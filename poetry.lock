@@ -2952,6 +2952,42 @@ files = [
 mpmath = ">=0.19"
 
 [[package]]
+name = "tensordict"
+version = "0.3.0"
+description = ""
+optional = false
+python-versions = "*"
+files = [
+    {file = "tensordict-0.3.0-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:be92a4d8c2a05bf4da881f45679510e461bb028d0d81c1d7430f55ecc27c64fa"},
+    {file = "tensordict-0.3.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:4bee18cad5483c8f93c67c1cdf5e66b95dca30627ba54d5865fd3ee206bc14ac"},
+    {file = "tensordict-0.3.0-cp310-cp310-manylinux1_x86_64.whl", hash = "sha256:59e24e505498379c7ff04cd218df5ade709361707e6f199fa019ab89acb84e96"},
+    {file = "tensordict-0.3.0-cp310-cp310-win_amd64.whl", hash = "sha256:986d9ccf3472d553814b40aea45f0bb8e15e8d9a230dcf3540ffcab57e472929"},
+    {file = "tensordict-0.3.0-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:748b42d714d80286e0151956b977dd4ad5efc252d8ad60831c0106550739c44e"},
+    {file = "tensordict-0.3.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:73152793cef87f705fe873c606c1d0336ed5597edb241bf148d7ba4091907853"},
+    {file = "tensordict-0.3.0-cp311-cp311-manylinux1_x86_64.whl", hash = "sha256:340fad70ce38c3c58dba597bc23ad54ae55a5b0cacf60258c6d757a507ba80b9"},
+    {file = "tensordict-0.3.0-cp311-cp311-win_amd64.whl", hash = "sha256:bae590c30dc3d39833217f2eb7f7e5f84da22e49c216cd3b67255e9149fe278f"},
+    {file = "tensordict-0.3.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:c5e6daf347ca7048687358aa2f71c3e70e39f692fa2241f8e2980a140a4509c5"},
+    {file = "tensordict-0.3.0-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:bb45d5497bc138f180487a8d28787250273f4f1080b6dab3ce4685e953536867"},
+    {file = "tensordict-0.3.0-cp38-cp38-macosx_11_0_x86_64.whl", hash = "sha256:1319454944fc2079316f13a18dbfad2e725f9424b334094f8476199832b799fd"},
+    {file = "tensordict-0.3.0-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:0f577d189caa87aea952d116cb265a4b2b95e277c3b701c7f5d4dc2ee7dcce4a"},
+    {file = "tensordict-0.3.0-cp38-cp38-win_amd64.whl", hash = "sha256:280e4da61e69e18bdf5c64c9f2b09b4fc865375a8215e74a42b341c1d38c22a9"},
+    {file = "tensordict-0.3.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:07099a59cbdc241aa72fe71d7c68c36f3f46c2eab4e9b1b4b196e1620d26c24f"},
+    {file = "tensordict-0.3.0-cp39-cp39-macosx_11_0_x86_64.whl", hash = "sha256:859c3a7f274997c2ff49641d6f2e08d1ad9f7e7f16200deeeff33a22c3cc31c5"},
+    {file = "tensordict-0.3.0-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:4c1081f1467739674410aab1bc8cdd177834afa3dcef357df0e1c75c34ee9e30"},
+    {file = "tensordict-0.3.0-cp39-cp39-win_amd64.whl", hash = "sha256:dfb7e184d2c349753277fa65eb85c9f416a3aef4c1b252ebbea979ffc70c0d9f"},
+]
+
+[package.dependencies]
+cloudpickle = "*"
+numpy = "*"
+torch = ">=2.1.0"
+
+[package.extras]
+checkpointing = ["torchsnapshot-nightly"]
+h5 = ["h5py (>=3.8)"]
+tests = ["pytest", "pytest-benchmark", "pytest-instafail", "pytest-rerunfailures", "pyyaml"]
+
+[[package]]
 name = "terminado"
 version = "0.18.0"
 description = "Tornado websocket backend for the Xterm.js Javascript terminal emulator library."
@@ -3069,6 +3105,51 @@ typing-extensions = ">=4.8.0"
 [package.extras]
 opt-einsum = ["opt-einsum (>=3.3)"]
 optree = ["optree (>=0.9.1)"]
+
+[[package]]
+name = "torchrl"
+version = "0.3.0"
+description = ""
+optional = false
+python-versions = "*"
+files = [
+    {file = "torchrl-0.3.0-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:9e68982c05ea357f59733c9cce2f2d714aeeb3ea2ec76974aaa3b31bb9025df3"},
+    {file = "torchrl-0.3.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:58802f4121bac784f436bfc083f6b6ddf472df40580c8798606a68f5f24ad31e"},
+    {file = "torchrl-0.3.0-cp310-cp310-manylinux1_x86_64.whl", hash = "sha256:058338bef1579bb23ffbd9ef9e8b8dc1a1eada788d7873e02f655bb47a69751f"},
+    {file = "torchrl-0.3.0-cp310-cp310-win_amd64.whl", hash = "sha256:b60347c57bb9d42c0de26642b628cc6c7367648582b141fc1d704ab499adb9cc"},
+    {file = "torchrl-0.3.0-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:e7646e2509e4e99ff1e43b84171377c138bbcb953ffa2d40772080b487dbbaac"},
+    {file = "torchrl-0.3.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:cf778cae677075f6d7f37544ba6290d3014d03d93e270e987d9daa2a03b0f394"},
+    {file = "torchrl-0.3.0-cp311-cp311-manylinux1_x86_64.whl", hash = "sha256:1b8793b832c2106a516508b7c6e7ffe5ba1b36dc99ec7d030661d58d5ea5f7ab"},
+    {file = "torchrl-0.3.0-cp311-cp311-win_amd64.whl", hash = "sha256:7bdb3d1923a2a49b826490fc9fbcedbbc06fbb94a657baef9678bd1e53d54724"},
+    {file = "torchrl-0.3.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:8c2f9e02cbe9e017f6ea21f096412db487d3847f901518eaa76236d6a8b120b6"},
+    {file = "torchrl-0.3.0-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:6fc661cff9fa2a2ded765b0002591cd9e3ff500cdf6b7e6b3ed308679c66e63f"},
+    {file = "torchrl-0.3.0-cp38-cp38-macosx_11_0_x86_64.whl", hash = "sha256:25920c7c918fc6a6c242bfb65aa75bf929671760951260ed86a34354597258da"},
+    {file = "torchrl-0.3.0-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:37ffcd66feae1fe388ed2c220857efcff056d75a8b95f41948ea1b267ab7adf4"},
+    {file = "torchrl-0.3.0-cp38-cp38-win_amd64.whl", hash = "sha256:04bd74ee806147eb149cdf4b2cded1d87f9b14d81f8869c837364b075de6977f"},
+    {file = "torchrl-0.3.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:b5b14460f9ff2c3fe106650dfa6c0d46b0d099c2c06be5af9934a6093fdc51b4"},
+    {file = "torchrl-0.3.0-cp39-cp39-macosx_11_0_x86_64.whl", hash = "sha256:938c340d1b8ca6e2150a22f3a42508bfea649136a6118c997feddd392f0ae3b5"},
+    {file = "torchrl-0.3.0-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:cab2215176a48ef6ce5f2aad6ea08a05fbf78bd1cd6c5e80e3bea1bbbf210540"},
+    {file = "torchrl-0.3.0-cp39-cp39-win_amd64.whl", hash = "sha256:4357f5a7fccc00b52dd040660ac76e095d26b577cdd7e4112748fc4f88da2775"},
+]
+
+[package.dependencies]
+cloudpickle = "*"
+numpy = "*"
+packaging = "*"
+tensordict = ">=0.3.0"
+torch = ">=2.1.0"
+
+[package.extras]
+all = ["ale-py", "atari-py", "dm-control", "git", "gym", "gym[accept-rom-license]", "gymnasium", "h5py", "huggingface-hub", "hydra-core (>=1.1)", "hydra-submitit-launcher", "minari", "moviepy", "mujoco", "pandas", "pettingzoo (>=1.24.1)", "pillow", "pygame", "pytest", "pytest-instafail", "pyyaml", "requests", "scikit-learn", "scipy", "tensorboard", "torchsnapshot", "torchvision", "tqdm", "vmas (>=1.2.10)", "wandb"]
+atari = ["ale-py", "atari-py", "gym", "gym[accept-rom-license]", "pygame"]
+checkpointing = ["torchsnapshot"]
+dm-control = ["dm-control"]
+gym-continuous = ["gymnasium", "mujoco"]
+marl = ["pettingzoo (>=1.24.1)", "vmas (>=1.2.10)"]
+offline-data = ["h5py", "huggingface-hub", "minari", "pandas", "pillow", "requests", "scikit-learn", "torchvision", "tqdm"]
+rendering = ["moviepy"]
+tests = ["pytest", "pytest-instafail", "pyyaml", "scipy"]
+utils = ["git", "hydra-core (>=1.1)", "hydra-submitit-launcher", "tensorboard", "tqdm", "wandb"]
 
 [[package]]
 name = "tornado"
@@ -3263,4 +3344,4 @@ test = ["websockets"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "86443904898d99d5f042a456746b72e5bf7f7027054ee1ac5010237a9b3118fc"
+content-hash = "b1559b9fb1926029580cdfb7b6e494088a154fa7c7ef81d513e5e3daf3be63a3"

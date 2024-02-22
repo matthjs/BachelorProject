@@ -16,6 +16,7 @@ gymnasium = { version = "^0.29.1", extras = ["box2d"] }
 matplotlib="^3.8.2"
 notebook="^7.1.0"
 ipykernel="^6.29.2"
+torchrl = "^0.3.0"
 
 
 [build-system]
