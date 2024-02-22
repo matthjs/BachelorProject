@@ -5,6 +5,7 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
 
+RUN apt install swig
 # Install Poetry
 RUN pip install poetry
 RUN poetry config virtualenvs.create false
@@ -15,4 +16,4 @@ RUN poetry install --no-root --no-interaction --no-ansi
 # Copy the entire project code to the container
 COPY . .
 
-CMD ["python", "other/pytorch-gpu-test.py"]
+CMD ["python", "bachelorproject/main.py"]

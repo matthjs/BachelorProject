@@ -14,11 +14,21 @@
 - [Docker v4.25](https://www.docker.com/get-started) or higher (if running docker container).
 - [Poetry](https://python-poetry.org/).
 ## Running
-Nothing to run here yet but:
+Using docker: Run the docker-compose files to run all relevant services (`docker compose up` or `docker compose up --build`).
 
-For running the Docker container you can run the docker compose file (`docker compose up --build`).
-
-Without Docker, you can set up a local virtual environment using
-Poetry and use the provided `poetry.lock` and `pyproject.toml` files. The dependencies are then installed using `poetry install`.
+You can also set up a virtual environment using Poetry. Poetry can  be installed using `pip`:
+```
+pip install poetry
+```
+Then initiate the virtual environment with the required dependencies (see `poetry.lock`, `pyproject.toml`):
+```
+poetry config virtualenvs.in-project true    # ensures virtual environment is in project
+poetry install
+```
+The virtual environment can be accessed from the shell using:
+```
+poetry shell
+```
+IDEs like Pycharm will be able to detect the interpreter of this virtual environment.
 
 ## Usage

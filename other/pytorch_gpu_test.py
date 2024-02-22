@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 
 
-def main():
+def gpu_test():
     # Check if GPU is available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Device:", device)
@@ -15,7 +15,3 @@ def main():
     input_data = torch.randn(1, 10).to(device)
     output = model(input_data)
     print("Output:", output.item())
-
-
-if __name__ == "__main__":
-    main()
