@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 from models.linear import LinearModel
 from models.mlp import MLP
@@ -5,7 +6,7 @@ from models.mlp import MLP
 
 class ModelFactory:
     @staticmethod
-    def create_model(model_type: str, input_size: int, output_size: int, device: str = 'cuda') -> nn.Module:
+    def create_model(model_type: str, input_size: int, output_size: int) -> nn.Module:
         """
         Create a machine learning model based on the specified type.
 
@@ -15,6 +16,7 @@ class ModelFactory:
         :param output_size: Number of output features.
         :return: Model instance.
         """
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
         if model_type == "linear":
             return LinearModel(input_size, output_size).to(device)
         elif model_type == "mlp":

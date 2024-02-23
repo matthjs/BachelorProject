@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 
+import torch
+from torchrl.data import LazyMemmapStorage, ReplayBuffer
+
 
 class Agent(ABC):
     """
@@ -21,22 +24,19 @@ class Agent(ABC):
         def set_info(self, info):
             self.info = info
 
-    def __init__(self):
+    def __init__(self, models, obs_space, action_space, device, memory: ReplayBuffer):
         """
         Agent Base Class constructor.
         """
         self.env_info = self.EnvInfo()
+        self.replay_buffer = memory
+        self.models = models
+        self.obs_space = obs_space
+        self.action_space = action_space
+        self.device = device
 
     @abstractmethod
     def add_trajectory(self, trajectory):
-        pass
-
-    @abstractmethod
-    def sample_trajectory(self, batch_size=1):
-        pass
-
-    @abstractmethod
-    def process_state(self, state):
         pass
 
     @abstractmethod

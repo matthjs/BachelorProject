@@ -17,6 +17,10 @@ matplotlib="^3.8.2"
 notebook="^7.1.0"
 ipykernel="^6.29.2"
 torchrl = "^0.3.0"
+loguru = "^0.7.2"
+tensordict = "^0.3.0"
+skrl = "^1.1.0"
+stable-baselines3 = "^2.2.1"
 
 
 [build-system]

@@ -1,83 +1,123 @@
-from typing import List, Optional, Union
+import threading
+from typing import List, Optional, Union, Dict, Tuple
+from collections import defaultdict
+
+from util.welford import Welford
 
 
 class MetricsTracker:
     """
-    A class for tracking metrics such as loss and rewards in a Reinforcement Learning agent.
-
-    Attributes:
-        _loss_history (List[float]): A list to store the history of loss values.
-        _reward_history (List[Union[float, int]]): A list to store the history of reward values.
+    Thread-safe object for recording metrics. Slight abuse of the Singleton pattern similar
+    to how a logging object is designed.
     """
+    _instance = None
 
-    def __init__(self):
-        """
-        Initialize the MetricsTracker.
-        """
-        self._loss_history: List[float] = []
-        self._reward_history: List[Union[float, int]] = []
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._lock = threading.Lock()
+            cls._loss_aggr = Welford()
+            cls._reward_aggr = Welford()
+            cls._instance._loss_history: Dict[str, tuple] = defaultdict(lambda: ([], []))
+            cls._instance._reward_history: Dict[str, tuple] = defaultdict(lambda: ([], []))
+        return cls._instance
 
-    @property
-    def loss_history(self) -> List[float]:
+    def to_csv(self, filename: str) -> None:
         """
-        Get the history of loss values.
+        Write the metrics to a csv file.
 
-        :return: The list of loss values recorded.
+        :param filename: The name of the csv file.
         """
-        return self._loss_history
+        # Implementation for writing metrics to a CSV file
+        pass
 
-    @property
-    def reward_history(self) -> List[Union[float, int]]:
+    def plot(self) -> None:
         """
-        Get the history of reward values.
-
-        :return: The list of reward values recorded.
+        Plot the metrics to a matplotlib figure.
         """
-        return self._reward_history
+        # Implementation for plotting metrics using Matplotlib
+        pass
 
-    def record_loss(self, loss: float) -> None:
+    def record_loss(self, agent_id: str, loss: float) -> None:
         """
-        Record a loss value.
+        Record a loss value for a specific agent.
 
+        :param agent_id: The identifier of the agent.
         :param loss: The loss value to record.
         """
-        self._loss_history.append(loss)
+        with self._lock:
+            self._loss_aggr.update_aggr(loss)
+            mean_losses, variance_losses = self._loss_history[agent_id]
+            mean, var = self._loss_aggr.get_curr_mean_variance()
+            mean_losses.append(mean)
+            variance_losses.append(var)
 
-    def record_reward(self, reward: Union[float, int]) -> None:
+    def record_reward(self, agent_id: str, reward: Union[float, int]) -> None:
         """
-        Record a reward value.
+        Record a reward value for a specific agent.
 
+        :param agent_id: The identifier of the agent.
         :param reward: The reward value to record.
         """
-        self._reward_history.append(reward)
+        with self._lock:
+            self._reward_aggr.update_aggr(reward)
+            mean_rewards, variance_rewards = self._reward_history[agent_id]
+            mean, var = self._reward_aggr.get_curr_mean_variance()
+            mean_rewards.append(mean)
+            variance_rewards.append(var)
 
-    @property
-    def latest_loss(self) -> Optional[float]:
+    def latest_loss(self, agent_id: str) -> Optional[float]:
         """
-        Get the latest recorded loss value.
+        Get the latest recorded loss value for a specific agent.
 
-        :return: The latest recorded loss value, or None if no loss has been recorded.
+        :param agent_id: The identifier of the agent.
+        :return: The latest recorded loss value for the agent, or None if no loss has been recorded.
         """
-        if self._loss_history:
-            return self._loss_history[-1]
-        else:
-            return None
+        with self._lock:
+            loss_values = self._loss_history.get(agent_id)
+            if loss_values:
+                return loss_values[-1]
+            else:
+                return None
 
-    @property
-    def latest_reward(self) -> Optional[Union[float, int]]:
+    def latest_reward(self, agent_id: str) -> Optional[Union[float, int]]:
         """
-        Get the latest recorded reward value.
+        Get the latest recorded reward value for a specific agent.
 
-        :return: The latest recorded reward value, or None if no reward has been recorded.
+        :param agent_id: The identifier of the agent.
+        :return: The latest recorded reward value for the agent, or None if no reward has been recorded.
         """
-        if self._reward_history:
-            return self._reward_history[-1]
-        else:
-            return None
+        with self._lock:
+            reward_values = self._reward_history.get(agent_id)
+            if reward_values:
+                return reward_values[-1]
+            else:
+                return None
 
     def clear(self) -> None:
         """
-        Clear the recorded metrics (loss and reward history).
+        Clear the recorded metrics (loss and reward history) for all agents.
         """
-        self._loss_history.clear()
-        self._reward_history.clear()
+        with self._lock:
+            self._loss_history.clear()
+            self._reward_history.clear()
+
+    @property
+    def loss_history(self) -> Dict[str, List[float]]:
+        """
+        Get the history of loss values for all agents.
+
+        :return: A dictionary containing the loss history for each agent.
+        """
+        with self._lock:
+            return self._loss_history
+
+    @property
+    def reward_history(self) -> Dict[str, List[Union[float, int]]]:
+        """
+        Get the history of reward values for all agents.
+
+        :return: A dictionary containing the reward history for each agent.
+        """
+        with self._lock:
+            return self._reward_history

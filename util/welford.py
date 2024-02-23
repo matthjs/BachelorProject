@@ -1,5 +1,4 @@
 from typing import Tuple
-import numpy as np
 
 """
 Online algorithms for keeping track of sample means and sample variances.
@@ -13,35 +12,40 @@ For more information, see: https://en.wikipedia.org/wiki/Algorithms_for_calculat
 
 
 class Welford:
-    @staticmethod
-    def update_aggr(existing_aggr: Tuple[int, float, float], new_val: float) -> Tuple[int, float, float]:
+    def __init__(self):
+        self.count = 0
+        self.mean = 0.0
+        self.M2 = 0.0
+
+    def update_aggr(self, new_val: float) -> None:
         """
         Update aggregate values with a new value.
 
-        :param existing_aggr: Tuple containing the current aggregate values (count, mean, M2).
         :param new_val: The new value to be incorporated into the aggregate.
-        :return: Updated aggregate values after incorporating the new value.
         """
-        (count, mean, M2) = existing_aggr
-        count += 1
-        delta = new_val - mean
-        mean += delta / count
-        delta2 = new_val - mean
-        M2 += delta * delta2
-        return count, mean, M2
+        self.count += 1
+        delta = new_val - self.mean
+        self.mean += delta / self.count
+        delta2 = new_val - self.mean
+        self.M2 += delta * delta2
 
-    @staticmethod
-    def finalize_aggr(existing_aggr: Tuple[int, float, float]) -> Tuple[float, float, float]:
+    def get_curr_mean_variance(self) -> Tuple[float, float]:
         """
-        Retrieve the mean, variance, and sample variance from an aggregate.
+        Return the current sample mean and sample variance estimate.
+        :return: mean and variance.
+        """
+        mean, _, var = self._finalize_aggr()
+        return mean, var
 
-        :param existing_aggr: Tuple containing the aggregate values (count, mean, M2).
+    def _finalize_aggr(self) -> Tuple[float, float, float]:
+        """
+        Retrieve the mean, variance, and sample variance from the aggregate.
+
         :return: Mean, variance, and sample variance calculated from the aggregate.
         """
-        count, mean, m2 = existing_aggr
-        if count < 2:
-            return mean, 0, 0
+        if self.count < 2:
+            return self.mean, 0, 0
         else:
-            variance = m2 / count
-            sample_variance = m2 / (count - 1)
-            return mean, variance, sample_variance
+            variance = self.M2 / self.count
+            sample_variance = self.M2 / (self.count - 1)
+            return self.mean, variance, sample_variance
