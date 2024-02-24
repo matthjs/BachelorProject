@@ -1,5 +1,5 @@
 import threading
-from typing import List, Optional, Union, Dict, Tuple
+from typing import List, Optional, Union, Dict, Tuple, SupportsFloat
 from collections import defaultdict
 
 from util.welford import Welford
@@ -52,7 +52,7 @@ class MetricsTracker:
             mean_losses.append(mean)
             variance_losses.append(var)
 
-    def record_reward(self, agent_id: str, reward: Union[float, int]) -> None:
+    def record_reward(self, agent_id: str, reward: Union[float, int, SupportsFloat]) -> None:
         """
         Record a reward value for a specific agent.
 
@@ -103,7 +103,7 @@ class MetricsTracker:
             self._reward_history.clear()
 
     @property
-    def loss_history(self) -> Dict[str, List[float]]:
+    def loss_history(self) -> dict[str, tuple]:
         """
         Get the history of loss values for all agents.
 
@@ -113,7 +113,7 @@ class MetricsTracker:
             return self._loss_history
 
     @property
-    def reward_history(self) -> Dict[str, List[Union[float, int]]]:
+    def reward_history(self) -> dict[str, tuple]:
         """
         Get the history of reward values for all agents.
 

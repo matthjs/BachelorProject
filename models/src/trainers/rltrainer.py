@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import namedtuple
 
 import torch
 import torch.nn as nn
@@ -11,6 +12,8 @@ class RLTrainer(Trainer, ABC):
     """
     Base class for RL optimizers.
     """
+    Transition = namedtuple('Transition',
+                            ('state', 'action', 'reward', 'next_state'))
 
     def __init__(self, model, batch_size: int, buf: ReplayBuffer, learning_rate: float, discount_factor=0.9,
                  loss=nn.MSELoss()):
@@ -23,7 +26,7 @@ class RLTrainer(Trainer, ABC):
 
         self.model = model  # make sure model is on GPU!
         self.loss_fn = loss
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr = learning_rate)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
 
     def set_replay_buffer(self, buf: ReplayBuffer):
         self.buf = buf

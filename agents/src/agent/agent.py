@@ -24,16 +24,13 @@ class Agent(ABC):
         def set_info(self, info):
             self.info = info
 
-    def __init__(self, models, obs_space, action_space, device, memory: ReplayBuffer):
+    def __init__(self, models, memory: ReplayBuffer):
         """
         Agent Base Class constructor.
         """
-        self.env_info = self.EnvInfo()
-        self.replay_buffer = memory
+        self._env_info = self.EnvInfo()
         self.models = models
-        self.obs_space = obs_space
-        self.action_space = action_space
-        self.device = device
+        self._replay_buffer = memory
 
     @abstractmethod
     def add_trajectory(self, trajectory):
@@ -66,5 +63,6 @@ class Agent(ABC):
         self.env_info.set_done(done)
         self.env_info.set_info(info)
 
+    @property
     def env_info(self) -> EnvInfo:
-        return self.env_info
+        return self._env_info
