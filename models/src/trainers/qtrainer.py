@@ -44,8 +44,7 @@ class QTrainer(RLTrainer):
         Compute q values of neural network approximating
         the action-value function for the chosen actions
         in the batch.
-        Note that action selection here is off-policy (due to max operation).
-        :return:
+        :return: batched model output q(S,A) for all actions.
         """
         model_output = self.model(state_batch)
         q_values = []
@@ -63,11 +62,9 @@ class QTrainer(RLTrainer):
         :return: the TD target.
         """
         next_state_values = torch.zeros(self.batch_size, device=self.device)
-        # DQN would use torch.no_grad, but I guess in this case you will not have this (?)
-        # print("nb ->", self.model(next_state_batch))
+        # DQN would use torch.no_grad, but I guess in this case you will not.
 
         max_q_value, _ = torch.max(self.model(next_state_batch), dim=0)
-        # print("max type ->", max_q_value.dtype)
         next_state_values[mask] = self.model(next_state_batch).max()
 
         td_target = (next_state_values * self.discount_factor) + reward_batch
@@ -88,7 +85,6 @@ class QTrainer(RLTrainer):
 
         # The loss is the MSE of the q-output of the current state and the temporal difference target.
         # Note that the TD target is off-policy in Q-learning.
-        # print("state  action values ->", state_action_values.dtype)
         loss = self.loss_fn(state_action_values, td_target)
 
         # gradient descent step
