@@ -27,3 +27,9 @@ class LinearModel(nn.Module):
         """
         out = self._linear(x)
         return out
+
+    def save(self, file_name='./params/model.pth'):
+        torch.save(self.state_dict(), file_name)
+
+    def load(self, file_name='./params/model.pth'):
+        self.load_state_dict(torch.load(file_name))

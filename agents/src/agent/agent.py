@@ -28,6 +28,7 @@ class Agent(ABC):
         """
         Agent Base Class constructor.
         """
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self._env_info = self.EnvInfo()
         self.models = models
         self._replay_buffer = memory

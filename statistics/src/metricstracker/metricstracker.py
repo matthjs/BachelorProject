@@ -2,6 +2,9 @@ import threading
 from typing import List, Optional, Union, Dict, Tuple, SupportsFloat
 from collections import defaultdict
 
+import numpy as np
+from matplotlib import pyplot as plt
+
 from util.welford import Welford
 
 
@@ -18,8 +21,8 @@ class MetricsTracker:
             cls._instance._lock = threading.Lock()
             cls._loss_aggr = Welford()
             cls._reward_aggr = Welford()
-            cls._instance._loss_history: Dict[str, tuple] = defaultdict(lambda: ([], []))
-            cls._instance._reward_history: Dict[str, tuple] = defaultdict(lambda: ([], []))
+            cls._loss_history: Dict[str, tuple] = defaultdict(lambda: ([], []))
+            cls._reward_history: Dict[str, tuple] = defaultdict(lambda: ([], []))
         return cls._instance
 
     def to_csv(self, filename: str) -> None:
@@ -35,8 +38,38 @@ class MetricsTracker:
         """
         Plot the metrics to a matplotlib figure.
         """
-        # Implementation for plotting metrics using Matplotlib
-        pass
+        with self._lock:
+
+            fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(10, 8))
+
+            for agent_id, (mean_losses, var_losses) in self._loss_history.items():
+                x_loss = np.linspace(0, len(mean_losses), len(mean_losses), endpoint=False)
+                axes[0].plot(x_loss, mean_losses, label=f'{agent_id} Loss')
+                axes[0].fill_between(x_loss,
+                                     mean_losses - np.sqrt(var_losses) * 0.1,
+                                     mean_losses + np.sqrt(var_losses) * 0.1,
+                                     alpha=0.2)
+
+            for agent_id, (mean_rewards, var_rewards) in self._reward_history.items():
+                x_reward = np.linspace(0, len(mean_rewards), len(mean_rewards), endpoint=False)
+                axes[1].plot(x_reward, mean_rewards, label=f'{agent_id} Loss')
+                axes[1].fill_between(x_reward,
+                                     mean_rewards - np.sqrt(var_rewards) * 0.1,
+                                     mean_rewards + np.sqrt(var_rewards) * 0.1,
+                                     alpha=0.2)
+
+            axes[0].set_title('Loss History')
+            axes[0].set_xlabel('Episodes')
+            axes[0].set_ylabel('Average Loss')
+            axes[0].legend()
+
+            axes[1].set_title('Reward History')
+            axes[1].set_xlabel('Episodes')
+            axes[1].set_ylabel('Average Reward')
+            axes[1].legend()
+
+            plt.tight_layout()
+            plt.show()
 
     def record_loss(self, agent_id: str, loss: float) -> None:
         """

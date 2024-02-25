@@ -14,7 +14,6 @@ def env_interaction_gym(agent_type: str, env_str: str, episodes: int, render_mod
     agent = AgentFactory.create_agent(agent_type, env=env)
 
     for _ in range(episodes):
-        print(env.action_space.sample())
         old_obs = obs
         action = agent.policy(obs)
         obs, reward, terminated, truncated, info = env.step(action)
@@ -31,12 +30,7 @@ def env_interaction_gym(agent_type: str, env_str: str, episodes: int, render_mod
     env.close()
     print(MetricsTracker().loss_history)
     print(MetricsTracker().reward_history)
-
-
-def env_interaction(agent_type: str, env_str: str, setting: str, episodes: int, render_mode: str):
-
-
-    env_interaction_gym(agent_type, env, setting, episodes)
+    MetricsTracker().plot()
 
 
 def gym_env_interact(agent_type: str, env_str: str, episodes: int):

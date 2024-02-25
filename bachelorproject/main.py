@@ -2,11 +2,7 @@ from collections import namedtuple
 
 import gymnasium as gym
 import torch
-from tensordict.nn import TensorDictSequential
-from torch import nn
 from torchrl.data import LazyTensorStorage, ReplayBuffer
-from torchrl.envs import GymEnv
-from torchrl.modules import EGreedyModule
 
 from loops.envinteraction import env_interaction_gym
 
@@ -24,10 +20,7 @@ def test_memory_buffer():
     print(batch.next_state)
 
 
-def test():
-    pass
-
-def testE():
+def test_e():
     env = gym.make("MountainCar-v0", render_mode="human")
     obs, info = env.reset()
 
@@ -43,14 +36,13 @@ def testE():
 
     env.close()
 
-def testBufAgain():
-    Transition = namedtuple('Transition',
-                            ('state', 'action', 'reward', 'next_state'))
+
+def test_buf_again():
     env = gym.make("MountainCar-v0")
 
     obs, info = env.reset()
 
-    buf = ReplayBuffer(storage=LazyTensorStorage(20))
+    buf = ReplayBuffer(storage=LazyTensorStorage(20, device="cuda"))
 
     for cnt in range(10):
         action = env.action_space.sample()
@@ -62,6 +54,8 @@ def testBufAgain():
         reward_t = torch.as_tensor(reward, device="cuda")
         next_state_t = torch.as_tensor(obs, device="cuda")
 
+        print("DEV ->", state_t.device)
+
         buf.add((state_t, action_t, reward_t, next_state_t))
 
         if terminated or truncated:
@@ -71,16 +65,15 @@ def testBufAgain():
 
     trajectories = buf.sample(batch_size=2)
 
-    print("state: ", trajectories[0])
+    print("state: ", trajectories[0].device)
     print("action: ", trajectories[1])
     print("reward: ", trajectories[2])
     print("next_state: ", trajectories[3])
 
 
-
 if __name__ == "__main__":
-    testBufAgain()
-    #env_interaction_gym("mlp_q_agent", "MountainCar-v0", 1000)
+    # test_buf_again()
+    env_interaction_gym("mlp_q_agent", "MountainCar-v0", 50000)
     """
     MetricsTracker().record_loss("cat", 2)
     MetricsTracker().record_loss("cat", 4)

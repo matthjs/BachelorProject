@@ -4,6 +4,12 @@ import gymnasium as gym
 import numpy as np
 import torch
 
+from util.fetchdevice import fetch_device
+
+
+def process_state(state):
+    return torch.from_numpy(state).to(device=fetch_device())
+
 
 class EpsilonGreedy:
     """
@@ -15,7 +21,7 @@ class EpsilonGreedy:
     TODO: Find some way to generalize environment specifications.
     TODO: Look into EGREEDYMODULE from torchrl.
     """
-    def __init__(self, model, action_space: gym.Space, eps_init=1.0, eps_end=0.1, annealing_num_steps=1000):
+    def __init__(self, model, action_space: gym.Space, eps_init=1.0, eps_end=0.1, annealing_num_steps=10000):
         """
         :param model: action-value function estimate.
         :param action_space:
@@ -44,7 +50,7 @@ class EpsilonGreedy:
         :return: action
         """
         if np.random.uniform(0, 100) >= self._epsilon * 100:
-            model_output = self._model(state)
+            model_output = self._model(process_state(state))
             return torch.argmax(model_output).item()
 
-        return random.randint(0, self._action_space.n)
+        return self._action_space.sample()

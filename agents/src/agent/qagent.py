@@ -1,12 +1,8 @@
-from threading import current_thread
-
-import numpy as np
 import torch
 from torchrl.data import ReplayBuffer, LazyTensorStorage
-from torchrl.modules import EGreedyModule
 
 from agent.agent import Agent
-from metricstracker.metricstracker import MetricsTracker
+from util.fetchdevice import fetch_device
 from trainers.qtrainer import QTrainer
 
 
@@ -21,10 +17,9 @@ class QAgent(Agent):
         # Note: Classical Q-learning does not use a ReplayBuffer, so we set
         # the ReplayBuffer size to 1.
         super().__init__({"value_network": model},
-                         memory=ReplayBuffer(storage=LazyTensorStorage(1)))
+                         memory=ReplayBuffer(storage=LazyTensorStorage(1, device=fetch_device())))
         self._exploration_policy = exploration_policy
         self._trainer = QTrainer(model=model, batch_size=1, buf=self._replay_buffer)
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     def add_trajectory(self, trajectory: tuple) -> None:
         """
@@ -58,7 +53,9 @@ class QAgent(Agent):
         return self._exploration_policy.action(state)
 
     def load_parameters(self):
-        pass
+        for model_name, model in self.models:
+            model.load()
 
     def save_parameters(self):
-        pass
+        for model_name, model in self.models:
+            model.save()
