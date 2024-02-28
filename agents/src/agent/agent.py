@@ -33,9 +33,18 @@ class Agent(ABC):
         self.models = models
         self._replay_buffer = memory
 
-    @abstractmethod
-    def add_trajectory(self, trajectory):
-        pass
+    def add_trajectory(self, trajectory: tuple) -> None:
+        """
+        Add a to replay buffer.
+        NOTE: trajectory is converted to tensor and moved to self.device.
+        :param trajectory = (state, action, reward, next_state)
+        """
+        state, action, reward, next_state = trajectory
+        state_t = torch.as_tensor(state, device=self.device)
+        action_t = torch.as_tensor(action, device=self.device)
+        reward_t = torch.as_tensor(reward, device=self.device)
+        next_state_t = torch.as_tensor(next_state, device=self.device)
+        self._replay_buffer.add((state_t, action_t, reward_t, next_state_t))
 
     @abstractmethod
     def update(self):
@@ -45,13 +54,13 @@ class Agent(ABC):
     def policy(self, state):
         pass
 
-    @abstractmethod
     def load_parameters(self):
-        pass
+        for model, model_name in enumerate(self.models):
+            model.load()
 
-    @abstractmethod
     def save_parameters(self):
-        pass
+        for model, model_name in enumerate(self.models):
+            model.save()
 
     def record_env_info(self, info, done=False) -> None:
         """

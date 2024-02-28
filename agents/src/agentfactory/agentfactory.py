@@ -6,6 +6,7 @@ import torchrl
 from torchrl.modules import EGreedyModule
 
 from agent.agent import Agent
+from agent.dqnagent import DQNAgent
 from agent.qagent import QAgent
 from exploration.egreedy import EpsilonGreedy
 from modelfactory.modelfactory import ModelFactory
@@ -48,5 +49,10 @@ class AgentFactory:
                                                                input_size=obs_space.shape[0],
                                                                output_size=action_space.n)
             return QAgent(model=model, exploration_policy=EpsilonGreedy(model, action_space))
+        elif agent_type == "mlp_dqn_agent":
+            model = ModelFactory.create_model(model_type="mlp",
+                                                               input_size=obs_space.shape[0],
+                                                               output_size=action_space.n)
+            return DQNAgent(model=model, exploration_policy=EpsilonGreedy(model, action_space), param_copying=20)
 
         raise ValueError("Invalid agent type")

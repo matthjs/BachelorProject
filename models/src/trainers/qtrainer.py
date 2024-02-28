@@ -64,7 +64,7 @@ class QTrainer(RLTrainer):
         next_state_values = torch.zeros(self.batch_size, device=self.device)
         # DQN would use torch.no_grad, but I guess in this case you will not.
 
-        max_q_value, _ = torch.max(self.model(next_state_batch), dim=0)
+        # max_q_value, _ = torch.max(self.model(next_state_batch), dim=0)
         next_state_values[mask] = self.model(next_state_batch).max()
 
         td_target = (next_state_values * self.discount_factor) + reward_batch
