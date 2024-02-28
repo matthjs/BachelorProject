@@ -4,7 +4,6 @@ import gym
 import torch
 from torchrl.data import ReplayBuffer, LazyTensorStorage
 
-
 def test_e():
     env = gym.make("MountainCar-v0", render_mode="human")
     obs, info = env.reset()

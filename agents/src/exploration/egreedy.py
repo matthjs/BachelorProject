@@ -21,7 +21,7 @@ class EpsilonGreedy:
     TODO: Find some way to generalize environment specifications.
     TODO: Look into EGREEDYMODULE from torchrl.
     """
-    def __init__(self, model, action_space: gym.Space, eps_init=1.0, eps_end=0.1, annealing_num_steps=10000):
+    def __init__(self, model, action_space: gym.Space, eps_init=1.0, eps_end=0.1, annealing_num_steps=3000):
         """
         :param model: action-value function estimate.
         :param action_space:

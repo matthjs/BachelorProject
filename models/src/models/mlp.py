@@ -31,8 +31,8 @@ class MLP(nn.Module):
         """
         return self._layers(x)
 
-    def save(self, file_name='./params/model.pth'):
+    def save(self, file_name='./model.pth'):
         torch.save(self.state_dict(), file_name)
 
-    def load(self, file_name='./params/model.pth'):
+    def load(self, file_name='./model.pth'):
         self.load_state_dict(torch.load(file_name))

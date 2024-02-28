@@ -31,6 +31,7 @@ def env_interaction_gym(agent_type: str, env_str: str, episodes: int, render_mod
     print(MetricsTracker().loss_history)
     print(MetricsTracker().reward_history)
     MetricsTracker().plot()
+    agent.save_parameters()
 
 
 def gym_env_interact(agent_type: str, env_str: str, episodes: int):

@@ -53,9 +53,9 @@ class QAgent(Agent):
         return self._exploration_policy.action(state)
 
     def load_parameters(self):
-        for model_name, model in self.models:
+        for model, model_name in enumerate(self.models):
             model.load()
 
     def save_parameters(self):
-        for model_name, model in self.models:
+        for model, model_name in enumerate(self.models):
             model.save()
