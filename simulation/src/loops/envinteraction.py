@@ -8,12 +8,12 @@ from agentfactory.agentfactory import AgentFactory
 from metricstracker.metricstracker import MetricsTracker
 
 
-def env_interaction_gym(agent_type: str, env_str: str, episodes: int, render_mode: str = "human"):
+def env_interaction_gym(agent_type: str, env_str: str, time_steps: int, render_mode: str = "human"):
     env = gym.make(env_str, render_mode=render_mode)
     obs, info = env.reset()
     agent = AgentFactory.create_agent(agent_type, env=env)
 
-    for _ in range(episodes):
+    for _ in range(time_steps):
         old_obs = obs
         action = agent.policy(obs)
         obs, reward, terminated, truncated, info = env.step(action)

@@ -10,6 +10,7 @@ from util.welford import Welford
 
 class MetricsTracker:
     """
+    Author: Matthijs van der Lende (email: m.r.van.der.lende@student.rug.nl).
     Thread-safe object for recording metrics. Slight abuse of the Singleton pattern similar
     to how a logging object is designed.
     """
