@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from collections import namedtuple
 
 import torch
 import torch.nn as nn
@@ -12,8 +11,6 @@ class RLTrainer(Trainer, ABC):
     """
     Base class for RL optimizers.
     """
-    Transition = namedtuple('Transition',
-                            ('state', 'action', 'reward', 'next_state'))
 
     def __init__(self, model, batch_size: int, buf: ReplayBuffer, learning_rate: float, discount_factor=0.9,
                  loss=nn.MSELoss()):

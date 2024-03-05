@@ -1,16 +1,19 @@
 from abc import ABC
 
-from torchrl.data import ReplayBuffer
-
-from agent.agent import Agent
-from trainers.rltrainer import RLTrainer
+from agent.abstractagent import AbstractAgent
+from builders.valueagentbuilder import ValueAgentBuilder
 
 
-class ValueAgent(Agent, ABC):
-    def __init__(self, models, memory: ReplayBuffer, exploration_policy, trainer: RLTrainer):
-        super().__init__(models, memory)
-        self._exploration_policy = exploration_policy
-        self._trainer = trainer
+class ValueAgent(AbstractAgent, ABC):
+
+    def __init__(self, builder: ValueAgentBuilder):
+        """
+        NOTE: This constructor should not be run by itself but indirectly by the builder.
+        :param builder:
+        """
+        super().__init__(builder)
+        self._exploration_policy = builder.exploration_policy()
+        self._trainer = builder.trainer()
 
     def update(self) -> None:
         """

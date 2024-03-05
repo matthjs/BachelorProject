@@ -3,39 +3,27 @@ from abc import ABC, abstractmethod
 import torch
 from torchrl.data import LazyMemmapStorage, ReplayBuffer
 
+from builders.abstractagentbuilder import BaseAgentBuilder, EnvInfo
+from util.fetchdevice import fetch_device
 
-class Agent(ABC):
+
+class AbstractAgent(ABC):
     """
     Agent abstract base class.
     """
-
-    class EnvInfo:
+    def __init__(self, builder: BaseAgentBuilder):
         """
-        Inner class for recording game information.
+        NOTE: This constructor should not be called directly. It is
+        indirectly called by BaseAgentBuilder.
         """
-
-        def __init__(self):
-            self.done = False
-            self.info = None
-
-        def set_done(self, done):
-            self.done = done
-
-        def set_info(self, info):
-            self.info = info
-
-    def __init__(self, models, memory: ReplayBuffer):
-        """
-        Agent Base Class constructor.
-        """
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self._env_info = self.EnvInfo()
-        self.models = models
-        self._replay_buffer = memory
+        self.device = builder.device
+        self._env_info = builder.env_info
+        self._models = builder.models
+        self._replay_buffer = builder.replay_buffer
 
     def add_trajectory(self, trajectory: tuple) -> None:
         """
-        Add a to replay buffer.
+        Add a trajectory to the replay buffer.
         NOTE: trajectory is converted to tensor and moved to self.device.
         :param trajectory = (state, action, reward, next_state)
         """
@@ -72,6 +60,14 @@ class Agent(ABC):
         """
         self.env_info.set_done(done)
         self.env_info.set_info(info)
+
+    @property
+    def models(self) -> dict:
+        return self._models
+
+    @property
+    def replay_buffer(self) -> ReplayBuffer:
+        return self._replay_buffer\
 
     @property
     def env_info(self) -> EnvInfo:
