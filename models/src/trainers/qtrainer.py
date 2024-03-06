@@ -16,7 +16,7 @@ class QTrainer(RLTrainer):
     DQN.
     """
     def __init__(self, value_model, target_model, batch_size: int,
-                 buf: ReplayBuffer, learning_rate: float = 0.01, discount_factor=0.9):
+                 buf: ReplayBuffer, learning_rate: float = 0.01, discount_factor=0.9, gradient_steps=1):
         """
         NOTE: Expects models to contain a mapping "value_model" -> torch.nn.module
         :param models:
