@@ -1,27 +1,22 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 import torchrl
-from torch import nn
+from torchrl.data import LazyTensorStorage
 
-from builders.abstractagentbuilder import BaseAgentBuilder
-from exploration.egreedy import EpsilonGreedy
-from trainers.rltrainer import RLTrainer
+from builders.abstractagentbuilder import AbstractAgentBuilder
 
 
-class ValueAgentBuilder(BaseAgentBuilder, ABC):
+class ValueAgentBuilder(AbstractAgentBuilder, ABC):
     def __init__(self):
         super().__init__()
         self.batch_size = None
-        self.learning_rate = None
-        self.discount_factor = None
+        self.learning_rate = 0.01     # By default
+        self.discount_factor = 0.9    # By default
         self.replay_buffer_size = None
         self.annealing_num_steps = None
 
         self.value_model_type_str = None
-        self.buffer_storage_type = None
-
-        self.exploration_policy = None
-        self.trainer = None
+        self.buffer_storage_type = LazyTensorStorage    # By default.
 
     def set_batch_size(self, batch_size: int):
         self.batch_size = batch_size
@@ -55,17 +50,4 @@ class ValueAgentBuilder(BaseAgentBuilder, ABC):
         return super().valid() and self.batch_size is not None and self.learning_rate is not None and \
                 self.discount_factor is not None and self.replay_buffer_size is not None and \
                 self.annealing_num_steps is not None and self.value_model_type_str is not None and \
-                self.buffer_storage_type is not None and self.exploration_policy is not None and \
-                self.trainer
-
-    @abstractmethod
-    def init_value_model(self):
-        pass
-
-    @abstractmethod
-    def init_exploration_policy(self):
-        pass
-
-    @abstractmethod
-    def init_trainer(self):
-        pass
+                self.buffer_storage_type is not None

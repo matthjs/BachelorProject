@@ -10,7 +10,6 @@ from util.welford import Welford
 
 class MetricsTracker:
     """
-    Author: Matthijs van der Lende (email: m.r.van.der.lende@student.rug.nl).
     Thread-safe object for recording metrics. Slight abuse of the Singleton pattern similar
     to how a logging object is designed.
     """
@@ -60,12 +59,12 @@ class MetricsTracker:
                                      alpha=0.2)
 
             axes[0].set_title('Loss History')
-            axes[0].set_xlabel('Episodes')
+            axes[0].set_xlabel('Time steps')
             axes[0].set_ylabel('Average Loss')
             axes[0].legend()
 
             axes[1].set_title('Reward History')
-            axes[1].set_xlabel('Episodes')
+            axes[1].set_xlabel('Time steps')
             axes[1].set_ylabel('Average Reward')
             axes[1].legend()
 

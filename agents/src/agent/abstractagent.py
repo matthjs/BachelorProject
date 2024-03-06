@@ -1,26 +1,36 @@
 from abc import ABC, abstractmethod
 
-import torch
-from torchrl.data import LazyMemmapStorage, ReplayBuffer
-
-from builders.abstractagentbuilder import BaseAgentBuilder, EnvInfo
+from builders.abstractagentbuilder import AbstractAgentBuilder
 from util.fetchdevice import fetch_device
+
+class EnvInfo:
+    """
+    Inner class for recording game information.
+    """
+
+    def __init__(self):
+        self.done = False
+        self.info = None
+
+    def set_done(self, done):
+        self.done = done
+
+    def set_info(self, info):
+        self.info = info
 
 
 class AbstractAgent(ABC):
     """
     Agent abstract base class.
     """
-    def __init__(self, builder: BaseAgentBuilder):
+    def __init__(self, models, state_space, action_space):
         """
-        NOTE: This constructor should not be called directly. It is
-        indirectly called by BaseAgentBuilder.
         """
-        self.device = builder.device
-        self._env_info = builder.env_info
-        self._models = builder.models
-        self._state_space = builder.state_space
-        self._action_space = builder.action_space
+        self.device = fetch_device()
+        self._env_info = EnvInfo()
+        self._models = models
+        self._state_space = state_space
+        self._action_space = action_space
 
     @abstractmethod
     def add_trajectory(self, trajectory: tuple) -> None:

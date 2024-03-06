@@ -1,25 +1,30 @@
 from agent.valueagent import ValueAgent
-from builders.qagentbuilder import QAgentBuilder
 from exploration.egreedy import EpsilonGreedy
 from modelfactory.modelfactory import ModelFactory
 from trainers.qtrainer import QTrainer
 
 
 class QAgent(ValueAgent):
-    def __init__(self, builder: QAgentBuilder):
-        super().__init__(builder)
-        self._exploration_policy = builder.exploration_policy
-        self._trainer = builder.trainer
-
+    def __init__(self,
+                 models,
+                 state_space,
+                 action_space,
+                 replay_buffer_size: int,
+                 value_model_type_str,
+                 batch_size=200,
+                 annealing_num_steps=2000,
+                 learning_rate=0.01,
+                 discount_factor=0.9):
         # The 'Product' is also the 'Director'
-        self.models["value_model"] = ModelFactory.create_model(builder.value_model_type_str,
-                                                               builder.state_space.shape[0],
-                                                               builder.action_space.n)
-        self.exploration_policy = EpsilonGreedy(self.models["value_model"],
-                                                builder.action_space,
-                                                annealing_num_steps=builder.annealing_num_steps)
-        self.trainer = QTrainer(self.models,
-                                batch_size=builder.batch_size,
-                                buf=self._replay_buffer,
-                                learning_rate=builder.learning_rate,
-                                discount_factor=builder.discount_factor)
+        super().__init__(models, state_space, action_space, replay_buffer_size)
+        self._models["value_model"] = ModelFactory.create_model(value_model_type_str,
+                                                                state_space.shape[0],
+                                                                action_space.n)
+        self._exploration_policy = EpsilonGreedy(self.models["value_model"],
+                                                 action_space,
+                                                 annealing_num_steps=annealing_num_steps)
+        self._trainer = QTrainer(self.models,
+                                 batch_size=batch_size,
+                                 buf=self._replay_buffer,
+                                 learning_rate=learning_rate,
+                                 discount_factor=discount_factor)

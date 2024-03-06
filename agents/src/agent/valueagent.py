@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 import torch
-from torchrl.data import ReplayBuffer
+from torchrl.data import ReplayBuffer, LazyTensorStorage
 
 from agent.abstractagent import AbstractAgent
 from builders.valueagentbuilder import ValueAgentBuilder
@@ -13,14 +13,17 @@ from util.fetchdevice import fetch_device
 
 class ValueAgent(AbstractAgent, ABC):
 
-    def __init__(self, builder: ValueAgentBuilder):
+    def __init__(self,
+                 models,
+                 state_space,
+                 action_space,
+                 replay_buffer_size: int,
+                 buffer_storage_type=LazyTensorStorage):
         """
-        NOTE: This constructor should not be run by itself but indirectly by the builder.
-        :param builder:
         """
-        super().__init__(builder)
-        self._replay_buffer = ReplayBuffer(storage=builder.buffer_storage_type(
-                                           size=builder.replay_buffer_size,
+        super().__init__(models, state_space, action_space)
+        self._replay_buffer = ReplayBuffer(storage=buffer_storage_type(
+                                           max_size=replay_buffer_size,
                                            device=fetch_device()))
         self._exploration_policy = None
         self._trainer = None
