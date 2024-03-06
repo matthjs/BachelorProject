@@ -19,7 +19,7 @@ class DQNTrainer(QTrainer):
         self.target_model = self.models["target_model"]
 
     @override
-    def _evaluate_target_network(self, next_state_batch, reward_batch, mask):
+    def evaluate_target_network(self, next_state_batch, reward_batch, mask):
         """
         The computation here takes into account whether we are in a final state or not.
         Because if next_state is a final state then the target is just the reward.

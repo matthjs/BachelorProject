@@ -11,7 +11,7 @@ class DQNAgent(ValueAgent):
                  action_space,
                  replay_buffer_size: int,
                  value_model_type_str,
-                 batch_size=200,
+                 batch_size=64,
                  annealing_num_steps=2000,
                  learning_rate=0.01,
                  discount_factor=0.9,
@@ -21,6 +21,9 @@ class DQNAgent(ValueAgent):
         self._models["value_model"] = ModelFactory.create_model(value_model_type_str,
                                                                 state_space.shape[0],
                                                                 action_space.n)
+        self._models["target_model"] = ModelFactory.create_model(value_model_type_str,
+                                                                 state_space.shape[0],
+                                                                 action_space.n)
         self._exploration_policy = EpsilonGreedy(self.models["value_model"],
                                                  action_space,
                                                  annealing_num_steps=annealing_num_steps)

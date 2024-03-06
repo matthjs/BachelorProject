@@ -15,7 +15,7 @@ class QTrainer(RLTrainer):
     the q-function. Meaning, there is no separate network with frozen parameter like with
     DQN.
     """
-    def __init__(self, models: dict, batch_size: int,
+    def __init__(self, value_model, target_model, batch_size: int,
                  buf: ReplayBuffer, learning_rate: float = 0.01, discount_factor=0.9):
         """
         NOTE: Expects models to contain a mapping "value_model" -> torch.nn.module
@@ -25,8 +25,9 @@ class QTrainer(RLTrainer):
         :param learning_rate:
         :param discount_factor:
         """
-        super().__init__(models, batch_size, buf, learning_rate, discount_factor, loss=nn.MSELoss())
-        self.value_model = self.models["value_model"]
+        super().__init__({"value_model": value_model, "target_model": target_model}, batch_size, buf, learning_rate, discount_factor, loss=nn.MSELoss())
+        self.value_model = value_model
+        self.target_model = target_model
         self.optimizer = torch.optim.Adam(self.value_model.parameters(), lr=learning_rate)
 
     def _trajectories(self) -> tuple[torch.tensor, torch.tensor, torch.tensor, torch.tensor]:
@@ -63,7 +64,7 @@ class QTrainer(RLTrainer):
 
         return torch.as_tensor(q_values, device=self.device, dtype=torch.float32)
 
-    def _evaluate_target_network(self, next_state_batch, reward_batch, mask):
+    def evaluate_target_network(self, next_state_batch, reward_batch, mask):
         """
         The computation here takes into account whether we are in a final state or not.
         Because if next_state is a final state then the target is just the reward.
@@ -75,7 +76,7 @@ class QTrainer(RLTrainer):
         # DQN would use torch.no_grad, but I guess in this case you will not.
 
         # max_q_value, _ = torch.max(self.model(next_state_batch), dim=0)
-        next_state_values[mask] = self.value_model(next_state_batch).max()
+        next_state_values[mask] = self.target_model(next_state_batch).max()
 
         td_target = (next_state_values * self.discount_factor) + reward_batch
         return td_target
@@ -91,7 +92,7 @@ class QTrainer(RLTrainer):
         state_batch, action_batch, reward_batch, next_state_batch, non_final_mask = self._compute_trajectory_batches()
 
         state_action_values = self._evaluate_q_network(state_batch, action_batch)
-        td_target = self._evaluate_target_network(next_state_batch, reward_batch, non_final_mask)
+        td_target = self.evaluate_target_network(next_state_batch, reward_batch, non_final_mask)
 
         # The loss is the MSE of the q-output of the current state and the temporal difference target.
         # Note that the TD target is off-policy in Q-learning.

@@ -1,19 +1,11 @@
 from threading import current_thread
 
 import gymnasium as gym
-import torch
-import torchrl
-from torchrl.modules import EGreedyModule
 
-from agent.agent import Agent
-from agent.dqnagent import DQNAgent
-from agent.qagent import QAgent
+from agent.abstractagent import AbstractAgent
 from builders.dqnagentbuilder import DQNAgentBuilder
 from builders.qagentbuilder import QAgentBuilder
-from exploration.egreedy import EpsilonGreedy
-from modelfactory.modelfactory import ModelFactory
-from models.linear import LinearModel
-from torchrl.data import TensorSpec, LazyTensorStorage
+from torchrl.data import LazyTensorStorage
 
 
 class AgentFactory:
@@ -27,7 +19,7 @@ class AgentFactory:
         thr.name = agent_type + "_thread_" + str(thr.ident)
 
     @staticmethod
-    def create_agent(agent_type: str, env: gym.Env) -> Agent:
+    def create_agent(agent_type: str, env: gym.Env) -> AbstractAgent:
         """
         Factory method for Agent creation.
         NOTE: This factory function assumes continuous state spaces and
@@ -55,8 +47,8 @@ class AgentFactory:
         elif agent_type == "mlp_q_agent":
             return (QAgentBuilder()
                     .set_env(env)
-                    .set_replay_buffer_size(1)
-                    .set_batch_size(1)
+                    .set_replay_buffer_size(5000)
+                    .set_batch_size(32)
                     .set_value_model_type_str("mlp")
                     .set_buffer_storage_type(LazyTensorStorage)
                     .set_annealing_num_steps(2000)
