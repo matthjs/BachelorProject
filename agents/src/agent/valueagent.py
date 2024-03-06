@@ -1,7 +1,14 @@
-from abc import ABC
+from abc import ABC, abstractmethod
+
+import torch
+from torchrl.data import ReplayBuffer
 
 from agent.abstractagent import AbstractAgent
 from builders.valueagentbuilder import ValueAgentBuilder
+from exploration.egreedy import EpsilonGreedy
+from trainers.rltrainer import RLTrainer
+from trainers.trainer import Trainer
+from util.fetchdevice import fetch_device
 
 
 class ValueAgent(AbstractAgent, ABC):
@@ -12,8 +19,24 @@ class ValueAgent(AbstractAgent, ABC):
         :param builder:
         """
         super().__init__(builder)
-        self._exploration_policy = builder.exploration_policy()
-        self._trainer = builder.trainer()
+        self._replay_buffer = ReplayBuffer(storage=builder.buffer_storage_type(
+                                           size=builder.replay_buffer_size,
+                                           device=fetch_device()))
+        self._exploration_policy = None
+        self._trainer = None
+
+    def add_trajectory(self, trajectory: tuple) -> None:
+        """
+        Add a trajectory to the replay buffer.
+        NOTE: trajectory is converted to tensor and moved to self.device.
+        :param trajectory = (state, action, reward, next_state)
+        """
+        state, action, reward, next_state = trajectory
+        state_t = torch.as_tensor(state, device=self.device)
+        action_t = torch.as_tensor(action, device=self.device)
+        reward_t = torch.as_tensor(reward, device=self.device)
+        next_state_t = torch.as_tensor(next_state, device=self.device)
+        self._replay_buffer.add((state_t, action_t, reward_t, next_state_t))
 
     def update(self) -> None:
         """

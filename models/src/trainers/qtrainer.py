@@ -15,9 +15,19 @@ class QTrainer(RLTrainer):
     the q-function. Meaning, there is no separate network with frozen parameter like with
     DQN.
     """
-    def __init__(self, model: nn.Module, batch_size: int,
+    def __init__(self, models: dict, batch_size: int,
                  buf: ReplayBuffer, learning_rate: float = 0.01, discount_factor=0.9):
-        super().__init__(model, batch_size, buf, learning_rate, discount_factor, loss=nn.MSELoss())
+        """
+        NOTE: Expects models to contain a mapping "value_model" -> torch.nn.module
+        :param models:
+        :param batch_size:
+        :param buf:
+        :param learning_rate:
+        :param discount_factor:
+        """
+        super().__init__(models, batch_size, buf, learning_rate, discount_factor, loss=nn.MSELoss())
+        self.value_model = self.models["value_model"]
+        self.optimizer = torch.optim.Adam(self.value_model.parameters(), lr=learning_rate)
 
     def _trajectories(self) -> tuple[torch.tensor, torch.tensor, torch.tensor, torch.tensor]:
         """
@@ -46,7 +56,7 @@ class QTrainer(RLTrainer):
         in the batch.
         :return: batched model output q(S,A) for all actions.
         """
-        model_output = self.model(state_batch)
+        model_output = self.value_model(state_batch)
         q_values = []
         for idx, vec in enumerate(model_output):
             q_values.append(vec[action_batch[idx]])
@@ -65,7 +75,7 @@ class QTrainer(RLTrainer):
         # DQN would use torch.no_grad, but I guess in this case you will not.
 
         # max_q_value, _ = torch.max(self.model(next_state_batch), dim=0)
-        next_state_values[mask] = self.model(next_state_batch).max()
+        next_state_values[mask] = self.value_model(next_state_batch).max()
 
         td_target = (next_state_values * self.discount_factor) + reward_batch
         return td_target
@@ -91,7 +101,7 @@ class QTrainer(RLTrainer):
         self.optimizer.zero_grad()
         loss.required_grad = True
         loss.backward()
-        torch.nn.utils.clip_grad_value_(self.model.parameters(), 100)
+        # torch.nn.utils.clip_grad_value_(self.value_model.parameters(), 100)
         self.optimizer.step()
 
         MetricsTracker().record_loss(current_thread().name, loss.item())

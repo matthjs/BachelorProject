@@ -21,6 +21,7 @@ loguru = "^0.7.2"
 tensordict = "^0.3.0"
 skrl = "^1.1.0"
 stable-baselines3 = "^2.2.1"
+tensorboard = "^2.16.2"
 
 
 [build-system]

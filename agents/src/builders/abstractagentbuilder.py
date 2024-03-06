@@ -1,8 +1,10 @@
+import gymnasium as gym
 from abc import ABC, abstractmethod
 
 from torchrl.data import ReplayBuffer
 
 from agent.abstractagent import AbstractAgent
+from trainers.rltrainer import RLTrainer
 from util.fetchdevice import fetch_device
 
 
@@ -31,45 +33,27 @@ class BaseAgentBuilder(ABC):
     def __init__(self):
         self.device = fetch_device()
         self.env_info = EnvInfo()
-        self.models = None
-        self.replay_buffer = None
-        self.replay_buffer_size = None
-        self.batch_size = None
-        self.learning_rate = None
-        self.discount_factor = None
+        self.models = {}
+        self.state_space = None
+        self.action_space = None
+        self.env = None
 
-    def set_models(self, models: dict):
-        self.models = models
+    def set_state_space(self, state_space):
+        self.state_space = state_space
         return self
 
-    def set_replay_buffer_size(self, replay_buffer_size: int):
-        self.replay_buffer_size = replay_buffer_size
+    def set_action_space(self, action_space):
+        self.action_space = action_space
         return self
 
-    def set_replay_buffer(self, replay_buffer: ReplayBuffer):
-        self.replay_buffer = replay_buffer
-        return self
-
-    def set_batch_size(self, batch_size: int):
-        self.batch_size = batch_size
-        return self
-
-    def set_learning_rate(self, learning_rate: float):
-        self.learning_rate = learning_rate
-        return self
-
-    def set_discount_factor(self, discount_factor: float):
-        self.discount_factor = discount_factor
+    def set_env(self, env: gym.Env):
+        self.env = env
+        self.state_space = env.observation_space
+        self.action_space = env.action_space
         return self
 
     def valid(self) -> bool:
-        return self.models is not None and self.replay_buffer_size is not None and self.replay_buffer is not None \
-                and self.batch_size is not None and self.batch_size is not None \
-                and self.learning_rate is not None and self.discount_factor is not None
-
-    @abstractmethod
-    def init_replay_buffer(self) -> None:
-        pass
+        return self.action_space is not None and self.state_space is not None
 
     @abstractmethod
     def build(self) -> AbstractAgent:

@@ -19,20 +19,12 @@ class AbstractAgent(ABC):
         self.device = builder.device
         self._env_info = builder.env_info
         self._models = builder.models
-        self._replay_buffer = builder.replay_buffer
+        self._state_space = builder.state_space
+        self._action_space = builder.action_space
 
+    @abstractmethod
     def add_trajectory(self, trajectory: tuple) -> None:
-        """
-        Add a trajectory to the replay buffer.
-        NOTE: trajectory is converted to tensor and moved to self.device.
-        :param trajectory = (state, action, reward, next_state)
-        """
-        state, action, reward, next_state = trajectory
-        state_t = torch.as_tensor(state, device=self.device)
-        action_t = torch.as_tensor(action, device=self.device)
-        reward_t = torch.as_tensor(reward, device=self.device)
-        next_state_t = torch.as_tensor(next_state, device=self.device)
-        self._replay_buffer.add((state_t, action_t, reward_t, next_state_t))
+        pass
 
     @abstractmethod
     def update(self):
@@ -42,13 +34,13 @@ class AbstractAgent(ABC):
     def policy(self, state):
         pass
 
-    def load_parameters(self):
-        for model, model_name in enumerate(self.models):
-            model.load()
+    # def load_parameters(self):
+    #    for model, model_name in enumerate(self.models):
+    #        model.load()
 
-    def save_parameters(self):
-        for model, model_name in enumerate(self.models):
-            model.save()
+    # def save_parameters(self):
+    #     for model, model_name in enumerate(self.models):
+    #         model.save()
 
     def record_env_info(self, info, done=False) -> None:
         """
@@ -64,10 +56,6 @@ class AbstractAgent(ABC):
     @property
     def models(self) -> dict:
         return self._models
-
-    @property
-    def replay_buffer(self) -> ReplayBuffer:
-        return self._replay_buffer\
 
     @property
     def env_info(self) -> EnvInfo:

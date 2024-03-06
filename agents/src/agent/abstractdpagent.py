@@ -8,7 +8,6 @@ from agent.abstractagent import AbstractAgent
 class AbstractDPAgent(AbstractAgent, ABC):
     def __init__(self, builder):
         super().__init__(builder)
-        self._gym_env = builder.gym_env
 
     @abstractmethod
     def iterate(self):
