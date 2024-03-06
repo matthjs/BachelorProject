@@ -25,7 +25,7 @@ class QTrainer(RLTrainer):
         :param learning_rate:
         :param discount_factor:
         """
-        super().__init__({"value_model": value_model, "target_model": target_model}, batch_size, buf, learning_rate, discount_factor, loss=nn.MSELoss())
+        super().__init__({"value_model": value_model, "target_model": target_model}, batch_size, buf, learning_rate, discount_factor, loss=nn.SmoothL1Loss())
         self.value_model = value_model
         self.target_model = target_model
         self.optimizer = torch.optim.Adam(self.value_model.parameters(), lr=learning_rate)
@@ -59,7 +59,9 @@ class QTrainer(RLTrainer):
         """
         model_output = self.value_model(state_batch)
         q_values = []
+        print("input shape ->", state_batch.shape)
         for idx, vec in enumerate(model_output):
+            # print("idx, vec", idx, vec)
             q_values.append(vec[action_batch[idx]])
 
         return torch.as_tensor(q_values, device=self.device, dtype=torch.float32)
@@ -68,6 +70,7 @@ class QTrainer(RLTrainer):
         """
         The computation here takes into account whether we are in a final state or not.
         Because if next_state is a final state then the target is just the reward.
+        Based on stable-baselines DQN implementation.
         :param next_state_batch:
         :param mask:
         :return: the TD target.
@@ -75,7 +78,9 @@ class QTrainer(RLTrainer):
         next_state_values = torch.zeros(self.batch_size, device=self.device)
         # DQN would use torch.no_grad, but I guess in this case you will not.
 
-        # max_q_value, _ = torch.max(self.model(next_state_batch), dim=0)
+        # with torch.no_grad():
+        # max_q_value, _ = torch.max(self.target_model(next_state_batch), dim=0)
+        print("target input shape ->", next_state_values.shape)
         next_state_values[mask] = self.target_model(next_state_batch).max()
 
         td_target = (next_state_values * self.discount_factor) + reward_batch

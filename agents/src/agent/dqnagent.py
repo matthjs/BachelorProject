@@ -27,7 +27,8 @@ class DQNAgent(ValueAgent):
         self._exploration_policy = EpsilonGreedy(self.models["value_model"],
                                                  action_space,
                                                  annealing_num_steps=annealing_num_steps)
-        self._trainer = DQNTrainer(self.models,
+        self._trainer = DQNTrainer(self._models["value_model"],
+                                   self._models["target_model"],
                                    batch_size=batch_size,
                                    buf=self._replay_buffer,
                                    learning_rate=learning_rate,
@@ -38,7 +39,7 @@ class DQNAgent(ValueAgent):
     def update(self) -> None:
         if self._train_count == self._param_copying:
             self._train_count = 0
-            self.models["target_network"].load_state_dict(self.models["value_network"].state_dict())
+            self.models["target_model"].load_state_dict(self.models["value_model"].state_dict())
 
         super().update()
         self._train_count += 1

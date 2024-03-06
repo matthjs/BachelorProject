@@ -9,14 +9,8 @@ from trainers.rltrainer import RLTrainer
 
 
 class DQNTrainer(QTrainer):
-    def __init__(self,
-                 models,
-                 batch_size: int,
-                 buf: ReplayBuffer,
-                 learning_rate: float = 0.01,
-                 discount_factor: float = 0.9):
-        super().__init__(models, batch_size, buf, learning_rate, discount_factor)
-        self.target_model = self.models["target_model"]
+    def __init__(self, value_model, target_model, batch_size: int, buf: ReplayBuffer, learning_rate, discount_factor):
+        super().__init__(value_model, target_model, batch_size, buf, learning_rate, discount_factor)
 
     @override
     def evaluate_target_network(self, next_state_batch, reward_batch, mask):
@@ -29,7 +23,7 @@ class DQNTrainer(QTrainer):
         """
         next_state_values = torch.zeros(self.batch_size, device=self.device)
         # DQN would use torch.no_grad, but I guess in this case you will not.
-
+        print("target input shape ->", next_state_values.shape)
         with torch.no_grad():
             next_state_values[mask] = self.target_model(next_state_batch).max()
 
