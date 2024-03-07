@@ -4,11 +4,14 @@ from agent.abstractagent import AbstractAgent
 
 
 class AbstractDPAgent(AbstractAgent, ABC):
-    def __init__(self, builder):
-        super().__init__(builder)
+    def __init__(self, models, state_space, action_space):
+        super().__init__(models, state_space, action_space)
 
     @abstractmethod
     def iterate(self):
+        pass
+
+    def add_trajectory(self, trajectory: tuple) -> None:
         pass
 
     def update(self):
