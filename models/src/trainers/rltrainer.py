@@ -13,7 +13,7 @@ class RLTrainer(Trainer, ABC):
     """
 
     def __init__(self, models: dict, batch_size: int, buf: ReplayBuffer, learning_rate: float, discount_factor=0.9,
-                 loss=nn.MSELoss()):
+                 loss=nn.SmoothL1Loss):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.buf = buf
 

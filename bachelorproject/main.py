@@ -7,4 +7,4 @@ import gymnasium as gym
 from metricstracker.metricstracker import MetricsTracker
 
 if __name__ == "__main__":
-    env_interaction_gym("mlp_dqn_agent", "MountainCar-v0", 1000)
+    env_interaction_gym("mlp_q_agent", "MountainCar-v0", 3000)

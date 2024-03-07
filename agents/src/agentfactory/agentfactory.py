@@ -47,8 +47,8 @@ class AgentFactory:
         elif agent_type == "mlp_q_agent":
             return (QAgentBuilder()
                     .set_env(env)
-                    .set_replay_buffer_size(32)
-                    .set_batch_size(5000)
+                    .set_replay_buffer_size(1)
+                    .set_batch_size(1)
                     .set_value_model_type_str("mlp")
                     .set_annealing_num_steps(2000)
                     .set_learning_rate(0.001)

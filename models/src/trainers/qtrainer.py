@@ -38,10 +38,14 @@ class QTrainer(RLTrainer):
         """
         trajectories = self.buf.sample(batch_size=self.batch_size)
 
+        print("Traj", trajectories)
+
         return trajectories[0], trajectories[1], trajectories[2], trajectories[3]
 
     def _compute_trajectory_batches(self) -> tuple[torch.tensor, torch.tensor, torch.tensor, torch.tensor, torch.tensor]:
         state_batch, action_batch, reward_batch, next_state_batch = self._trajectories()
+
+        print("PRE NEXT STATE BATCH", next_state_batch)
 
         # Compute next_state batch. Here
         non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, next_state_batch)),
@@ -60,6 +64,7 @@ class QTrainer(RLTrainer):
         model_output = self.value_model(state_batch)
         q_values = []
         print("input shape ->", state_batch.shape)
+        print(state_batch)
         for idx, vec in enumerate(model_output):
             # print("idx, vec", idx, vec)
             q_values.append(vec[action_batch[idx]])
@@ -80,8 +85,12 @@ class QTrainer(RLTrainer):
 
         # with torch.no_grad():
         # max_q_value, _ = torch.max(self.target_model(next_state_batch), dim=0)
-        print("target input shape ->", next_state_values.shape)
-        next_state_values[mask] = self.target_model(next_state_batch).max()
+        print("Target input shape ->", next_state_batch.shape)
+        print("Target input ->", next_state_batch)
+
+        next_state_values = self.target_model(next_state_batch).max()
+        print("target output shape ->", next_state_values.shape)
+        print("Target output ->", next_state_values)
 
         td_target = (next_state_values * self.discount_factor) + reward_batch
         return td_target

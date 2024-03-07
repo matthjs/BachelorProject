@@ -24,6 +24,7 @@ class DQNTrainer(QTrainer):
         next_state_values = torch.zeros(self.batch_size, device=self.device)
         # DQN would use torch.no_grad, but I guess in this case you will not.
         print("target input shape ->", next_state_values.shape)
+        print(next_state_values)
         with torch.no_grad():
             next_state_values[mask] = self.target_model(next_state_batch).max()
 
