@@ -3,6 +3,7 @@ from threading import current_thread
 import gymnasium as gym
 
 from agent.abstractagent import AbstractAgent
+from agent.gaussianprocessdpagent import GaussianProcessDPAgent
 from builders.dqnagentbuilder import DQNAgentBuilder
 from builders.qagentbuilder import QAgentBuilder
 from torchrl.data import LazyTensorStorage
@@ -13,6 +14,7 @@ class AgentFactory:
     Naive factory method implementation for
     RL agent creation.
     """
+
     @staticmethod
     def set_thread_id(agent_type: str) -> None:
         thr = current_thread()
@@ -65,5 +67,7 @@ class AgentFactory:
                     .set_discount_factor(0.9)
                     .set_param_copying(20)
                     .build())
+        elif agent_type == "gaussian_dp_agent":
+            return GaussianProcessDPAgent(env)
 
         raise ValueError("Invalid agent type")

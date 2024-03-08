@@ -7,11 +7,11 @@ class AbstractDPAgent(AbstractAgent, ABC):
     def __init__(self, models, state_space, action_space):
         super().__init__(models, state_space, action_space)
 
-    @abstractmethod
-    def iterate(self):
+    def add_trajectory(self, trajectory: tuple) -> None:
         pass
 
-    def add_trajectory(self, trajectory: tuple) -> None:
+    @abstractmethod
+    def iterate(self):
         pass
 
     def update(self):

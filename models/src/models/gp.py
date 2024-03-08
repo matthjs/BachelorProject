@@ -13,11 +13,12 @@ class DynamicsGPModel(gpytorch.models.ExactGP):
         return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
 
 
-class GPModel(gpytorch.models.ExactGP):
-    def __init__(self, train_x, train_y, likelihood):
-        super(GPModel, self).__init__(train_x, train_y, likelihood)
+class GaussianProcessRegressor(gpytorch.models.ExactGP):
+    def __init__(self, train_x, train_y, likelihood=gpytorch.likelihoods.GaussianLikelihood()):
+        super(GaussianProcessRegressor, self).__init__(train_x, train_y, likelihood)
         self.mean_module = gpytorch.means.ConstantMean()
         self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
+        self.likelihood = likelihood
 
     def forward(self, x):
         mean_x = self.mean_module(x)
