@@ -1,4 +1,7 @@
 import gpytorch.models
+import torch
+
+from util.fetchdevice import fetch_device
 
 
 class DynamicsGPModel(gpytorch.models.ExactGP):
@@ -14,7 +17,7 @@ class DynamicsGPModel(gpytorch.models.ExactGP):
 
 
 class GaussianProcessRegressor(gpytorch.models.ExactGP):
-    def __init__(self, train_x, train_y, likelihood=gpytorch.likelihoods.GaussianLikelihood()):
+    def __init__(self, train_x, train_y, likelihood=gpytorch.likelihoods.GaussianLikelihood().to(device=fetch_device())):
         super(GaussianProcessRegressor, self).__init__(train_x, train_y, likelihood)
         self.mean_module = gpytorch.means.ConstantMean()
         self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
@@ -24,3 +27,20 @@ class GaussianProcessRegressor(gpytorch.models.ExactGP):
         mean_x = self.mean_module(x)
         covar_x = self.covar_module(x)
         return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
+
+    def predict(self, x) -> tuple:
+        """
+        Give predictions for test inputs.
+        :return: a mean output and confidence interval (from bayesian predictive posterior)
+        and the multivariate normal after conditioning.
+        """
+        self.eval()
+        self.likelihood.eval()
+
+        # Model predictions are made by feeding the model output through the likelihood.
+        with torch.no_grad(), gpytorch.settings.fast_pred_var():
+            f_pred = self(x)
+            observed_pred = self.likelihood(f_pred)
+            mean = observed_pred.mean
+            lower, upper = observed_pred.confidence_region()
+            return mean, lower, upper, f_pred

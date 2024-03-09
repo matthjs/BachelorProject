@@ -1,0 +1,30 @@
+import gpytorch
+from torch import optim
+
+from models.gp import GaussianProcessRegressor
+
+
+class GaussianProcessTrainer:
+    def __init__(self, model: GaussianProcessRegressor, learning_rate, optimizer=None):
+        self.model = model
+        self.mll = gpytorch.mlls.exact_marginal_log_likelihood.ExactMarginalLogLikelihood(model.likelihood, model)
+        self.optimizer = optimizer or optim.Adam(model.parameters(), lr=learning_rate)
+
+    def train(self, train_x, train_y, num_epochs=100):
+        self.model.train()
+        self.model.likelihood.train()
+
+        for epoch in range(num_epochs):
+            self.optimizer.zero_grad()
+            output = self.model(train_x)
+            loss = -self.mll(output, train_y)
+            loss.backward()
+            print('Iter %d/%d - Loss: %.3f   lengthscale: %.3f   noise: %.3f' % (
+                epoch + 1, num_epochs, loss.item(),
+                self.model.covar_module.base_kernel.lengthscale.item(),
+                self.model.likelihood.noise.item()
+            ))
+            self.optimizer.step()
+
+            if epoch % 10 == 0:
+                print(f'Epoch {epoch+1}/{num_epochs}, Loss: {loss.item()}')
