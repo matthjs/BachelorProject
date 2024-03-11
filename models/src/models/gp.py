@@ -38,7 +38,9 @@ class GaussianProcessRegressor(gpytorch.models.ExactGP):
         self.likelihood.eval()
 
         # Model predictions are made by feeding the model output through the likelihood.
-        with torch.no_grad(), gpytorch.settings.fast_pred_var():
+        # Also WARNINGS are disabled! Done so that we do not get warnings in case we want predictions for
+        # training data.
+        with torch.no_grad(), gpytorch.settings.fast_pred_var(), gpytorch.settings.debug(state=False):
             f_pred = self(x)
             observed_pred = self.likelihood(f_pred)
             mean = observed_pred.mean

@@ -6,7 +6,7 @@ from loguru import logger
 
 from agent.abstractdpagent import AbstractDPAgent
 import gymnasium as gym
-
+import torch
 from models.gp import GaussianProcessRegressor
 from trainers.gptrainer import GaussianProcessTrainer
 from util.fetchdevice import fetch_device
@@ -25,17 +25,17 @@ def predict_transition_distribution(models, state_action):
                               torch.cat([pred.covariance_matrix.unsqueeze(0) for pred in predictive_distributions]))
 
 
-def mountain_car_reward_fun(state) -> float:
+def mountain_car_reward_fun(state) -> torch.tensor:
     """
     Kinda have to do this since the gymnasium reward function is not a function of just the state but
     the state and action r(s,a). TODO: Find a more flexible approach.
     :return: scalar reward value.
     """
     if state[0] < 0.5:
-        return -1
-
-    # Goal reached if x-pos is >= 0.5.
-    return 0
+        return torch.tensor(-1.0, device=fetch_device())
+    else:
+        # Goal reached if x-pos is >= 0.5.
+        return torch.tensor(0.0, device=fetch_device())
 
 
 class GaussianProcessDPAgent(AbstractDPAgent):
@@ -47,8 +47,8 @@ class GaussianProcessDPAgent(AbstractDPAgent):
     def __init__(self,
                  env: gym.Env,
                  discount_factor=0.9,
-                 dynamics_fit_iter=100,
-                 value_fit_iter=100,
+                 dynamics_fit_iter=5,
+                 value_fit_iter=5,
                  learning_rate=0.01,
                  batch_num_support_points=50,
                  simulation_time_interval=5):
@@ -100,8 +100,6 @@ class GaussianProcessDPAgent(AbstractDPAgent):
         """
         models = []
 
-        print("shape data ->", train_x.shape)
-
         for idx in range(train_y.size(-1)):
             # Model the system dynamics by Gaussian processes for each state coordinate
             # and combine them to obtain a model of the transition function (as a multivariate normal).
@@ -114,10 +112,11 @@ class GaussianProcessDPAgent(AbstractDPAgent):
 
         return models
 
-    def _construct_dynamics_model(self, train_x, train_y) -> None:
+    def _construct_dynamics_model(self, train_x: torch.tensor, train_y) -> None:
         """
         Model the transition function as a multivariate normal where the mean vector and covariance
         matrix come from the Bayesian predictive posterior from two Gaussian Processes.
+        One GP for each output dimension.
         :param train_x:
         :param train_y:
         """
@@ -127,35 +126,41 @@ class GaussianProcessDPAgent(AbstractDPAgent):
         covars = []
 
         for model in self.dynamics_gps:
+            model.double()  # Why the hell do I need to do this?
             _, _, _, f_pred = model.predict(train_x)
             means.append(f_pred.mean)
             covars.append(f_pred.covariance_matrix)
 
         combined_mean = torch.cat(means, dim=-1)
         combined_covar = torch.block_diag(*covars)
+        # Is this what the paper also does? It is a bit vague what they mean with `combining`.
 
-        print(combined_mean)
-        print(combined_covar)
+        # print(combined_mean)
+        # print(combined_covar)
         self.transition_model = torch.distributions.MultivariateNormal(combined_mean, combined_covar)
 
     def _fit_value_function(self, state_support_points):
+        """
+        Given a set of support points s_i we initialize the value vector as V_i <- Reward_fun(s_i).
+        Afterward a Gaussian process models is used to model V(s). HyperParameters are also fitted
+        using the marginal log likelihood.
+        :param state_support_points:
+        """
         value_vector = []
         for state in state_support_points:
-            # How to get the reward function. Also in the paper the reward function appears to be a
-            # a function of just the state. For the mountain car problem the reward function is simple though.
             reward = self.reward_fun(state)
             value_vector.append(reward)
 
         self.value_vector = torch.tensor(value_vector)
         self.value_vector = self.value_vector.to(device=fetch_device())
-        support_points = state_support_points.to(fetch_device())
+        support_points = state_support_points.to(device=fetch_device())
 
-        self.value_gp = GaussianProcessRegressor(train_x=self.value_vector,
-                                                 train_y=support_points)
+        self.value_gp = GaussianProcessRegressor(train_x=support_points,
+                                                 train_y=self.value_vector).to(fetch_device())
 
         # Fit Gaussian process hyperparameters for representing V(s).
         trainer = GaussianProcessTrainer(self.value_gp, learning_rate=self.learning_rate)
-        trainer.train(train_x=self.value_vector, train_y=support_points, num_epochs=self.value_fit_iter)
+        trainer.train(train_x=support_points, train_y=self.value_vector, num_epochs=self.value_fit_iter)
 
     def _bellman_update(self, state):
         pass
@@ -176,8 +181,20 @@ class GaussianProcessDPAgent(AbstractDPAgent):
 
         # Value iteration
         while True:
-             for idx, state in enumerate(state_support_points):
-                 pass
+            for idx, state in enumerate(state_support_points):
+                break
+                # Compute equation 11
+                # Compute transition probability
+                # Compute R_i
+                # Compute i-th row of W as in eq 9
+
+            # Compute closed form of value vector.
+
+            # Check for convergence
+            # if torch.allclose(new_value_vector, self.value_vector, atol=1e-3):
+            #    break
+
+            # self.value_vector = new_value_vector
 
     def policy(self, state):
         if self.policy_calculated is False:
