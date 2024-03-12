@@ -12,7 +12,6 @@ pandas = "^2.1.3"
 more-itertools = "^10.1.0"
 scipy = "^1.12.0"
 gpytorch="^1.11"
-gymnasium = { version = "^0.29.1", extras = ["box2d"] }
 matplotlib="^3.8.2"
 notebook="^7.1.0"
 ipykernel="^6.29.2"
@@ -20,8 +19,10 @@ torchrl = "^0.3.0"
 loguru = "^0.7.2"
 tensordict = "^0.3.0"
 skrl = "^1.1.0"
-stable-baselines3 = "^2.2.1"
 tensorboard = "^2.16.2"
+stable-baselines3 = "^2.2.1"
+ale-py = "^0.8.1"
+gymnasium = {version = "^0.29.1", extras = ["box2d", "atari", "accept-rom-license"]}
 
 
 [build-system]
