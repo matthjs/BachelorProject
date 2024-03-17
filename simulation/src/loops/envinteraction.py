@@ -12,7 +12,7 @@ def env_interaction_gym(agent_type: str, env_str: str, time_steps: int, render_m
     env = gym.make(env_str, render_mode=render_mode)
     obs, info = env.reset()
     agent_factory = AgentFactory()
-    agent = agent_factory.create_agent(agent_type, env=env)
+    agent = agent_factory.create_agent(agent_type, env_str=env_str)
 
     for _ in range(time_steps):
         old_obs = obs

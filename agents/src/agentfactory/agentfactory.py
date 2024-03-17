@@ -21,7 +21,7 @@ class AgentFactory:
         thr.name = agent_type + "_thread_" + str(thr.ident)
 
     @staticmethod
-    def create_agent(agent_type: str, env: gym.Env) -> AbstractAgent:
+    def create_agent(agent_type: str, env_str: str) -> AbstractAgent:
         """
         Factory method for Agent creation.
         NOTE: This factory function assumes continuous state spaces and
@@ -30,6 +30,7 @@ class AgentFactory:
         :param agent_type: a string key corresponding to the agent.
         :return: an object of type Agent.
         """
+        env = gym.make(env_str)
         obs_space = env.observation_space
         action_space = env.action_space
 

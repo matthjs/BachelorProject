@@ -6,6 +6,7 @@ from agent.abstractagent import AbstractAgent
 class AbstractDPAgent(AbstractAgent, ABC):
     def __init__(self, models, state_space, action_space):
         super().__init__(models, state_space, action_space)
+        self.policy_calculated = False
 
     def add_trajectory(self, trajectory: tuple) -> None:
         pass
@@ -20,4 +21,5 @@ class AbstractDPAgent(AbstractAgent, ABC):
         which is the function that executes the dynamic programming algorithm.
         :return:
         """
-        self.iterate()
+        if self.policy_calculated is False:
+            self.iterate()

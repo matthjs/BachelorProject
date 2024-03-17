@@ -12,21 +12,8 @@ import torch
 from models.gp import GaussianProcessRegressor
 from trainers.gptrainer import GaussianProcessTrainer
 from util.fetchdevice import fetch_device
-from copy import copy
 
 from wrappers.initialstatewrapper import InitialStateWrapper
-
-
-# Combine predictive models to obtain a multivariate Gaussian distribution
-def predict_transition_distribution(models, state_action):
-    predictive_distributions = []
-    for model in models:
-        model.eval()
-        with torch.no_grad(), gpytorch.settings.fast_pred_var():
-            predictive_distribution = model(state_action)
-        predictive_distributions.append(predictive_distribution)
-    return MultivariateNormal(torch.cat([pred.mean.unsqueeze(-1) for pred in predictive_distributions], dim=-1),
-                              torch.cat([pred.covariance_matrix.unsqueeze(0) for pred in predictive_distributions]))
 
 
 def mountain_car_reward_fun(state) -> torch.tensor:
@@ -45,14 +32,13 @@ def mountain_car_reward_fun(state) -> torch.tensor:
 class GaussianProcessDPAgent(AbstractDPAgent):
     """
     Dynamic Programming Agent.
-    TODO: Refactor the class so that the training steps are decoupled from the agent.
     """
 
     def __init__(self,
                  env: gym.Env,
                  discount_factor=0.9,
-                 dynamics_fit_iter=5,
-                 value_fit_iter=5,
+                 dynamics_fit_iter=50,
+                 value_fit_iter=50,
                  learning_rate=0.01,
                  batch_num_support_points=50,
                  simulation_time_interval=5,
@@ -61,8 +47,7 @@ class GaussianProcessDPAgent(AbstractDPAgent):
                  noise_level=1):
         # Awkward: passing empty dictionary to base class -> class hierarchy is a bit messy.
         super().__init__({}, env.observation_space, env.action_space)
-        self.policy_calculated = False
-        self.env = InitialStateWrapper(env)     # Needed to set the state of the environment.
+        self.env = InitialStateWrapper(env)  # Needed to set the state of the environment.
         self.dynamics_fit_iter = dynamics_fit_iter
         self.value_fit_iter = value_fit_iter
 
@@ -163,42 +148,39 @@ class GaussianProcessDPAgent(AbstractDPAgent):
             value_vector.append(reward)
 
         self.value_vector = torch.tensor(value_vector)
-        self.value_vector = self.value_vector.to(device=fetch_device())
+        value_vector = self.value_vector.to(device=fetch_device())
         support_points = self.state_support_points.to(device=fetch_device())
 
         self.value_gp = GaussianProcessRegressor(train_x=support_points,
-                                                 train_y=self.value_vector,
+                                                 train_y=value_vector,
                                                  covar_function=self.kernel).to(fetch_device())
         logger.debug("Fitting Gaussian Process kernel hyperparameters for value function")
         # Fit Gaussian process hyperparameters for representing V(s).
         trainer = GaussianProcessTrainer(self.value_gp, learning_rate=self.learning_rate)
-        trainer.train(train_x=support_points, train_y=self.value_vector, num_epochs=self.value_fit_iter)
+        trainer.train(train_x=support_points, train_y=value_vector,
+                      num_epochs=self.value_fit_iter)
 
-    def _bellman_update(self, state):
-        pass
-
-    def _policy_improvement(self, state):
+    def _greedy_action_selection(self, state):
         """
         Perform policy improvement step.
         https://github.com/openai/gym/issues/402.
         This is done by making the policy greedy w.r.t. to the
         current value function estimate.
         """
-        logger.debug("policy improvement")
         # argmax loop.
         argmax_action = None
         argmax_value = -999
 
-        assert(isinstance(self.env.action_space, gym.spaces.Discrete))
+        assert (isinstance(self.env.action_space, gym.spaces.Discrete))
 
         for action in range(self.env.action_space.n):
             obs = self.env.reset(initial_state=state)
             next_obs, reward, terminated, truncated, info = self.env.step(action)
             next_obs_tensor = torch.as_tensor(next_obs, device=fetch_device())
             next_obs_tensor = next_obs_tensor.reshape(1, next_obs_tensor.shape[0])
-            print(next_obs_tensor)
-            print(next_obs_tensor.shape)
-            self.value_gp.double()    # Why?!
+            # print(next_obs_tensor)
+            # print(next_obs_tensor.shape)
+            self.value_gp.double()  # Why?!
             value, lower, upper, f_pred = self.value_gp.predict(next_obs_tensor)
 
             action_value = reward + self.discount_factor * value
@@ -208,8 +190,6 @@ class GaussianProcessDPAgent(AbstractDPAgent):
                 argmax_value = action_value
 
         return argmax_action
-
-
 
     def _sample_support_points(self):
         logger.debug("Calculating state support points.")
@@ -233,24 +213,49 @@ class GaussianProcessDPAgent(AbstractDPAgent):
 
         self._fit_value_function()
 
+        reward_vec = np.zeros(self.batch_num_support_points)
+        value_gp_trainer = GaussianProcessTrainer(self.value_gp, learning_rate=self.learning_rate)
+
         # Value iteration
         while True:
-            for idx, state in enumerate(self.state_support_points):
-                self._policy_improvement(state)
-                # Compute equation 11
-                # Compute transition probability
-                # Compute R_i
-                # Compute i-th row of W as in eq 9
+            old_value_vector = self.value_vector.clone().to(device=fetch_device(), dtype=torch.float64)
 
-            # Compute closed form of value vector.
+            for idx, state in enumerate(self.state_support_points):
+                action = self._greedy_action_selection(state)
+                # Very strange... in the paper implementation they do not use the dynamics GP
+                self.env.reset(initial_state=state)
+                next_state, reward, terminated, truncated, info = self.env.step(action)
+                # As a consequence the reward is simply given by the environment and need not be computed
+                reward_vec[idx] = reward
+
+                state_tensor = torch.as_tensor(state, device=fetch_device())
+                state_tensor = state_tensor.reshape(1, state_tensor.shape[0])
+                state_value, _, _, _ = self.value_gp.predict(state_tensor)
+
+                self.value_vector[idx] = reward + self.discount_factor * state_value
+
+            # Update the GP hyperparameters for representing V(s) to fit the new value vector V.
+            self.value_gp.train()
+            state_support_points = self.state_support_points.to(device=fetch_device(), dtype=torch.float64)
+            value_vector = self.value_vector.to(device=fetch_device(), dtype=torch.float64)
+            logger.debug(f"Value vector -> {self.value_vector}")
+
+            self.value_gp.set_train_data(inputs=state_support_points,
+                                         targets=value_vector)
+            value_gp_trainer.train(train_x=state_support_points,
+                                   train_y=value_vector,
+                                   num_epochs=self.value_fit_iter,
+                                   logging=False)
 
             # Check for convergence
-            # if torch.allclose(new_value_vector, self.value_vector, atol=1e-3):
-            #    break
-
-            # self.value_vector = new_value_vector
+            if torch.allclose(old_value_vector, value_vector, atol=1e-3):
+                break
 
     def policy(self, state):
         if self.policy_calculated is False:
-            print("Optimal Policy Not calculated yet, running policy iteration")
+            logger.info("Optimal Policy Not calculated yet, running policy iteration")
             self.iterate()
+
+        return self._greedy_action_selection(state)
+
+
