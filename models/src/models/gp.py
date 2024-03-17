@@ -17,10 +17,15 @@ class DynamicsGPModel(gpytorch.models.ExactGP):
 
 
 class GaussianProcessRegressor(gpytorch.models.ExactGP):
-    def __init__(self, train_x, train_y, likelihood=gpytorch.likelihoods.GaussianLikelihood().to(device=fetch_device())):
+    def __init__(self,
+                 train_x,
+                 train_y,
+                 likelihood=gpytorch.likelihoods.GaussianLikelihood().to(device=fetch_device()),
+                 mean_function=gpytorch.means.ConstantMean(),
+                 covar_function=gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())):
         super(GaussianProcessRegressor, self).__init__(train_x, train_y, likelihood)
-        self.mean_module = gpytorch.means.ConstantMean()
-        self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
+        self.mean_module = mean_function
+        self.covar_module = covar_function
         self.likelihood = likelihood
 
     def forward(self, x):
