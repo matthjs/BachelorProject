@@ -23,6 +23,8 @@ tensorboard = "^2.16.2"
 stable-baselines3 = "^2.2.1"
 ale-py = "^0.8.1"
 gymnasium = {version = "^0.29.1", extras = ["box2d", "atari", "accept-rom-license"]}
+opencv-python = "^4.9.0.80"
+moviepy = "^1.0.3"
 
 
 [build-system]
