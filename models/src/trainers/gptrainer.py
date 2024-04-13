@@ -20,6 +20,7 @@ class GaussianProcessTrainer:
         """
         self.model.train()
         self.model.likelihood.train()
+        self.model.set_train_data(train_x, train_y)
 
         for epoch in range(num_epochs):
             self.optimizer.zero_grad()

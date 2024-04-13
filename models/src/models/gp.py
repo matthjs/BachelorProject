@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+
 import gpytorch.models
 import torch
 
@@ -16,7 +18,23 @@ class DynamicsGPModel(gpytorch.models.ExactGP):
         return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
 
 
-class GaussianProcessRegressor(gpytorch.models.ExactGP):
+class AbstractGPRegressor(ABC):
+
+    @abstractmethod
+    def forward(self, x):
+        pass
+
+    @abstractmethod
+    def predict(self, x) -> tuple:
+        pass
+
+    @abstractmethod
+    def set_train_data(self, inputs=None, targets=None, strict=True):
+        # Only used by ExactGP models.
+        pass
+
+
+class GaussianProcessRegressor(gpytorch.models.ExactGP, AbstractGPRegressor):
     def __init__(self,
                  train_x,
                  train_y,
@@ -51,3 +69,6 @@ class GaussianProcessRegressor(gpytorch.models.ExactGP):
             mean = observed_pred.mean
             lower, upper = observed_pred.confidence_region()
             return mean, lower, upper, f_pred
+
+    def set_train_data(self, inputs=None, targets=None, strict=True):
+        super(gpytorch.models.ExactGP, self).set_train_data(inputs, targets, strict)

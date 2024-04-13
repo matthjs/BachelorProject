@@ -1,10 +1,9 @@
-import random
-
 import gymnasium as gym
 import numpy as np
 import torch
 
 from exploration.abstractepsilongreedy import AbstractEpsilonGreedy
+from models.gp import AbstractGPRegressor
 from util.fetchdevice import fetch_device
 
 
@@ -12,17 +11,17 @@ def process_state(state):
     return torch.from_numpy(state).to(device=fetch_device())
 
 
-class EpsilonGreedy(AbstractEpsilonGreedy):
+class GPEpsilonGreedy(AbstractEpsilonGreedy):
     """
     Class supporting epsilon greedy action selection with decay.
-    TODO: Create ABC for exploration modules.
-    NOTE: This class is currently only compatible with discrete action spaces.
-    NOTE: Constructor assumes gym.spaces.Discrete as type of action space but this
-    requirement can be relaxed probably.
-    TODO: Find some way to generalize environment specifications.
-    TODO: Look into EGREEDYMODULE from torchrl.
     """
-    def __init__(self, model, action_space: gym.Space, eps_init=1.0, eps_end=0.1, annealing_num_steps=5000):
+
+    def __init__(self,
+                 model: AbstractGPRegressor,
+                 action_space: gym.Space,
+                 eps_init=1.0,
+                 eps_end=0.1,
+                 annealing_num_steps=5000):
         """
         :param model: action-value function estimate.
         :param action_space:
@@ -52,7 +51,7 @@ class EpsilonGreedy(AbstractEpsilonGreedy):
         :return: action
         """
         if np.random.uniform(0, 100) >= self._epsilon * 100:
-            model_output = self._model(process_state(state))
-            return torch.argmax(model_output).item()
+            mean, lower, upper, f_pred = self._model.predict(process_state(state))
+            return torch.argmax(mean).item()
 
         return self._action_space.sample()

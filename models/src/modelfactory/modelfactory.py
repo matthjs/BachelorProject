@@ -21,5 +21,7 @@ class ModelFactory:
             return LinearModel(input_size, output_size).to(device)
         elif model_type == "mlp":
             return MLP(input_size, output_size).to(device)
+        elif model_type == "exact_gp_value":
+            return GaussianProcessRegressor()
         else:
             raise ValueError("Invalid model type. Supported types: 'linear', 'mlp'.")
