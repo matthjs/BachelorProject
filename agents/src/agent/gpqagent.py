@@ -1,34 +1,43 @@
-from torchrl.data import ReplayBuffer, TensorDictReplayBuffer
+from tensordict.nn import TensorDictSequential, TensorDictModule
+from torchrl.envs import GymEnv
+from torchrl.modules import QValueActor, QValueModule, EGreedyModule
 
-from agent.abstractagent import AbstractAgent
-from exploration.gpepsilongreedy import GPEpsilonGreedy
 from modelfactory.modelfactory import ModelFactory
-from trainers.gptrainer import GaussianProcessTrainer
+from models.gp import ExactGaussianProcessRegressor
+from util.fetchdevice import fetch_device
 
 
-class GPQAgent(AbstractAgent):
-    def __int__(self,
-                gp_model_str: str,
-                state_space,
-                action_space,
-                learning_rate: float = 0.01,
-                discount_factor: float = 0.99,
-                annealing_num_steps=2000,
-                batch_size=1,
-                sparsification=False):
-        self._models["value_model"] = ModelFactory.create_model(gp_model_str,
-                                                                state_space.shape[0],
-                                                                action_space.n)
+def make_gp_q_agent(
+                dummy_env: GymEnv,
+                gp_model_str: str = "exact_gp_value",
+                annealing_num_steps=2000) -> tuple[TensorDictSequential, TensorDictSequential]:
+    # Add assertion that dummy environment needs to have discrete action space.
 
-        self._exploration_policy = GPEpsilonGreedy(self._models["value_model"],
-                                                   action_space,
-                                                   annealing_num_steps=annealing_num_steps)
-        self._trainer = GaussianProcessTrainer(self._models["value_model"],
-                                               learning_rate=learning_rate)
-        pass
+    gp_regressor = ExactGaussianProcessRegressor().to(device=fetch_device())   # Hard code for now.
 
-    def update(self):
-        pass
+    value_model = TensorDictModule(
+        gp_regressor,
+        in_keys=["observation", "action"],    # Concatenate observation and action as input
+        out_keys=["action_value"]
+    )
 
-    def policy(self, state):
-        return self._exploration_policy.action(state)
+    # noinspection PyTypeChecker
+    actor = TensorDictSequential(
+        value_model,
+        QValueModule(
+            action_space=dummy_env.action_spec
+        )
+    )
+
+    exploration_module = EGreedyModule(
+        spec=dummy_env.spec,
+        annealing_num_steps=annealing_num_steps,
+    )
+
+    # noinspection PyTypeChecker
+    actor_explore = TensorDictSequential(
+        actor,
+        exploration_module
+    )
+
+    return actor, actor_explore

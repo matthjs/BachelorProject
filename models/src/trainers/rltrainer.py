@@ -4,10 +4,10 @@ import torch
 import torch.nn as nn
 from torchrl.data import ReplayBuffer
 
-from trainers.trainer import Trainer
+from trainers.trainer import AbstractTrainer
 
 
-class RLTrainer(Trainer, ABC):
+class RLTrainer(AbstractTrainer, ABC):
     """
     Base class for RL optimizers.
     """

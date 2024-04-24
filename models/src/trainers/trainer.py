@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class Trainer(ABC):
+class AbstractTrainer(ABC):
     """
     Performs the optimization process / learning parameters
     given model and input
