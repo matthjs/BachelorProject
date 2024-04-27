@@ -1,43 +1,66 @@
-from tensordict.nn import TensorDictSequential, TensorDictModule
-from torchrl.envs import GymEnv
-from torchrl.modules import QValueActor, QValueModule, EGreedyModule
+import torch
+from torchrl.data import ReplayBuffer, LazyTensorStorage
 
+from agent.abstractagent import AbstractAgent
+from exploration.gpepsilongreedy import GPEpsilonGreedy
 from modelfactory.modelfactory import ModelFactory
-from models.gp import ExactGaussianProcessRegressor
+from trainers.gpqtrainer import ExactGPQTrainer
+from trainers.gptrainer import GaussianProcessTrainer
 from util.fetchdevice import fetch_device
 
 
-def make_gp_q_agent(
-                dummy_env: GymEnv,
-                gp_model_str: str = "exact_gp_value",
-                annealing_num_steps=2000) -> tuple[TensorDictSequential, TensorDictSequential]:
-    # Add assertion that dummy environment needs to have discrete action space.
+class GPQAgent(AbstractAgent):
+    def __init__(self,
+                 gp_model_str: str,
+                 state_space,
+                 action_space,
+                 learning_rate: float,
+                 discount_factor: float,
+                 annealing_num_steps,
+                 batch_size,
+                 replay_buffer_size,
+                 num_epochs,
+                 sparsification=False):
+        super(GPQAgent, self).__init__({}, state_space, action_space)
+        self._models["value_model"] = ModelFactory.create_model(gp_model_str,
+                                                                state_space.shape[0],
+                                                                action_space.n)
 
-    gp_regressor = ExactGaussianProcessRegressor().to(device=fetch_device())   # Hard code for now.
+        self._exploration_policy = GPEpsilonGreedy(model=self._models["value_model"],
+                                                   action_space=action_space,
+                                                   annealing_num_steps=annealing_num_steps)
+        self._replay_buffer = ReplayBuffer(storage=LazyTensorStorage(
+                                           max_size=replay_buffer_size,
+                                           device=fetch_device()))
 
-    value_model = TensorDictModule(
-        gp_regressor,
-        in_keys=["observation", "action"],    # Concatenate observation and action as input
-        out_keys=["action_value"]
-    )
+        if gp_model_str == "exact_gp":
+            self._trainer = ExactGPQTrainer(
+                model=self._models["value_model"],
+                action_space_size=action_space.n,
+                batch_size=batch_size,
+                buf=self._replay_buffer,
+                learning_rate=learning_rate,
+                discount_factor=discount_factor,
+                num_epochs=num_epochs
+            )
+        else:
+            raise ValueError(f"No trainer for gaussian process model `{gp_model_str}`")
 
-    # noinspection PyTypeChecker
-    actor = TensorDictSequential(
-        value_model,
-        QValueModule(
-            action_space=dummy_env.action_spec
-        )
-    )
+    def update(self):
+        self._trainer.train()
 
-    exploration_module = EGreedyModule(
-        spec=dummy_env.spec,
-        annealing_num_steps=annealing_num_steps,
-    )
+    def add_trajectory(self, trajectory: tuple) -> None:
+        """
+        Add a trajectory to the replay buffer.
+        NOTE: trajectory is converted to tensor and moved to self.device.
+        :param trajectory = (state, action, reward, next_state)
+        """
+        state, action, reward, next_state = trajectory
+        state_t = torch.as_tensor(state, device=self.device)
+        action_t = torch.as_tensor(action, device=self.device)
+        reward_t = torch.as_tensor(reward, device=self.device)
+        next_state_t = torch.as_tensor(next_state, device=self.device)
+        self._replay_buffer.add((state_t, action_t, reward_t, next_state_t))
 
-    # noinspection PyTypeChecker
-    actor_explore = TensorDictSequential(
-        actor,
-        exploration_module
-    )
-
-    return actor, actor_explore
+    def policy(self, state):
+        return self._exploration_policy.action(state)

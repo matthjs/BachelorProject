@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from models.gp import GaussianProcessRegressor, ExactGaussianProcessRegressor
+from models.gp import ExactGaussianProcessRegressor
 from models.linear import LinearModel
 from models.mlp import MLP
 
@@ -23,7 +23,7 @@ class ModelFactory:
             return LinearModel(input_size, output_size).to(device)
         elif model_type == "mlp":
             return MLP(input_size, output_size).to(device)
-        elif model_type == "exact_gp_value":
-            return ExactGaussianProcessRegressor()
+        elif model_type == "exact_gp":
+            return ExactGaussianProcessRegressor().to(device)
         else:
             raise ValueError("Invalid model type. Supported types: 'linear', 'mlp'.")

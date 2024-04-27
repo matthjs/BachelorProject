@@ -9,7 +9,8 @@ from loguru import logger
 from agent.abstractdpagent import AbstractDPAgent
 import gymnasium as gym
 import torch
-from models.gp import GaussianProcessRegressor
+
+from models.gp import ExactGaussianProcessRegressor
 from trainers.gptrainer import GaussianProcessTrainer
 from util.fetchdevice import fetch_device
 
@@ -54,7 +55,7 @@ class GaussianProcessDPAgent(AbstractDPAgent):
         self.dynamics_gps = None
         self.transition_model = None
 
-        self.value_gp: GaussianProcessRegressor = None
+        self.value_gp: ExactGaussianProcessRegressor = None
         self.value_vector = None
         self.state_support_points = None
 
@@ -100,7 +101,7 @@ class GaussianProcessDPAgent(AbstractDPAgent):
             logger.debug("Fitting Gaussian Process kernel hyperparams for dynamics")
             # Model the system dynamics by Gaussian processes for each state coordinate
             # and combine them to obtain a model of the transition function (as a multivariate normal).
-            model = GaussianProcessRegressor(train_x, train_y[..., idx]).to(device=fetch_device())
+            model = ExactGaussianProcessRegressor(train_x, train_y[..., idx]).to(device=fetch_device())
             trainer = GaussianProcessTrainer(model, learning_rate=self.learning_rate)
             trainer.train(train_x, train_y[..., idx], num_epochs=self.dynamics_fit_iter)
 
@@ -116,7 +117,7 @@ class GaussianProcessDPAgent(AbstractDPAgent):
         :param train_x:
         :param train_y:
         """
-        self.dynamics_gps: list[GaussianProcessRegressor] = self._fit_gaussian_processes(train_x, train_y)
+        self.dynamics_gps: list[ExactGaussianProcessRegressor] = self._fit_gaussian_processes(train_x, train_y)
 
         means = []
         covars = []
@@ -151,9 +152,9 @@ class GaussianProcessDPAgent(AbstractDPAgent):
         value_vector = self.value_vector.to(device=fetch_device())
         support_points = self.state_support_points.to(device=fetch_device())
 
-        self.value_gp = GaussianProcessRegressor(train_x=support_points,
-                                                 train_y=value_vector,
-                                                 covar_function=self.kernel).to(fetch_device())
+        self.value_gp = ExactGaussianProcessRegressor(train_x=support_points,
+                                                      train_y=value_vector,
+                                                      covar_function=self.kernel).to(fetch_device())
         logger.debug("Fitting Gaussian Process kernel hyperparameters for value function")
         # Fit Gaussian process hyperparameters for representing V(s).
         trainer = GaussianProcessTrainer(self.value_gp, learning_rate=self.learning_rate)

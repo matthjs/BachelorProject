@@ -4,6 +4,7 @@ import gymnasium as gym
 
 from agent.abstractagent import AbstractAgent
 from agent.gaussianprocessdpagent import GaussianProcessDPAgent
+from agent.gpqagent import GPQAgent
 from builders.dqnagentbuilder import DQNAgentBuilder
 from builders.qagentbuilder import QAgentBuilder
 from torchrl.data import LazyTensorStorage
@@ -70,5 +71,16 @@ class AgentFactory:
                     .build())
         elif agent_type == "gaussian_dp_agent":
             return GaussianProcessDPAgent(env)
+        elif agent_type == "gpq_agent":
+            return GPQAgent(gp_model_str="exact_gp",
+                            state_space=obs_space,
+                            action_space=action_space,
+                            learning_rate=0.01,
+                            discount_factor=0.99,
+                            annealing_num_steps=2000,
+                            batch_size=32,
+                            replay_buffer_size=1000,
+                            num_epochs=100,
+                            sparsification=False)
 
         raise ValueError("Invalid agent type")

@@ -1,9 +1,7 @@
 import torch
 import torch.nn as nn
 
-from models.gp import GaussianProcessRegressor, ExactGaussianProcessRegressor
-from models.linear import LinearModel
-from models.mlp import MLP
+from experimental.gaussianprocesses.gp import ExactGaussianProcessRegressor
 
 
 class ModelFactory:
@@ -20,9 +18,11 @@ class ModelFactory:
         """
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         if model_type == "linear":
-            return LinearModel(input_size, output_size).to(device)
+            pass
+            # return LinearModel(input_size, output_size).to(device)
         elif model_type == "mlp":
-            return MLP(input_size, output_size).to(device)
+            pass
+            # return MLP(input_size, output_size).to(device)
         elif model_type == "exact_gp_value":
             return ExactGaussianProcessRegressor()
         else:
