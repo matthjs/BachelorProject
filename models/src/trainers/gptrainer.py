@@ -12,6 +12,8 @@ class GaussianProcessTrainer:
         self.model = model
         self.mll = gpytorch.mlls.exact_marginal_log_likelihood.ExactMarginalLogLikelihood(model.likelihood, model)
         self.optimizer = optimizer or optim.Adam(model.parameters(), lr=learning_rate)
+        data_x = []
+        data_y = []
 
     def train(self, train_x, train_y, num_epochs=100, logging=True, hyperparameter_fitting=True) -> None:
         """
