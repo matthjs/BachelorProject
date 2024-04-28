@@ -9,6 +9,9 @@ from util.fetchdevice import fetch_device
 
 
 class AbstractGPRegressor(ABC):
+    @abstractmethod
+    def __call__(self, *args, **kwargs):
+        pass
 
     @abstractmethod
     def forward(self, x):
@@ -102,9 +105,6 @@ class ExactGaussianProcessRegressor(gpytorch.models.ExactGP, AbstractGPRegressor
             lower, upper = observed_pred.confidence_region()
             return mean, lower, upper, f_pred
 
-    def set_train_data(self, inputs=None, targets=None, strict=False):
-        super(gpytorch.models.ExactGP, self).set_train_data(inputs, targets, strict)
-
 
 def max_state_action_value(qgp_model: AbstractGPRegressor, action_space_size, state_batch, device=None):
     """
@@ -118,7 +118,7 @@ def max_state_action_value(qgp_model: AbstractGPRegressor, action_space_size, st
     :return: a vector (PyTorch tensor) of Q-values shape (batch_size, 1).
     """
     with torch.no_grad():
-        q_values = []    # for each action, the batched q-values.
+        q_values = []  # for each action, the batched q-values.
         batch_size = state_batch.size(0)
         if device is None:
             device = fetch_device()
@@ -130,7 +130,7 @@ def max_state_action_value(qgp_model: AbstractGPRegressor, action_space_size, st
 
             # print(state_action_pairs.shape)
 
-            mean_qs, _, _, _ = qgp_model.predict(state_action_pairs)   # batch_size amount of q_values.
+            mean_qs, _, _, _ = qgp_model.predict(state_action_pairs)  # batch_size amount of q_values.
             q_values.append(mean_qs)
             # print(f"S X A: \n{state_action_pairs}, q_values: {mean_qs}\n")
 
@@ -144,6 +144,12 @@ def max_state_action_value(qgp_model: AbstractGPRegressor, action_space_size, st
         # print(max_actions.shape)
 
     return max_q_values, max_actions
+
+
+def covar_test(gp: ExactGaussianProcessRegressor, x_test):
+    gp.eval()
+    pred_distribution = gp(x_test)
+    print("covar matrix shape ->", pred_distribution.covariance_matrix.shape)
 
 
 """
@@ -162,4 +168,3 @@ with torch.no_grad():
     q_tensor = torch.cat(q_values, dim=0).view(len(q_values), -1, 1)
     max_q_values, _ = torch.max(q_tensor, dim=0)
 """
-

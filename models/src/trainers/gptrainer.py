@@ -2,6 +2,7 @@ from collections import deque
 
 import gpytorch
 import torch
+from gpytorch import ExactMarginalLogLikelihood
 from torch import optim
 
 from models.gp import ExactGaussianProcessRegressor
@@ -13,7 +14,7 @@ class GaussianProcessTrainer:
     """
     def __init__(self, model: ExactGaussianProcessRegressor, learning_rate, max_dataset_size=10000, sparsification=False, optimizer=None):
         self.model = model
-        self.mll = gpytorch.mlls.exact_marginal_log_likelihood.ExactMarginalLogLikelihood(model.likelihood, model)
+        self.mll = ExactMarginalLogLikelihood(model.likelihood, model)
         self.optimizer = optimizer or optim.Adam(model.parameters(), lr=learning_rate)
         self.data_x = deque(maxlen=max_dataset_size)    # Memory intensive: keep track of N latest samples.
         self.data_y = deque(maxlen=max_dataset_size)
@@ -29,8 +30,6 @@ class GaussianProcessTrainer:
         :param logging:
         :param hyperparameter_fitting:
         """
-        print("EPIC!")
-
         # No linear independence test is performed for now, just add to dataset.
         self.data_x.append(new_train_x)
         self.data_y.append(new_train_y)
@@ -38,12 +37,12 @@ class GaussianProcessTrainer:
         train_x = torch.cat(list(self.data_x))
         train_y = torch.cat(list(self.data_y)).squeeze()
 
-        print(train_y)
-
-        self.model.set_train_data(train_x, train_y, True)
+        print("TD target shape ->", train_y.shape)
 
         self.model.train()
         self.model.likelihood.train()
+
+        self.model.set_train_data(train_x, train_y, False)
 
         if hyperparameter_fitting:
             # noinspection DuplicatedCode
@@ -52,7 +51,7 @@ class GaussianProcessTrainer:
                 output = self.model(train_x)
                 loss = -self.mll(output, train_y)
                 loss.backward()
-                if logging:
+                if logging and epoch % 10 == 0:
                     print('Iter %d/%d - Loss: %.3f   lengthscale: %.3f   noise: %.3f' % (
                         epoch + 1, num_epochs, loss.item(),
                         self.model.covar_module.base_kernel.lengthscale.item(),
@@ -60,8 +59,8 @@ class GaussianProcessTrainer:
                     ))
                 self.optimizer.step()
 
-                if logging and epoch % 10 == 0:
-                    print(f'Epoch {epoch + 1}/{num_epochs}, Loss: {loss.item()}')
+                # if logging and epoch % 25 == 0:
+                #    print(f'Epoch {epoch + 1}/{num_epochs}, Loss: {loss.item()}')
 
         # Incorporate new data using fantasy modeling
         # Not now.

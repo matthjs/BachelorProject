@@ -25,6 +25,6 @@ class ModelFactory:
             return MLP(input_size, output_size).to(device)
         elif model_type == "exact_gp":
             # Check if this needs to be the same shape as input_size, output_size.
-            return ExactGaussianProcessRegressor(torch.zeros(1, 3), torch.zeros(1)).to(device)
+            return ExactGaussianProcessRegressor(torch.zeros(1, input_size + 1), torch.zeros(1)).to(device)
         else:
             raise ValueError("Invalid model type. Supported types: 'linear', 'mlp'.")

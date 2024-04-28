@@ -52,7 +52,7 @@ class MetricsTracker:
 
             for agent_id, (mean_rewards, var_rewards) in self._reward_history.items():
                 x_reward = np.linspace(0, len(mean_rewards), len(mean_rewards), endpoint=False)
-                axes[1].plot(x_reward, mean_rewards, label=f'{agent_id} Loss')
+                axes[1].plot(x_reward, mean_rewards, label=f'{agent_id} Reward')
                 axes[1].fill_between(x_reward,
                                      mean_rewards - np.sqrt(var_rewards) * 0.1,
                                      mean_rewards + np.sqrt(var_rewards) * 0.1,
