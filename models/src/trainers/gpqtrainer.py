@@ -3,7 +3,7 @@ from typing import Tuple
 import torch
 from torchrl.data import ReplayBuffer
 
-from models.gp import ExactGaussianProcessRegressor
+from models.gp import ExactGaussianProcessRegressor, max_state_action_value
 from trainers.gptrainer import GaussianProcessTrainer
 from trainers.trainer import AbstractTrainer
 
@@ -57,19 +57,7 @@ class ExactGPQTrainer(AbstractTrainer):
         # Compute TD(0) target.
         # The max() operation over actions inherently means this can only be done
         # for discrete action spaces.
-        with torch.no_grad():
-            q_values = []
-
-            # Again assume discrete action encoding starting from 0.
-            for action in range(self.action_space_size):
-                action_batch = torch.full((self.batch_size, 1), action).to(self.device)
-                next_state_action_pair = torch.cat((states, action_batch), dim=1).to(self.device)
-                mean_q, _, _, _ = self.gp.predict(next_state_action_pair)
-                q_values.append(mean_q)
-
-            # Some reshaping black magic to get the max q value along each batch dimension.
-            q_tensor = torch.cat(q_values, dim=0).view(len(q_values), -1, 1)
-            max_q_values, _ = torch.max(q_tensor, dim=0)
+        max_q_values, _ = max_state_action_value(self.gp, self.action_space_size, next_states, self.device)
 
         td_targets = rewards + self.discount_factor * max_q_values
 
@@ -81,4 +69,4 @@ class ExactGPQTrainer(AbstractTrainer):
         print("YOOOO!")
 
         # NOTE: performs MLL estimation of kernel parameters every time.
-        self.gp_trainer.train(state_action_pairs, td_target)
+        self.gp_trainer.train(state_action_pairs, td_target, 100, True, True)

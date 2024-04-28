@@ -3,7 +3,7 @@ import numpy as np
 import torch
 
 from exploration.abstractepsilongreedy import AbstractEpsilonGreedy
-from models.gp import AbstractGPRegressor
+from models.gp import AbstractGPRegressor, max_state_action_value
 from util.fetchdevice import fetch_device
 
 
@@ -51,7 +51,7 @@ class GPEpsilonGreedy(AbstractEpsilonGreedy):
         :return: action
         """
         if np.random.uniform(0, 100) >= self._epsilon * 100:
-            mean, lower, upper, f_pred = self._model.predict(process_state(state))
-            return torch.argmax(mean).item()
+            _, max_actions = max_state_action_value(self._model, self._action_space.n, process_state(state))
+            return max_actions[0].squeeze().numpy()
 
         return self._action_space.sample()
