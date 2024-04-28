@@ -18,13 +18,13 @@ class GaussianProcessTrainer:
         self.data_x = deque(maxlen=max_dataset_size)    # Memory intensive: keep track of N latest samples.
         self.data_y = deque(maxlen=max_dataset_size)
 
-    def train(self, train_x, train_y, num_epochs=100, logging=True, hyperparameter_fitting=True) -> None:
+    def train(self, new_train_x, new_train_y, num_epochs=100, logging=True, hyperparameter_fitting=True) -> None:
         """
         Conditions Gaussian process on new incoming training data (train_x, train_y).
         Optionally also (re)-fits the Gaussian process hyperpameters to (train_x, train_y) data.
         Note that in inference the GP is conditioned on the new data.
-        :param train_x: input values compatible with kernel/covariance function.
-        :param train_y: scalar target values.
+        :param new_train_x: input values compatible with kernel/covariance function.
+        :param new_train_y: scalar target values.
         :param num_epochs: the number of iterations over the train data.
         :param logging:
         :param hyperparameter_fitting:
@@ -32,12 +32,15 @@ class GaussianProcessTrainer:
         print("EPIC!")
 
         # No linear independence test is performed for now, just add to dataset.
-        self.data_x.append(train_x)
-        self.data_y.append(train_y)
-        self.model.set_train_data(
-            torch.cat(list(train_x)),
-            torch.cat(list(train_y)).squeeze(),
-            strict=False)
+        self.data_x.append(new_train_x)
+        self.data_y.append(new_train_y)
+
+        train_x = torch.cat(list(self.data_x))
+        train_y = torch.cat(list(self.data_y)).squeeze()
+
+        print(train_y)
+
+        self.model.set_train_data(train_x, train_y, True)
 
         self.model.train()
         self.model.likelihood.train()

@@ -127,18 +127,21 @@ def max_state_action_value(qgp_model: AbstractGPRegressor, action_space_size, st
         for action in range(action_space_size):
             action_batch = torch.full((batch_size, 1), action).to(device)
             state_action_pairs = torch.cat((state_batch, action_batch), dim=1).to(device)
+
+            # print(state_action_pairs.shape)
+
             mean_qs, _, _, _ = qgp_model.predict(state_action_pairs)   # batch_size amount of q_values.
             q_values.append(mean_qs)
-            print(f"S X A: \n{state_action_pairs}, q_values: {mean_qs}\n")
+            # print(f"S X A: \n{state_action_pairs}, q_values: {mean_qs}\n")
 
         # Some reshaping black magic to get the max q value along each batch dimension.
-        print(q_values)
+        # print(q_values)
         q_tensor = torch.cat(q_values, dim=0).view(len(q_values), -1, 1)
         max_q_values, max_actions = torch.max(q_tensor, dim=0)
-        print(max_q_values)
-        print(max_q_values.shape)
-        print(max_actions)
-        print(max_actions.shape)
+        # print(max_q_values)
+        # print(max_q_values.shape)
+        # print(max_actions)
+        # print(max_actions.shape)
 
     return max_q_values, max_actions
 

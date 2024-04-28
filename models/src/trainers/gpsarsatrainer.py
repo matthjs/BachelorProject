@@ -8,7 +8,7 @@ from trainers.gptrainer import GaussianProcessTrainer
 from trainers.trainer import AbstractTrainer
 
 
-class ExactGPQTrainer(AbstractTrainer):
+class ExactGPSarsaTrainer(AbstractTrainer):
     def __init__(self,
                  model: ExactGaussianProcessRegressor,
                  action_space_size: int,  # Assumes actions are encoded as 0, 1, 2, ..., action_space_size
@@ -40,11 +40,10 @@ class ExactGPQTrainer(AbstractTrainer):
         :return: A tuple containing the states, actions, rewards, and next states.
         """
         trajectories = self.buf.sample(batch_size=self.batch_size)
-        return trajectories[0], trajectories[1], trajectories[2], trajectories[3]
+        return trajectories[0], trajectories[1], trajectories[2], trajectories[3], trajectories[4]
 
     def _construct_target_dataset(self) -> Tuple[torch.tensor, torch.tensor]:
-        states, actions, rewards, next_states = self._trajectory()
-        print("state: ", states.shape)
+        states, actions, rewards, next_states, next_actions = self._trajectory()
 
         # TODO: see if this can be more flexible.
         if len(actions.shape) == 1:  # Check if shape is [batch_size]
@@ -53,16 +52,13 @@ class ExactGPQTrainer(AbstractTrainer):
         print("action: ", actions.shape)
 
         state_action_pairs = torch.cat((states, actions), dim=1).to(self.device)
+        next_state_action_pairs = torch.cat((next_states, next_actions), dim=1).to(self.device)
 
+        next_q_values, _, _, _ = self.gp.predict(next_state_action_pairs)
         # Compute TD(0) target.
-        # The max() operation over actions inherently means this can only be done
-        # for discrete action spaces.
-        max_q_values, _ = max_state_action_value(self.gp, self.action_space_size, next_states, self.device)
-
-        print("max_q -> ", max_q_values)
 
         # Convert rewards from [32] -> [32, 1] so that it is compatible with max_q_values of shape [32, 1]
-        td_targets = rewards.unsqueeze(1) + self.discount_factor * max_q_values
+        td_targets = rewards.unsqueeze(1) + self.discount_factor * next_q_values
 
         print("TD->", td_targets)
 

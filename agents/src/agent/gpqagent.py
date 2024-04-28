@@ -1,5 +1,5 @@
 import torch
-from torchrl.data import ReplayBuffer, LazyTensorStorage
+from torchrl.data import ReplayBuffer, LazyTensorStorage, SamplerWithoutReplacement
 
 from agent.abstractagent import AbstractAgent
 from exploration.gpepsilongreedy import GPEpsilonGreedy
@@ -31,7 +31,11 @@ class GPQAgent(AbstractAgent):
                                                    annealing_num_steps=annealing_num_steps)
         self._replay_buffer = ReplayBuffer(storage=LazyTensorStorage(
                                            max_size=replay_buffer_size,
-                                           device=fetch_device()))
+                                           device=fetch_device()),
+                                           sampler=SamplerWithoutReplacement())
+
+        self._batch_counter = 0
+        self._batch_size = batch_size
 
         if gp_model_str == "exact_gp":
             self._trainer = ExactGPQTrainer(
@@ -47,7 +51,10 @@ class GPQAgent(AbstractAgent):
             raise ValueError(f"No trainer for gaussian process model `{gp_model_str}`")
 
     def update(self):
-        self._trainer.train()
+        if self._batch_counter >= self._batch_size:
+            self._trainer.train()
+            self._batch_counter = 0
+        self._batch_counter += 1
 
     def add_trajectory(self, trajectory: tuple) -> None:
         """
