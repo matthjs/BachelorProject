@@ -1,15 +1,32 @@
 import gymnasium as gym
 from stable_baselines3 import DQN
 from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.vec_env import VecVideoRecorder
+from stable_baselines3.common.vec_env import VecVideoRecorder, VecFrameStack
+from stable_baselines3.common.evaluation import evaluate_policy
 
 from metricstracker.metricstracker import MetricsTracker
 
 
-def dqn_train(env_str='MountainCar-v0', total_time_step=300000):
+def dqn_train(env_str='MountainCar-v0', total_time_step=int(1.2e5)):
     env = gym.make(env_str)
 
-    model = DQN('MlpPolicy', env, verbose=1)
+    model = DQN(
+        "MlpPolicy",  # What model to use to approximate Q-function.
+        env,
+        gamma=0.98,
+        verbose=1,
+        train_freq=16,
+        gradient_steps=8,
+        exploration_fraction=0.2,
+        exploration_final_eps=0.07,  # epsilon-greedy schedule
+        learning_rate=4e-3,
+        batch_size=128,
+        learning_starts=100000,
+        target_update_interval=600,
+        buffer_size=10000,  # Replay buffer size
+        optimize_memory_usage=False,
+        policy_kwargs=dict(net_arch=[256, 256])
+    )
     model.learn(total_timesteps=total_time_step)
 
     model.save("dqn_mountain_car")
@@ -50,6 +67,7 @@ def record_video(eval_env, model, video_length=500, prefix="", video_folder="vid
     # Close the video recorder
     vec_env_record.close()
 
+
 import base64
 from pathlib import Path
 
@@ -78,9 +96,21 @@ def show_videos(video_path="", prefix=""):
 
 
 def dqn_play_mountain_car(time_steps=3000):
-    agent = DQN.load("dqn_mountain_car")
+    agent = DQN.load("./dqn_mountain_car.zip")
 
     test_env = make_vec_env('MountainCar-v0', n_envs=1)
 
     record_video(test_env, agent, video_length=5000, prefix="dqn-mc")
     show_videos("videos", prefix="dqn-mc")
+
+
+def dqn_evaluate_policy(agent_str="./dqn_mountain_car.zip", env_str='MountainCar-v0', n_eval_ep=10):
+    model = DQN.load(agent_str)
+
+    test_env = make_vec_env(env_str, n_envs=1, seed=0)
+    # Frame-stacking with 4 frames
+    # test_env = VecFrameStack(test_env, n_stack=4)
+
+    mean_reward, std_reward = evaluate_policy(model, test_env, n_eval_episodes=n_eval_ep, warn=False)
+
+    print(f"mean_reward: {mean_reward:.2f} +/- {std_reward:.2f}")
