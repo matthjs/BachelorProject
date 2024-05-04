@@ -33,6 +33,31 @@ def dqn_train(env_str='MountainCar-v0', total_time_step=int(1.2e5)):
 
     env.close()
 
+def dqn_train2(env_str="CartPole-v1", total_time_step=int(5e4)):
+    env = gym.make(env_str)
+
+    model = DQN(
+        "MlpPolicy",  # What model to use to approximate Q-function.
+        env,
+        gamma=0.99,
+        verbose=1,
+        train_freq=256,
+        gradient_steps=128,
+        exploration_fraction=0.16,
+        exploration_final_eps=0.04,  # epsilon-greedy schedule
+        learning_rate=2.3e-3,
+        batch_size=64,
+        learning_starts=1000,
+        target_update_interval=10,
+        buffer_size=100000,  # Replay buffer size
+        policy_kwargs=dict(net_arch=[256, 256])
+    )
+    model.learn(total_timesteps=total_time_step)
+
+    model.save("dqn_cartpole-v1")
+
+    env.close()
+
 
 # Set up fake display; otherwise rendering will fail
 import os
@@ -95,16 +120,16 @@ def show_videos(video_path="", prefix=""):
     ipythondisplay.display(ipythondisplay.HTML(data="<br>".join(html)))
 
 
-def dqn_play_mountain_car(time_steps=3000):
-    agent = DQN.load("./dqn_mountain_car.zip")
+def dqn_play_cartpole(time_steps=3000):
+    agent = DQN.load("./dqn_cartpole-v1.zip")
 
-    test_env = make_vec_env('MountainCar-v0', n_envs=1)
+    test_env = make_vec_env("CartPole-v1", n_envs=1)
 
     record_video(test_env, agent, video_length=5000, prefix="dqn-mc")
     show_videos("videos", prefix="dqn-mc")
 
 
-def dqn_evaluate_policy(agent_str="./dqn_mountain_car.zip", env_str='MountainCar-v0', n_eval_ep=10):
+def dqn_evaluate_policy(agent_str="./dqn_cartpole-v1.zip", env_str="CartPole-v1", n_eval_ep=10):
     model = DQN.load(agent_str)
 
     test_env = make_vec_env(env_str, n_envs=1, seed=0)
