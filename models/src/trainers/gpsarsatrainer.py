@@ -3,7 +3,7 @@ from typing import Tuple
 import torch
 from torchrl.data import ReplayBuffer
 
-from models.gp import ExactGaussianProcessRegressor, max_state_action_value
+from gp.gp import ExactGaussianProcessRegressor
 from trainers.gptrainer import GaussianProcessTrainer
 from trainers.trainer import AbstractTrainer
 

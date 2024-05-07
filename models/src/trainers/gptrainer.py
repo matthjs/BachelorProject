@@ -1,11 +1,10 @@
 from collections import deque
 
-import gpytorch
 import torch
 from gpytorch import ExactMarginalLogLikelihood
 from torch import optim
 
-from models.gp import ExactGaussianProcessRegressor
+from gp.gp import ExactGaussianProcessRegressor
 
 
 class GaussianProcessTrainer:

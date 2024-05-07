@@ -1,9 +1,7 @@
 from tensordict.nn import TensorDictSequential, TensorDictModule
 from torchrl.envs import GymEnv
-from torchrl.modules import QValueActor, QValueModule, EGreedyModule
 
-from modelfactory.modelfactory import ModelFactory
-from models.gp import ExactGaussianProcessRegressor
+from gp.gp import ExactGaussianProcessRegressor
 from util.fetchdevice import fetch_device
 
 

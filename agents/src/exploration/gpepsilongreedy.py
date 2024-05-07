@@ -3,7 +3,7 @@ import numpy as np
 import torch
 
 from exploration.abstractepsilongreedy import AbstractEpsilonGreedy
-from models.gp import AbstractGPRegressor, max_state_action_value
+from gp.gp import AbstractGPRegressor, max_state_action_value
 from util.fetchdevice import fetch_device
 
 

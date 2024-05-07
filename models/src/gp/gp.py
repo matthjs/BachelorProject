@@ -106,8 +106,6 @@ class ExactGaussianProcessRegressor(gpytorch.models.ExactGP, AbstractGPRegressor
             return mean, lower, upper, f_pred
 
 
-
-
 def max_state_action_value(qgp_model: AbstractGPRegressor, action_space_size, state_batch, device=None):
     """
     Helper function for performing the max_a Q(S,a) operation for Q-learning.

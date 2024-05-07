@@ -1,7 +1,7 @@
 import gpytorch
 from torch import optim
 
-from models.gp import ExactGaussianProcessRegressor
+from gp.gp import ExactGaussianProcessRegressor
 
 
 class GaussianProcessTrainer:

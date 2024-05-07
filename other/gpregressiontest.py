@@ -3,7 +3,7 @@ import torch
 import gpytorch
 from matplotlib import pyplot as plt
 
-from models.gp import GaussianProcessRegressor
+from gp.gp import GaussianProcessRegressor
 from trainers.gptrainer import GaussianProcessTrainer
 from util.fetchdevice import fetch_device
 

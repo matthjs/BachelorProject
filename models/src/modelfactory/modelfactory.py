@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 
-from models.gp import ExactGaussianProcessRegressor
-from models.linear import LinearModel
-from models.mlp import MLP
+from gp.gp import ExactGaussianProcessRegressor
+from nn.linear import LinearModel
+from nn.mlp import MLP
 
 
 class ModelFactory:

@@ -1,9 +1,8 @@
 import unittest
 from unittest.mock import Mock
 
-import gpytorch
 import torch
-from models.gp import max_state_action_value, ExactGaussianProcessRegressor
+from gp.gp import max_state_action_value
 
 
 class TestMaxStateActionValue(unittest.TestCase):

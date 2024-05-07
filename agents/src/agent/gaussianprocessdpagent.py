@@ -1,16 +1,12 @@
-import gpytorch.mlls.exact_marginal_log_likelihood
-import torch
 import numpy as np
-from gpytorch.distributions import MultivariateNormal
 from gpytorch.kernels import ScaleKernel, MaternKernel
-from gpytorch.likelihoods import FixedNoiseGaussianLikelihood
 from loguru import logger
 
 from agent.abstractdpagent import AbstractDPAgent
 import gymnasium as gym
 import torch
 
-from models.gp import ExactGaussianProcessRegressor
+from gp.gp import ExactGaussianProcessRegressor
 from trainers.gptrainer import GaussianProcessTrainer
 from util.fetchdevice import fetch_device
 
