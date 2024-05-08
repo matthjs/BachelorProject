@@ -26,9 +26,12 @@ class GPQAgent(AbstractAgent):
                                                                 state_space.shape[0],
                                                                 action_space.n)
 
+        # self._bayesopt_module = BayesianOptimizerRL
+
         self._exploration_policy = GPEpsilonGreedy(model=self._models["value_model"],
                                                    action_space=action_space,
                                                    annealing_num_steps=annealing_num_steps)
+
         self._replay_buffer = ReplayBuffer(storage=LazyTensorStorage(
                                            max_size=replay_buffer_size,
                                            device=fetch_device()),

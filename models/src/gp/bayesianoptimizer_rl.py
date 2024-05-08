@@ -102,7 +102,7 @@ class BayesianOptimizerRL:
         self._data_x = deque(maxlen=max_dataset_size)  # Memory intensive: keep track of N latest samples.
         self._data_y = deque(maxlen=max_dataset_size)
         self.action_size = action_size
-        self.outcome_transform = Standardize(m=1)  # I am guessing m should b 1
+        self.outcome_transform = Standardize(m=1)  # I am guessing m should be 1
         # This Standardization is VERY important as we assume the mean function is 0.
         # If not then we will have problems with the Q values.
 
@@ -111,7 +111,7 @@ class BayesianOptimizerRL:
         if model_str == 'exact_gp':
             # TODO: Look into variant where we do not instantiate a new GP
             # every time.
-            self.gp_constructor = SingleTaskGP
+            self.gp_constructor = SingleTaskGP     # TODO: Look into whether mixedSingleTaskGP should be used.
             self.likelihood_constructor = GaussianLikelihood
             # Just use the standard Matern kernel for now.
         else:
@@ -157,4 +157,5 @@ class BayesianOptimizerRL:
         if self._current_gp is None:
             raise ValueError("No current GP is set. Run fit first to condition on some data")
 
+        # Things can be adjusted here later though the magic of *composition*
         return simple_thompson_action_sampler(self._current_gp, state, self.action_size)
