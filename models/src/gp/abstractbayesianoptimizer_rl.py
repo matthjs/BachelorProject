@@ -31,5 +31,9 @@ class AbstractBayesianOptimizerRL(ABC):
         pass
 
     @abstractmethod
+    def state_action_value(self, state_batch, action_batch):
+        pass
+
+    @abstractmethod
     def max_state_action_value(self, state_batch, device=None):
         pass

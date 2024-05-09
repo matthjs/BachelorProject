@@ -37,19 +37,19 @@ class GPSarsaTrainer(AbstractTrainer):
         # TODO: see if this can be more flexible.
         if len(actions.shape) == 1:  # Check if shape is [batch_size]
             actions = actions.unsqueeze(1)  # Convert shape to [batch_size, 1]
+            next_actions = next_actions.unsqueeze(1)
 
-        print("action: ", actions.shape)
+        # print("action: ", next_actions.shape)
 
         state_action_pairs = torch.cat((states, actions), dim=1).to(self.device)
-        next_state_action_pairs = torch.cat((next_states, next_actions), dim=1).to(self.device)
 
-        next_q_values, _, _, _ = self.gp.preddict(next_state_action_pairs)
-        # Compute TD(0) target.
+        next_q_values = self.bayesian_opt_module.state_action_value(next_states, next_actions)
 
-        # Convert rewards from [32] -> [32, 1] so that it is compatible with max_q_values of shape [32, 1]
+        # Compute TD(0) target. Convert rewards from [batch_size] -> [batch_size, 1] so that it is compatible with
+        # max_q_values of shape [32, 1]
         td_targets = rewards.unsqueeze(1) + self.discount_factor * next_q_values
 
-        print("TD->", td_targets)
+        # print("TD->", td_targets)
 
         return state_action_pairs, td_targets
 
@@ -61,4 +61,4 @@ class GPSarsaTrainer(AbstractTrainer):
         state_action_pairs, td_target = self._construct_target_dataset()
 
         # NOTE: performs MLL estimation of kernel parameters every time.
-        self.gp_trainer.train(state_action_pairs, td_target, 100, True, True)
+        self.bayesian_opt_module.fit(state_action_pairs, td_target, True)

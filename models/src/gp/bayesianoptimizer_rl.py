@@ -219,6 +219,13 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         action_tensor = simple_thompson_action_sampler(self._current_gp, process_state(state), self._action_size)
         return action_tensor.item()
 
+    def state_action_value(self, state_batch, action_batch):
+        with torch.no_grad():
+            next_state_action_pairs = torch.cat((state_batch, action_batch), dim=1).to(self.device)
+            q_val = self._current_gp.posterior(next_state_action_pairs).mean
+
+        return q_val
+
     def max_state_action_value(self, state_batch, device=None):
         """
         Helper function for performing the max_a Q(S,a) operation for Q-learning.

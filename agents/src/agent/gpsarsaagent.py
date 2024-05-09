@@ -43,18 +43,12 @@ class GPSarsaAgent(AbstractAgent):
         self._batch_counter = 0
         self._batch_size = batch_size
 
-        if gp_model_str == "exact_gp":
-            self._trainer = GPSarsaTrainer(
-                model=self._models["value_model"],
-                action_space_size=action_space.n,
-                batch_size=batch_size,
-                buf=self._replay_buffer,
-                learning_rate=learning_rate,
-                discount_factor=discount_factor,
-                num_epochs=num_epochs
-            )
-        else:
-            raise ValueError(f"No trainer for gaussian process model `{gp_model_str}`")
+        self._trainer = GPSarsaTrainer(
+            self._exploration_policy,
+            batch_size=batch_size,
+            buf=self._replay_buffer,
+            discount_factor=discount_factor
+        )
 
     def update(self):
         if self._batch_counter >= self._batch_size:
@@ -70,10 +64,10 @@ class GPSarsaAgent(AbstractAgent):
         :param trajectory = (state, action, reward, next_state)
         """
         state, action, reward, next_state = trajectory
-        state_t = torch.as_tensor(state, device=self.device)
+        state_t = torch.as_tensor(state, device=self.device, dtype=torch.double)
         action_t = torch.as_tensor(action, device=self.device)
-        reward_t = torch.as_tensor(reward, device=self.device)
-        next_state_t = torch.as_tensor(next_state, device=self.device)
+        reward_t = torch.as_tensor(reward, device=self.device, dtype=torch.double)
+        next_state_t = torch.as_tensor(next_state, device=self.device, dtype=torch.double)
 
         # To ensure compatible interface with on-policy algorithms we have to run the policy one more time here.
         next_action = self.policy(next_state)
@@ -82,4 +76,4 @@ class GPSarsaAgent(AbstractAgent):
         self._replay_buffer.add((state_t, action_t, reward_t, next_state_t, next_action_t))
 
     def policy(self, state):
-        return self._exploration_policy.action(state)
+        return self._exploration_policy.choose_next_action(state)

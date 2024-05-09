@@ -39,15 +39,12 @@ class GPQAgent(AbstractAgent):
         self._batch_counter = 0
         self._batch_size = batch_size
 
-        if gp_model_str == "exact_gp":
-            self._trainer = GPQTrainer(
-                self._exploration_policy,
-                batch_size=batch_size,
-                buf=self._replay_buffer,
-                discount_factor=discount_factor
-            )
-        else:
-            raise ValueError(f"No trainer for gaussian process model `{gp_model_str}`")
+        self._trainer = GPQTrainer(
+            self._exploration_policy,
+            batch_size=batch_size,
+            buf=self._replay_buffer,
+            discount_factor=discount_factor
+        )
 
     def update(self):
         if self._batch_counter >= self._batch_size:
