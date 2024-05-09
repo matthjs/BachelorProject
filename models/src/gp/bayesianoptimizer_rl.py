@@ -8,6 +8,8 @@ from botorch.posteriors import GPyTorchPosterior
 from gpytorch import ExactMarginalLogLikelihood
 from gpytorch.kernels import Kernel
 from gpytorch.likelihoods import GaussianLikelihood
+from botorch.models.transforms.input import Normalize, InputStandardize
+from loguru import logger
 from matplotlib import pyplot as plt
 from botorch.models.transforms.outcome import Standardize
 
@@ -17,34 +19,7 @@ import gymnasium as gym
 
 
 def process_state(state):
-    return torch.from_numpy(state).to(device=fetch_device())
-
-
-def append_actions(state: torch.tensor, action_size: int):
-    """
-    Append to a state vector (s1, s2, ..., s_n) actions such that we have
-    a batch of tensors of the form: (s1, s2, ..., s_n, a_1),
-                                    (s1, s2, ..., s_n, a_2),
-                                    ...
-                                    (s1, s2, ..., s_n, a_m)   m = num of actions.
-    :param state:
-    :param action_size:
-    :return:
-    """
-    batch_size = state.size(0)
-
-    # Repeat the state vector for each action
-    repeated_state = state.repeat_interleave(action_size, dim=0)  # Shape: (batch_size * action_size,
-    # num_state_features)
-
-    # Create a tensor for actions ranging from 0 to action_size - 1
-    actions = torch.arange(action_size).repeat(batch_size)  # Shape: (batch_size * action_size,)
-
-    # Concatenate the repeated state vectors with the actions
-    state_action_pairs = torch.cat([repeated_state, actions.unsqueeze(1)], dim=1)  # Shape: (batch_size *
-    # action_size, num_state_features + 1)
-
-    return state_action_pairs
+    return torch.from_numpy(state).to(device=fetch_device(), dtype=torch.double)
 
 
 def visualize_distributions(posterior_distribution, action_size):
@@ -73,6 +48,44 @@ def visualize_distributions(posterior_distribution, action_size):
     plt.show()
 
 
+def append_actions(state: torch.tensor, action_size: int):
+    """
+    Append to a state vector (s1, s2, ..., s_n) actions such that we have
+    a batch of tensors of the form: (s1, s2, ..., s_n, a_1),
+                                    (s1, s2, ..., s_n, a_2),
+                                    ...
+                                    (s1, s2, ..., s_n, a_m)   m = num of actions.
+    :param state:
+    :param action_size:
+    :return:
+    """
+    batch_size = state.size(0)
+
+    # print("state ->", state)
+
+    # print("batch size ->", batch_size)
+    # print("action size ->", action_size)
+
+    # Repeat the state vector for each action
+    repeated_state = torch.stack([state] * action_size)
+    # print("rep: ", repeated_state.shape)
+    # print(repeated_state)
+
+    # Create a tensor for actions ranging from 0 to action_size - 1
+    actions = torch.arange(action_size).to(fetch_device())  # Shape: (batch_size * action_size,)
+
+    # print("ac: ", actions.shape)
+    # print(actions)
+
+    # Concatenate the repeated state vectors with the actions
+    state_action_pairs = torch.cat([repeated_state, actions.unsqueeze(1)], dim=-1)  # Shape: (batch_size *
+    # action_size, num_state_features + 1)
+    # print(state_action_pairs)
+    # print(state_action_pairs.shape)
+
+    return state_action_pairs
+
+
 def simple_thompson_action_sampler(gpq_model, state_tensor: torch.tensor, action_size: int) -> torch.tensor:
     """
     Thompson sampling for discrete action spaces.
@@ -99,13 +112,16 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
     To be used in the context of model-free RL
     with discrete action spaces.
     TODO: Look at noise parameter!
+    TODO: IDEA: Use target network approach from DQN to improve learning?
+    Meaning, that for
     An external optimizer will run the .fit() function. The
-    agent will use the choose_next_aaction() for action selection.
+    agent will use the choose_next_action() for action selection.
     This defines a behavioral policy.
     """
 
     def __init__(self,
                  model_str: str,
+                 random_draws: int,
                  max_dataset_size: int,
                  state_size: int,
                  action_space: gym.Space,
@@ -116,6 +132,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         self._state_size = state_size
         self._action_size = action_space.n
         self._action_space = action_space
+
+        self._input_transform = None # InputStandardize(d=state_size + 1)
         self._outcome_transform = Standardize(m=1)  # I am guessing m should be 1
         # This Standardization is VERY important as we assume the mean function is 0.
         # If not then we will have problems with the Q values.
@@ -130,28 +148,41 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         else:
             raise ValueError(f'Unknown gp model type: {model_str}')
 
-        self._current_gp = self.gp_constructor(train_X=torch.zeros(1, state_size + 1),
-                                               train_Y=torch.zeros(1),
-                                               cat_dims=[self._state_size + 1],
+        self._current_gp = self.gp_constructor(train_X=torch.zeros(1, state_size + 1, dtype=torch.double),
+                                               train_Y=torch.zeros(1, 1, dtype=torch.double),
+                                               cat_dims=[self._state_size],
+                                               input_transform=self._input_transform,
                                                outcome_transform=self._outcome_transform).to(self.device)
+
+        self._random_draws = random_draws
 
     def fit(self, new_train_x, new_train_y, hyperparameter_fitting=True) -> Model:
         """
         Condition GP on data and fit its hyperparameters.
         :return:
         """
+        if self._random_draws > 0:
+            return self._current_gp
+
         # TODO: Change out kernel function for something else.
         # TODO: Is it really necessary to instantiate a new GP every time?
+        # logger.debug("fitting new GP")
 
         # No linear independence test is performed for now, just add to dataset.
         self.extend_dataset(new_train_x, new_train_y)
 
         train_x = torch.cat(list(self._data_x))
-        train_y = torch.cat(list(self._data_y)).squeeze()
+        train_y = torch.cat(list(self._data_y))
+
+        # print("train:", train_x.shape)
+        # print(train_x)
+        # print("target:", train_y.shape)
+        # print(train_y)
 
         gp = self.gp_constructor(train_X=train_x,
                                  train_Y=train_y,
-                                 cat_dims=[self._state_size + 1],
+                                 cat_dims=[self._state_size],
+                                 input_transform=self._input_transform,
                                  outcome_transform=self._outcome_transform).to(self.device)
         mll = ExactMarginalLogLikelihood(gp.likelihood, gp)
 
@@ -159,6 +190,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             fit_gpytorch_mll(mll)
 
         self._current_gp = gp
+        # logger.debug("Done fitting new GP")
         return gp
 
     def extend_dataset(self, new_train_x, new_train_y):
@@ -176,11 +208,16 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         :param target:
         :return:
         """
-        if self._current_gp is None:
+        if self._random_draws > 0:
+            # logger.debug("Random action selection...")
+            self._random_draws -= 1
             return self._action_space.sample()
 
+        # logger.debug("Sampling action from GP given state...")
+
         # Things can be adjusted here later though the magic of *composition*
-        return simple_thompson_action_sampler(self._current_gp, state, self._action_size)
+        action_tensor = simple_thompson_action_sampler(self._current_gp, process_state(state), self._action_size)
+        return action_tensor.item()
 
     def max_state_action_value(self, state_batch, device=None):
         """

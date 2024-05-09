@@ -3,9 +3,10 @@ from torchrl.data import ReplayBuffer, LazyTensorStorage, SamplerWithoutReplacem
 
 from agent.abstractagent import AbstractAgent
 from exploration.gpepsilongreedy import GPEpsilonGreedy
+from gp.bayesianoptimizer_rl import BayesianOptimizerRL
 from modelfactory.modelfactory import ModelFactory
 from trainers.gpqtrainer import GPQTrainer
-from trainers.gpsarsatrainer import ExactGPSarsaTrainer
+from trainers.gpsarsatrainer import GPSarsaTrainer
 from util.fetchdevice import fetch_device
 
 
@@ -18,21 +19,22 @@ class GPSarsaAgent(AbstractAgent):
                  gp_model_str: str,
                  state_space,
                  action_space,
-                 learning_rate: float,
                  discount_factor: float,
-                 annealing_num_steps,
                  batch_size,
                  replay_buffer_size,
-                 num_epochs,
+                 exploring_starts,
+                 max_dataset_size,
                  sparsification=False):
         super(GPSarsaAgent, self).__init__({}, state_space, action_space)
-        self._models["value_model"] = ModelFactory.create_model(gp_model_str,
-                                                                state_space.shape[0],
-                                                                action_space.n)
 
-        self._exploration_policy = GPEpsilonGreedy(model=self._models["value_model"],
-                                                   action_space=action_space,
-                                                   annealing_num_steps=annealing_num_steps)
+        self._exploration_policy = BayesianOptimizerRL(
+            model_str=gp_model_str,
+            max_dataset_size=max_dataset_size,
+            random_draws=exploring_starts,
+            state_size=state_space.shape[0],
+            action_space=action_space,
+        )
+
         self._replay_buffer = ReplayBuffer(storage=LazyTensorStorage(
                                            max_size=replay_buffer_size,
                                            device=fetch_device()),
@@ -42,7 +44,7 @@ class GPSarsaAgent(AbstractAgent):
         self._batch_size = batch_size
 
         if gp_model_str == "exact_gp":
-            self._trainer = ExactGPSarsaTrainer(
+            self._trainer = GPSarsaTrainer(
                 model=self._models["value_model"],
                 action_space_size=action_space.n,
                 batch_size=batch_size,

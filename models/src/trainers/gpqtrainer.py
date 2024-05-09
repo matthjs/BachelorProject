@@ -4,7 +4,6 @@ import torch
 from torchrl.data import ReplayBuffer
 
 from gp.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
-from gp.maxstateactionvalue import max_state_action_value
 from trainers.gptrainer import GaussianProcessTrainer
 from trainers.trainer import AbstractTrainer
 
@@ -14,14 +13,12 @@ class GPQTrainer(AbstractTrainer):
                  bayesian_opt_module: AbstractBayesianOptimizerRL,
                  batch_size: int,
                  buf: ReplayBuffer,
-                 learning_rate: float,
                  discount_factor: float):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.buf = buf
 
         self.bayesian_opt_module = bayesian_opt_module
         self.batch_size = batch_size
-        self.learning_rate = learning_rate
         self.discount_factor = discount_factor
 
     def _trajectory(self) -> tuple:
@@ -36,13 +33,13 @@ class GPQTrainer(AbstractTrainer):
     def _construct_target_dataset(self) -> Tuple[torch.tensor, torch.tensor]:
         # noinspection DuplicatedCode
         states, actions, rewards, next_states = self._trajectory()
-        print("state: ", states.shape)
+        # print("state: ", states.shape)
 
         # TODO: see if this can be more flexible.
         if len(actions.shape) == 1:  # Check if shape is [batch_size]
             actions = actions.unsqueeze(1)  # Convert shape to [batch_size, 1]
 
-        print("action: ", actions.shape)
+        # print("action: ", actions.shape)
 
         state_action_pairs = torch.cat((states, actions), dim=1).to(self.device)
 

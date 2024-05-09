@@ -3,35 +3,24 @@ from typing import Tuple
 import torch
 from torchrl.data import ReplayBuffer
 
+from gp.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
 from gp.gp import ExactGaussianProcessRegressor
 from trainers.gptrainer import GaussianProcessTrainer
 from trainers.trainer import AbstractTrainer
 
 
-class ExactGPSarsaTrainer(AbstractTrainer):
+class GPSarsaTrainer(AbstractTrainer):
     def __init__(self,
-                 model: ExactGaussianProcessRegressor,
-                 action_space_size: int,  # Assumes actions are encoded as 0, 1, 2, ..., action_space_size
+                 bayesian_opt_module: AbstractBayesianOptimizerRL,
                  batch_size: int,
                  buf: ReplayBuffer,
-                 learning_rate: float,
-                 discount_factor: float,
-                 num_epochs):
+                 discount_factor: float):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.buf = buf
-        self.action_space_size = action_space_size
 
-        self.gp = model
+        self.bayesian_opt_module = bayesian_opt_module
         self.batch_size = batch_size
-        self.learning_rate = learning_rate
         self.discount_factor = discount_factor
-
-        self.gp_trainer = GaussianProcessTrainer(
-            self.gp,
-            learning_rate=learning_rate,
-        )
-
-        self.num_epochs = num_epochs
 
     def _trajectory(self) -> tuple:
         """
@@ -54,7 +43,7 @@ class ExactGPSarsaTrainer(AbstractTrainer):
         state_action_pairs = torch.cat((states, actions), dim=1).to(self.device)
         next_state_action_pairs = torch.cat((next_states, next_actions), dim=1).to(self.device)
 
-        next_q_values, _, _, _ = self.gp.predict(next_state_action_pairs)
+        next_q_values, _, _, _ = self.gp.preddict(next_state_action_pairs)
         # Compute TD(0) target.
 
         # Convert rewards from [32] -> [32, 1] so that it is compatible with max_q_values of shape [32, 1]

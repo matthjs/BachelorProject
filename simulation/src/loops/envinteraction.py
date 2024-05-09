@@ -22,7 +22,6 @@ def env_interaction_gym(agent_type: str, env_str: str, time_steps: int, render_m
         action = agent.policy(obs)
         obs, reward, terminated, truncated, info = env.step(action)
 
-        MetricsTracker().record_reward(current_thread().name, reward)
         agent.record_env_info(info, terminated or truncated)
         agent.add_trajectory((old_obs, action, reward, obs))
 
@@ -32,6 +31,7 @@ def env_interaction_gym(agent_type: str, env_str: str, time_steps: int, render_m
 
         if terminated or truncated:
             logger.debug(f"Episode reward: {episode_reward}")
+            MetricsTracker().record_reward(current_thread().name, episode_reward)
             episode_reward = 0
             obs, info = env.reset()
 

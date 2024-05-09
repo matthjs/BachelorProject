@@ -6,6 +6,7 @@ from agent.abstractagent import AbstractAgent
 from agent.gaussianprocessdpagent import GaussianProcessDPAgent
 from agent.gpqagent import GPQAgent
 from agent.gpsarsaagent import GPSarsaAgent
+from agent.randomagent import RandomAgent
 from builders.dqnagentbuilder import DQNAgentBuilder
 from builders.qagentbuilder import QAgentBuilder
 from torchrl.data import LazyTensorStorage
@@ -76,12 +77,11 @@ class AgentFactory:
             return GPQAgent(gp_model_str="exact_gp",
                             state_space=obs_space,
                             action_space=action_space,
-                            learning_rate=0.001,
                             discount_factor=0.99,
-                            batch_size=32,
-                            replay_buffer_size=32,
-                            num_epochs=200,
-                            max_dataset_size=10000,
+                            batch_size=64,
+                            replay_buffer_size=64,
+                            exploring_starts=1000,
+                            max_dataset_size=3000,
                             sparsification=False)
         elif agent_type == "gpsarsa_agent":
             return GPSarsaAgent(gp_model_str="exact_gp",
@@ -94,5 +94,7 @@ class AgentFactory:
                                 replay_buffer_size=1000,
                                 num_epochs=200,
                                 sparsification=False)
+        elif agent_type == "random":
+            return RandomAgent(env)
 
         raise ValueError("Invalid agent type")

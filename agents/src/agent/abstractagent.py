@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from builders.abstractagentbuilder import AbstractAgentBuilder
 from util.fetchdevice import fetch_device
 
+
 class EnvInfo:
     """
     Inner class for recording game information.
@@ -23,6 +24,7 @@ class AbstractAgent(ABC):
     """
     Agent abstract base class.
     """
+
     def __init__(self, models, state_space, action_space):
         """
         """
