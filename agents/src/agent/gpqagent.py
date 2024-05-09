@@ -8,6 +8,7 @@ from modelfactory.modelfactory import ModelFactory
 from trainers.gpqtrainer import GPQTrainer
 from trainers.gptrainer import GaussianProcessTrainer
 from util.fetchdevice import fetch_device
+from util.processstate import process_state
 
 
 class GPQAgent(AbstractAgent):
@@ -52,6 +53,7 @@ class GPQAgent(AbstractAgent):
             self._batch_counter = 0
         self._batch_counter += 1
 
+    # noinspection DuplicatedCode
     def add_trajectory(self, trajectory: tuple) -> None:
         """
         Add a trajectory to the replay buffer.
@@ -66,4 +68,4 @@ class GPQAgent(AbstractAgent):
         self._replay_buffer.add((state_t, action_t, reward_t, next_state_t))
 
     def policy(self, state):
-        return self._exploration_policy.choose_next_action(state)
+        return self._exploration_policy.choose_next_action(process_state(state))

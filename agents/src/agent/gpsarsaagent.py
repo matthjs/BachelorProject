@@ -8,6 +8,7 @@ from modelfactory.modelfactory import ModelFactory
 from trainers.gpqtrainer import GPQTrainer
 from trainers.gpsarsatrainer import GPSarsaTrainer
 from util.fetchdevice import fetch_device
+from util.processstate import process_state
 
 
 class GPSarsaAgent(AbstractAgent):
@@ -76,4 +77,4 @@ class GPSarsaAgent(AbstractAgent):
         self._replay_buffer.add((state_t, action_t, reward_t, next_state_t, next_action_t))
 
     def policy(self, state):
-        return self._exploration_policy.choose_next_action(state)
+        return self._exploration_policy.choose_next_action(process_state(state))

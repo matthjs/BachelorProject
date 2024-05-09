@@ -33,29 +33,20 @@ class GPQTrainer(AbstractTrainer):
     def _construct_target_dataset(self) -> Tuple[torch.tensor, torch.tensor]:
         # noinspection DuplicatedCode
         states, actions, rewards, next_states = self._trajectory()
-        # print("state: ", states.shape)
 
         # TODO: see if this can be more flexible.
         if len(actions.shape) == 1:  # Check if shape is [batch_size]
             actions = actions.unsqueeze(1)  # Convert shape to [batch_size, 1]
 
-        # print("action: ", actions.shape)
-
         state_action_pairs = torch.cat((states, actions), dim=1).to(self.device)
-
-        # covar_test(self.gp, state_action_pairs)
 
         # Compute TD(0) target.
         # The max() operation over actions inherently means this can only be done
         # for discrete action spaces.
         max_q_values, _ = self.bayesian_opt_module.max_state_action_value(next_states)
-
-        # print("max_q -> ", max_q_values)
-
-        # Convert rewards from [32] -> [32, 1] so that it is compatible with max_q_values of shape [32, 1]
+        # Convert rewards from [batch_size] -> [batch_size, 1] so that it is compatible with max_q_values of shape [
+        # batch_size, 1]
         td_targets = rewards.unsqueeze(1) + self.discount_factor * max_q_values
-
-        # print("TD->", td_targets)
 
         return state_action_pairs, td_targets
 
