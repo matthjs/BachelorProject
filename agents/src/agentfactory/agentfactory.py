@@ -78,10 +78,10 @@ class AgentFactory:
                             state_space=obs_space,
                             action_space=action_space,
                             discount_factor=0.99,
-                            batch_size=3,
+                            batch_size=64,
                             replay_buffer_size=64,
                             exploring_starts=1000,
-                            max_dataset_size=3000,
+                            max_dataset_size=5000,
                             sparsification=False)
         elif agent_type == "gpsarsa_agent":
             return GPSarsaAgent(gp_model_str="exact_gp",

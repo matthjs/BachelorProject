@@ -12,6 +12,7 @@ if __name__ == "__main__":
     # print(res.shape)
 
     env_interaction_gym("gpq_agent", "CartPole-v1", 3000)
+    env_interaction_gym("gpsarsa_agent", "CartPole-v1", 3000)
     env_interaction_gym("random", "CartPole-v1", 3000)
     # dqn_train2()
     # dqn_play_cartpole()
