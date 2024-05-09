@@ -3,26 +3,35 @@ from typing import Tuple
 import torch
 from torchrl.data import ReplayBuffer
 
-from gp.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
-from gp.maxstateactionvalue import max_state_action_value
+from gp.gp import ExactGaussianProcessRegressor, max_state_action_value
 from trainers.gptrainer import GaussianProcessTrainer
 from trainers.trainer import AbstractTrainer
 
 
 class GPQTrainer(AbstractTrainer):
     def __init__(self,
-                 bayesian_opt_module: AbstractBayesianOptimizerRL,
+                 model: ExactGaussianProcessRegressor,
+                 action_space_size: int,  # Assumes actions are encoded as 0, 1, 2, ..., action_space_size
                  batch_size: int,
                  buf: ReplayBuffer,
                  learning_rate: float,
-                 discount_factor: float):
+                 discount_factor: float,
+                 num_epochs):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.buf = buf
+        self.action_space_size = action_space_size
 
-        self.bayesian_opt_module = bayesian_opt_module
+        self.gp = model
         self.batch_size = batch_size
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
+
+        self.gp_trainer = GaussianProcessTrainer(
+            self.gp,
+            learning_rate=learning_rate,
+        )
+
+        self.num_epochs = num_epochs
 
     def _trajectory(self) -> tuple:
         """
@@ -34,7 +43,6 @@ class GPQTrainer(AbstractTrainer):
         return trajectories[0], trajectories[1], trajectories[2], trajectories[3]
 
     def _construct_target_dataset(self) -> Tuple[torch.tensor, torch.tensor]:
-        # noinspection DuplicatedCode
         states, actions, rewards, next_states = self._trajectory()
         print("state: ", states.shape)
 
@@ -51,7 +59,7 @@ class GPQTrainer(AbstractTrainer):
         # Compute TD(0) target.
         # The max() operation over actions inherently means this can only be done
         # for discrete action spaces.
-        max_q_values, _ = self.bayesian_opt_module.max_state_action_value(next_states)
+        max_q_values, _ = max_state_action_value(self.gp, self.action_space_size, next_states, self.device)
 
         # print("max_q -> ", max_q_values)
 
@@ -70,4 +78,4 @@ class GPQTrainer(AbstractTrainer):
         state_action_pairs, td_target = self._construct_target_dataset()
 
         # NOTE: performs MLL estimation of kernel parameters every time.
-        self.bayesian_opt_module.fit(state_action_pairs, td_target, True)
+        self.gp_trainer.train(state_action_pairs, td_target, self.num_epochs, True, True)

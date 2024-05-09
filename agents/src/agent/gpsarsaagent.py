@@ -4,7 +4,7 @@ from torchrl.data import ReplayBuffer, LazyTensorStorage, SamplerWithoutReplacem
 from agent.abstractagent import AbstractAgent
 from exploration.gpepsilongreedy import GPEpsilonGreedy
 from modelfactory.modelfactory import ModelFactory
-from trainers.gpqtrainer import ExactGPQTrainer
+from trainers.gpqtrainer import GPQTrainer
 from trainers.gpsarsatrainer import ExactGPSarsaTrainer
 from util.fetchdevice import fetch_device
 

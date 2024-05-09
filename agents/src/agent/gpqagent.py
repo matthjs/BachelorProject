@@ -3,8 +3,9 @@ from torchrl.data import ReplayBuffer, LazyTensorStorage, SamplerWithoutReplacem
 
 from agent.abstractagent import AbstractAgent
 from exploration.gpepsilongreedy import GPEpsilonGreedy
+from gp.bayesianoptimizer_rl import BayesianOptimizerRL
 from modelfactory.modelfactory import ModelFactory
-from trainers.gpqtrainer import ExactGPQTrainer
+from trainers.gpqtrainer import GPQTrainer
 from trainers.gptrainer import GaussianProcessTrainer
 from util.fetchdevice import fetch_device
 
@@ -16,21 +17,20 @@ class GPQAgent(AbstractAgent):
                  action_space,
                  learning_rate: float,
                  discount_factor: float,
-                 annealing_num_steps,
                  batch_size,
                  replay_buffer_size,
                  num_epochs,
+                 max_dataset_size,
                  sparsification=False):
         super(GPQAgent, self).__init__({}, state_space, action_space)
-        self._models["value_model"] = ModelFactory.create_model(gp_model_str,
-                                                                state_space.shape[0],
-                                                                action_space.n)
+        # self._models["value_model"] = ModelFactory.create_model(gp_model_str,
+                                                                # state_space.shape[0],
+                                                                # action_space.n)
 
-        # self._bayesopt_module = BayesianOptimizerRL
-
-        self._exploration_policy = GPEpsilonGreedy(model=self._models["value_model"],
-                                                   action_space=action_space,
-                                                   annealing_num_steps=annealing_num_steps)
+        self._exploration_policy = BayesianOptimizerRL(
+            model_str=gp_model_str,
+            max_dataset_size=max_dataset_size
+        )
 
         self._replay_buffer = ReplayBuffer(storage=LazyTensorStorage(
                                            max_size=replay_buffer_size,
@@ -41,14 +41,12 @@ class GPQAgent(AbstractAgent):
         self._batch_size = batch_size
 
         if gp_model_str == "exact_gp":
-            self._trainer = ExactGPQTrainer(
-                model=self._models["value_model"],
-                action_space_size=action_space.n,
+            self._trainer = GPQTrainer(
+                self._exploration_policy,
                 batch_size=batch_size,
                 buf=self._replay_buffer,
                 learning_rate=learning_rate,
-                discount_factor=discount_factor,
-                num_epochs=num_epochs
+                discount_factor=discount_factor
             )
         else:
             raise ValueError(f"No trainer for gaussian process model `{gp_model_str}`")
@@ -73,4 +71,4 @@ class GPQAgent(AbstractAgent):
         self._replay_buffer.add((state_t, action_t, reward_t, next_state_t))
 
     def policy(self, state):
-        return self._exploration_policy.action(state)
+        return self._exploration_policy.choose_next_action(state)

@@ -2,7 +2,8 @@ from collections import deque
 
 import torch
 from botorch import fit_gpytorch_mll
-from botorch.models import SingleTaskGP
+from botorch.models import SingleTaskGP, MixedSingleTaskGP
+from botorch.models.model import Model
 from botorch.posteriors import GPyTorchPosterior
 from gpytorch import ExactMarginalLogLikelihood
 from gpytorch.kernels import Kernel
@@ -10,7 +11,9 @@ from gpytorch.likelihoods import GaussianLikelihood
 from matplotlib import pyplot as plt
 from botorch.models.transforms.outcome import Standardize
 
+from gp.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
 from util.fetchdevice import fetch_device
+import gymnasium as gym
 
 
 def process_state(state):
@@ -90,34 +93,49 @@ def simple_thompson_action_sampler(gpq_model, state_tensor: torch.tensor, action
     return best_action
 
 
-class BayesianOptimizerRL:
+class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
     """
     Bayesian optimizer.
     To be used in the context of model-free RL
     with discrete action spaces.
     TODO: Look at noise parameter!
+    An external optimizer will run the .fit() function. The
+    agent will use the choose_next_aaction() for action selection.
+    This defines a behavioral policy.
     """
 
-    def __init__(self, model_str, max_dataset_size: int, action_size: int, strategy='thompson_sampling'):
+    def __init__(self,
+                 model_str: str,
+                 max_dataset_size: int,
+                 state_size: int,
+                 action_space: gym.Space,
+                 strategy='thompson_sampling'):
+        self.device = fetch_device()
         self._data_x = deque(maxlen=max_dataset_size)  # Memory intensive: keep track of N latest samples.
         self._data_y = deque(maxlen=max_dataset_size)
-        self.action_size = action_size
-        self.outcome_transform = Standardize(m=1)  # I am guessing m should be 1
+        self._state_size = state_size
+        self._action_size = action_space.n
+        self._action_space = action_space
+        self._outcome_transform = Standardize(m=1)  # I am guessing m should be 1
         # This Standardization is VERY important as we assume the mean function is 0.
         # If not then we will have problems with the Q values.
-
-        self._current_gp = None
 
         if model_str == 'exact_gp':
             # TODO: Look into variant where we do not instantiate a new GP
             # every time.
-            self.gp_constructor = SingleTaskGP     # TODO: Look into whether mixedSingleTaskGP should be used.
+            # Then again, maybe it does not really matter.
+            self.gp_constructor = MixedSingleTaskGP
             self.likelihood_constructor = GaussianLikelihood
             # Just use the standard Matern kernel for now.
         else:
             raise ValueError(f'Unknown gp model type: {model_str}')
 
-    def fit(self, new_train_x, new_train_y, hyperparameter_fitting=True) -> None:
+        self._current_gp = self.gp_constructor(train_X=torch.zeros(1, state_size + 1),
+                                               train_Y=torch.zeros(1),
+                                               cat_dims=[self._state_size + 1],
+                                               outcome_transform=self._outcome_transform).to(self.device)
+
+    def fit(self, new_train_x, new_train_y, hyperparameter_fitting=True) -> Model:
         """
         Condition GP on data and fit its hyperparameters.
         :return:
@@ -131,13 +149,17 @@ class BayesianOptimizerRL:
         train_x = torch.cat(list(self._data_x))
         train_y = torch.cat(list(self._data_y)).squeeze()
 
-        gp = self.gp_constructor(train_x, train_y, outcome_transform=self.outcome_transform)
+        gp = self.gp_constructor(train_X=train_x,
+                                 train_Y=train_y,
+                                 cat_dims=[self._state_size + 1],
+                                 outcome_transform=self._outcome_transform).to(self.device)
         mll = ExactMarginalLogLikelihood(gp.likelihood, gp)
 
         if hyperparameter_fitting:
             fit_gpytorch_mll(mll)
 
         self._current_gp = gp
+        return gp
 
     def extend_dataset(self, new_train_x, new_train_y):
         self._data_x.append(new_train_x)
@@ -155,7 +177,46 @@ class BayesianOptimizerRL:
         :return:
         """
         if self._current_gp is None:
-            raise ValueError("No current GP is set. Run fit first to condition on some data")
+            return self._action_space.sample()
 
         # Things can be adjusted here later though the magic of *composition*
-        return simple_thompson_action_sampler(self._current_gp, state, self.action_size)
+        return simple_thompson_action_sampler(self._current_gp, state, self._action_size)
+
+    def max_state_action_value(self, state_batch, device=None):
+        """
+        Helper function for performing the max_a Q(S,a) operation for Q-learning.
+        Assumes A is a discrete action space of the form {0, 1, ..., <action_space_size> - 1}.
+        Given a batch of states {S_1, ..., S_N} gets {max_a Q(S_1, a), max_a Q(S_2, a), ..., max_a Q(S_n, a)}.
+        :param gpq_model:  a Gaussian process regression model for Q : S x A -> R.
+        :param action_space_size: the number of discrete actions (e.g., env.action_space.n for discrete gym spaces).
+        :param state_batch: N state vectors.
+        :param device: determines whether new tensors should be placed in main memory (CPU) or VRAM (GPU).
+        :return: a vector (PyTorch tensor) of Q-values shape (batch_size, 1).
+        """
+        with torch.no_grad():
+            q_values = []  # for each action, the batched q-values.
+            batch_size = state_batch.size(0)
+            if device is None:
+                device = fetch_device()
+
+            # Assume discrete action encoding starting from 0.
+            for action in range(self._action_size):
+                action_batch = torch.full((batch_size, 1), action).to(device)
+                state_action_pairs = torch.cat((state_batch, action_batch), dim=1).to(device)
+
+                # print(state_action_pairs.shape)
+
+                mean_qs = self._current_gp.posterior(state_action_pairs).mean  # batch_size amount of q_values.
+                q_values.append(mean_qs)
+                # print(f"S X A: \n{state_action_pairs}, q_values: {mean_qs}\n")
+
+            # Some reshaping black magic to get the max q value along each batch dimension.
+            # print(q_values)
+            q_tensor = torch.cat(q_values, dim=0).view(len(q_values), -1, 1)
+            max_q_values, max_actions = torch.max(q_tensor, dim=0)
+            # print(max_q_values)
+            # print(max_q_values.shape)
+            # print(max_actions)
+            # print(max_actions.shape)
+
+        return max_q_values, max_actions
