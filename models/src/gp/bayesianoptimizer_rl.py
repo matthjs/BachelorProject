@@ -104,6 +104,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
     An external optimizer will run the .fit() function. The
     agent will use the choose_next_action() for action selection.
     This defines a behavioral policy.
+    WARNING: This class is getting a bit big.
     """
 
     def __init__(self,
