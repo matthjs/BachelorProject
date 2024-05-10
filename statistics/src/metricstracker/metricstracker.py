@@ -1,3 +1,4 @@
+import os
 import threading
 from typing import List, Optional, Union, Dict, Tuple, SupportsFloat
 from collections import defaultdict
@@ -19,10 +20,10 @@ class MetricsTracker:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._lock = threading.Lock()
-            cls._loss_aggr = Welford()
-            cls._reward_aggr = Welford()
+            cls._loss_aggr: Dict[str, Welford] = {}
+            cls._return_aggr: Dict[str, Welford] = {}
             cls._loss_history: Dict[str, tuple] = defaultdict(lambda: ([], []))
-            cls._reward_history: Dict[str, tuple] = defaultdict(lambda: ([], []))
+            cls._return_history: Dict[str, tuple] = defaultdict(lambda: ([], []))
         return cls._instance
 
     def to_csv(self, filename: str) -> None:
@@ -34,7 +35,7 @@ class MetricsTracker:
         # Implementation for writing metrics to a CSV file
         pass
 
-    def plot(self) -> None:
+    def plot(self, name="plot") -> None:
         """
         Plot the metrics to a matplotlib figure.
         """
@@ -50,12 +51,12 @@ class MetricsTracker:
                                      mean_losses + np.sqrt(var_losses) * 0.1,
                                      alpha=0.2)
 
-            for agent_id, (mean_rewards, var_rewards) in self._reward_history.items():
-                x_reward = np.linspace(0, len(mean_rewards), len(mean_rewards), endpoint=False)
-                axes[1].plot(x_reward, mean_rewards, label=f'{agent_id} Reward')
-                axes[1].fill_between(x_reward,
-                                     mean_rewards - np.sqrt(var_rewards) * 0.1,
-                                     mean_rewards + np.sqrt(var_rewards) * 0.1,
+            for agent_id, (mean_returns, var_returns) in self._return_history.items():
+                x_return = np.linspace(0, len(mean_returns), len(mean_returns), endpoint=False)
+                axes[1].plot(x_return, mean_returns, label=f'{agent_id} Returns')
+                axes[1].fill_between(x_return,
+                                     mean_returns - np.sqrt(var_returns) * 0.1,
+                                     mean_returns + np.sqrt(var_returns) * 0.1,
                                      alpha=0.2)
 
             axes[0].set_title('Loss History')
@@ -63,13 +64,44 @@ class MetricsTracker:
             axes[0].set_ylabel('Average Loss')
             axes[0].legend()
 
-            axes[1].set_title('Reward History')
-            axes[1].set_xlabel('Time steps')
-            axes[1].set_ylabel('Average Reward')
+            axes[1].set_title('return History')
+            axes[1].set_xlabel('Episodes')
+            axes[1].set_ylabel('Average return')
             axes[1].legend()
 
             plt.tight_layout()
             plt.show()
+            plt.savefig("../plots/" + name + ".png")
+
+    def plot_return(self, x_axis_label="Episodes", y_axis_label='Average Return', title="Return History") -> None:
+        """
+        Plot the metrics to a matplotlib figure.
+        """
+        with self._lock:
+            fig, ax = plt.subplots(figsize=(10, 8))
+
+            for agent_id, (mean_returns, var_returns) in self._return_history.items():
+                x_return = np.linspace(0, len(mean_returns), len(mean_returns), endpoint=False)
+                ax.plot(x_return, mean_returns, label=f'{agent_id} agent')
+                ax.fill_between(x_return,
+                                mean_returns - np.sqrt(var_returns) * 0.1,
+                                mean_returns + np.sqrt(var_returns) * 0.1,
+                                alpha=0.2)
+
+            ax.set_title(title)
+            ax.set_xlabel(x_axis_label)
+            ax.set_ylabel(y_axis_label)
+            ax.legend()
+            ax.grid(True)
+
+            plt.tight_layout()
+            plt.show()
+            # Create directory if it does not exist
+            plot_dir = '../plots'
+            if not os.path.exists(plot_dir):
+                os.makedirs(plot_dir)
+
+            plt.savefig('../plots/result.png')
 
     def record_loss(self, agent_id: str, loss: float) -> None:
         """
@@ -79,25 +111,45 @@ class MetricsTracker:
         :param loss: The loss value to record.
         """
         with self._lock:
-            self._loss_aggr.update_aggr(loss)
+            if agent_id not in self._loss_aggr:
+                self._loss_aggr[agent_id] = Welford()
+
+            self._loss_aggr[agent_id].update_aggr(loss)
             mean_losses, variance_losses = self._loss_history[agent_id]
-            mean, var = self._loss_aggr.get_curr_mean_variance()
+            mean, var = self._loss_aggr[agent_id].get_curr_mean_variance()
             mean_losses.append(mean)
             variance_losses.append(var)
 
-    def record_reward(self, agent_id: str, reward: Union[float, int, SupportsFloat]) -> None:
+    def record_return(self, agent_id: str, return_val: Union[float, int, SupportsFloat]) -> None:
         """
-        Record a reward value for a specific agent.
+        Record a return value for a specific agent.
+        NOTE: Code duplication == bad.
 
         :param agent_id: The identifier of the agent.
-        :param reward: The reward value to record.
+        :param return_val: The return value to record.
         """
         with self._lock:
-            self._reward_aggr.update_aggr(reward)
-            mean_rewards, variance_rewards = self._reward_history[agent_id]
-            mean, var = self._reward_aggr.get_curr_mean_variance()
-            mean_rewards.append(mean)
-            variance_rewards.append(var)
+            if agent_id not in self._return_aggr:
+                self._return_aggr[agent_id] = Welford()
+            self._return_aggr[agent_id].update_aggr(return_val)
+            mean_returns, variance_returns = self._return_history[agent_id]
+            mean, var = self._return_aggr[agent_id].get_curr_mean_variance()
+            mean_returns.append(mean)
+            variance_returns.append(var)
+
+    def latest_average_return(self, agent_id: str) -> Optional[float]:
+        """
+        Get the latest recorded average return value for a specific agent.
+
+        :param agent_id: The identifier of the agent.
+        :return: The latest recorded average return value for the agent, or None if no return has been recorded.
+        """
+        with self._lock:
+            return_values, _ = self._return_history.get(agent_id)
+            if return_values:
+                return return_values[-1]
+            else:
+                return None
 
     def latest_loss(self, agent_id: str) -> Optional[float]:
         """
@@ -113,27 +165,13 @@ class MetricsTracker:
             else:
                 return None
 
-    def latest_reward(self, agent_id: str) -> Optional[Union[float, int]]:
-        """
-        Get the latest recorded reward value for a specific agent.
-
-        :param agent_id: The identifier of the agent.
-        :return: The latest recorded reward value for the agent, or None if no reward has been recorded.
-        """
-        with self._lock:
-            reward_values = self._reward_history.get(agent_id)
-            if reward_values:
-                return reward_values[-1]
-            else:
-                return None
-
     def clear(self) -> None:
         """
-        Clear the recorded metrics (loss and reward history) for all agents.
+        Clear the recorded metrics (loss and return history) for all agents.
         """
         with self._lock:
             self._loss_history.clear()
-            self._reward_history.clear()
+            self._return_history.clear()
 
     @property
     def loss_history(self) -> dict[str, tuple]:
@@ -146,11 +184,11 @@ class MetricsTracker:
             return self._loss_history
 
     @property
-    def reward_history(self) -> dict[str, tuple]:
+    def return_history(self) -> dict[str, tuple]:
         """
-        Get the history of reward values for all agents.
+        Get the history of return values for all agents.
 
-        :return: A dictionary containing the reward history for each agent.
+        :return: A dictionary containing the return history for each agent.
         """
         with self._lock:
-            return self._reward_history
+            return self._return_history

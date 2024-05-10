@@ -13,6 +13,7 @@ from botorch.models.transforms.input import Normalize, InputStandardize
 from loguru import logger
 from matplotlib import pyplot as plt
 from botorch.models.transforms.outcome import Standardize
+from torch import optim
 
 from gp.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
 from util.fetchdevice import fetch_device
@@ -111,7 +112,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                  max_dataset_size: int,
                  state_size: int,
                  action_space: gym.Space,
-                 strategy='thompson_sampling'):
+                 strategy='thompson_sampling',
+                 sparsfication_treshold=None):
         self.device = fetch_device()
         self._data_x = deque(maxlen=max_dataset_size)  # Memory intensive: keep track of N latest samples.
         self._data_y = deque(maxlen=max_dataset_size)
@@ -123,6 +125,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         self._outcome_transform = Standardize(m=1)  # I am guessing m should be 1
         # This Standardization is VERY important as we assume the mean function is 0.
         # If not then we will have problems with the Q values.
+        self._sparsification_treshold = sparsfication_treshold
 
         if model_str == 'exact_gp':
             # TODO: Look into variant where we do not instantiate a new GP
@@ -166,9 +169,23 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         self._current_gp = gp
 
+    def _sparse_add(self, new_state_action_pair: torch.tensor) -> bool:
+        covar_fun = self._current_gp.covar_module
+
+        train_x = torch.cat(list(self._data_x))
+
+        covar_vec = covar_fun(train_x, new_state_action_pair).t()
+
+        independence_test_val = 0
+        # independence_test_val = covar_fun(new_state_action_pair, new_state_action_pair) - \
+        #                         torch.matmul(covar_vec.t(),
+        #                                      torch.solve())
+        return independence_test_val > self._sparsification_treshold
+
     def extend_dataset(self, new_train_x: torch.tensor, new_train_y: torch.tensor) -> None:
-        self._data_x.append(new_train_x)
-        self._data_y.append(new_train_y)
+        if self._sparsification_treshold is None or self._sparse_add(new_train_x):
+            self._data_x.append(new_train_x)
+            self._data_y.append(new_train_y)
 
     def dataset(self) -> tuple[torch.tensor, torch.tensor]:
         train_x = torch.cat(list(self._data_x))
