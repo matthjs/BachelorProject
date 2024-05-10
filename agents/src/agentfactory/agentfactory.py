@@ -82,7 +82,7 @@ class AgentFactory:
                             replay_buffer_size=64,
                             exploring_starts=1000,
                             max_dataset_size=10000,
-                            sparsification=False)
+                            sparsification_treshold=0.1)
         elif agent_type == "gpsarsa_agent":
             return GPSarsaAgent(gp_model_str="exact_gp",
                                 state_space=obs_space,
@@ -91,8 +91,8 @@ class AgentFactory:
                                 batch_size=64,
                                 replay_buffer_size=64,
                                 exploring_starts=1000,
-                                max_dataset_size=10000 ,
-                                sparsification=False)
+                                max_dataset_size=10000,
+                                sparsification_treshold=None)
         elif agent_type == "random":
             return RandomAgent(env)
 

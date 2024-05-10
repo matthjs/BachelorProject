@@ -21,7 +21,7 @@ class GPQAgent(AbstractAgent):
                  replay_buffer_size,
                  exploring_starts,
                  max_dataset_size,
-                 sparsification=False):
+                 sparsification_treshold=None):
         super(GPQAgent, self).__init__({}, state_space, action_space)
 
         self._exploration_policy = BayesianOptimizerRL(
@@ -30,6 +30,7 @@ class GPQAgent(AbstractAgent):
             random_draws=exploring_starts,
             state_size=state_space.shape[0],
             action_space=action_space,
+            sparsfication_treshold=sparsification_treshold
         )
 
         self._replay_buffer = ReplayBuffer(storage=LazyTensorStorage(

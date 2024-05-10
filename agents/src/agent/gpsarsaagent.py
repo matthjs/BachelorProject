@@ -25,7 +25,7 @@ class GPSarsaAgent(AbstractAgent):
                  replay_buffer_size,
                  exploring_starts,
                  max_dataset_size,
-                 sparsification=False):
+                 sparsification_treshold=None):
         super(GPSarsaAgent, self).__init__({}, state_space, action_space)
 
         self._exploration_policy = BayesianOptimizerRL(

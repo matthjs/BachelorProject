@@ -169,23 +169,63 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         self._current_gp = gp
 
-    def _sparse_add(self, new_state_action_pair: torch.tensor) -> bool:
+    def _linear_independence_test(self,
+                                  test_point: torch.tensor,
+                                  data_points: torch.tensor,
+                                  kernel_matrix: torch.tensor,
+                                  kernel_fun) -> bool:
+        """
+        Computes whether the linear independence test is passed.
+        The linear independence test asks, how well is test_point approximated by the elements
+        of data_points?
+        $test > treshold$?
+        $ test = k(z', z') - k(Z, z')^T K(Z, Z)^{-1} k(Z, z')$
+        :param test_point: a (1, vec_dim) vector.
+        :param data_points: the input dataset (dataset_size, vec_dim).
+        :param kernel_matrix: pre-computed from dataset (dataset_size, dataset_size).
+        :param kernel_fun: the covariance function.
+        :return: whether the independence test is passed depending on the sparsification treshold.
+        """
+        kernel_vec = kernel_fun(test_point, data_points)
+        res = torch.linalg.solve(kernel_matrix, kernel_vec.squeeze(0)).unsqueeze(0)
+        res2 = torch.matmul(res, kernel_vec.t())
+        test_val = (kernel_fun(test_point, test_point) - res2).to_dense()
+
+        print(f"test result test_val > spars_tresh -> {test_val.item()} > {self._sparsification_treshold}")
+        return test_val.item() > self._sparsification_treshold
+
+    def _sparse_add(self, new_train_x: torch.tensor, new_train_y: torch.tensor) -> None:
         covar_fun = self._current_gp.covar_module
-
         train_x = torch.cat(list(self._data_x))
+        covar_matrix = covar_fun(train_x, train_x)
 
-        covar_vec = covar_fun(train_x, new_state_action_pair).t()
+        # Problem: this is a sequential
+        candidates_x = []
+        candidates_y = []
+        for x, y in zip(new_train_x, new_train_y):
+            if self._linear_independence_test(x.unsqueeze(0), train_x, covar_matrix, covar_fun):
+                candidates_x.append(x)
+                candidates_y.append(y)
 
-        independence_test_val = 0
-        # independence_test_val = covar_fun(new_state_action_pair, new_state_action_pair) - \
-        #                         torch.matmul(covar_vec.t(),
-        #                                      torch.solve())
-        return independence_test_val > self._sparsification_treshold
+        if not candidates_x:
+            return
+
+        candidates_x_tensor = torch.cat(candidates_x)
+        candidates_y_tensor = torch.cat(candidates_y)
+
+        print("TENSOR SHAPE ->", candidates_x_tensor.shape)
+
+        self._data_x.append(candidates_x_tensor)
+        self._data_y.append(candidates_y_tensor)
 
     def extend_dataset(self, new_train_x: torch.tensor, new_train_y: torch.tensor) -> None:
-        if self._sparsification_treshold is None or self._sparse_add(new_train_x):
-            self._data_x.append(new_train_x)
-            self._data_y.append(new_train_y)
+        # dequeue evaluates to False if empty.
+        if self._sparsification_treshold is not None and self._data_x:
+            self._sparse_add(new_train_x, new_train_y)
+            return
+
+        self._data_x.append(new_train_x)
+        self._data_y.append(new_train_y)
 
     def dataset(self) -> tuple[torch.tensor, torch.tensor]:
         train_x = torch.cat(list(self._data_x))
