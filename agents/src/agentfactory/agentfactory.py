@@ -1,6 +1,7 @@
 from threading import current_thread
 
 import gymnasium as gym
+import hydra
 
 from agent.abstractagent import AbstractAgent
 from agent.gaussianprocessdpagent import GaussianProcessDPAgent
@@ -97,3 +98,7 @@ class AgentFactory:
             return RandomAgent(env)
 
         raise ValueError("Invalid agent type")
+
+    @staticmethod
+    def create_agent_configured(agent_type: str, cfg: "DictConfig", env_str: str) -> AbstractAgent:
+        pass

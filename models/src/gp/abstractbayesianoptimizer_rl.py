@@ -7,6 +7,7 @@ class AbstractBayesianOptimizerRL(ABC):
     """
     This is an abstract base class describing Bayesian action selection.
     """
+
     @abstractmethod
     def fit(self, new_train_x: torch.tensor, new_train_y: torch.tensor, hyperparameter_fitting=True) -> None:
         pass
@@ -29,4 +30,8 @@ class AbstractBayesianOptimizerRL(ABC):
 
     @abstractmethod
     def max_state_action_value(self, state_batch: torch.tensor, device=None) -> tuple[torch.tensor, torch.tensor]:
+        pass
+
+    @abstractmethod
+    def get_current_gp(self):
         pass

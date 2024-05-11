@@ -146,6 +146,9 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         self._random_draws = random_draws
 
+    def get_current_gp(self):
+        return self._current_gp
+
     def fit(self, new_train_x: torch.tensor, new_train_y: torch.tensor, hyperparameter_fitting=True) -> None:
         """
         Condition GP on data and fit its hyperparameters.

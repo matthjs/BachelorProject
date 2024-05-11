@@ -40,6 +40,7 @@ def env_interaction_gym(agent_type: str, env_str: str, time_steps: int, render_m
     print(MetricsTracker().return_history)
     MetricsTracker().plot()
 
+
 def env_interaction_gym2(agent_type: str, env_str: str, num_episodes: int, render_mode: str = "human"):
     env = gym.make(env_str)
     obs, info = env.reset()

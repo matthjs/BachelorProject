@@ -54,6 +54,12 @@ class AbstractAgent(ABC):
     #     for model, model_name in enumerate(self.models):
     #         model.save()
 
+    def load_model(self, path: str):
+        pass
+
+    def save_model(self, path: str):
+        pass
+
     def record_env_info(self, info, done=False) -> None:
         """
         Necessary for monte carlo agents

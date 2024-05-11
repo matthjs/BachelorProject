@@ -1,3 +1,5 @@
+import pickle
+
 import torch
 from torchrl.data import ReplayBuffer, LazyTensorStorage, SamplerWithoutReplacement
 
@@ -47,6 +49,13 @@ class GPQAgent(AbstractAgent):
             buf=self._replay_buffer,
             discount_factor=discount_factor
         )
+
+    def save_model(self, path: str):
+        with open(path + "dqp_bayesianoptimizer.dump", "wb") as f:
+            pickle.dump(self._exploration_policy, f)
+
+    def load_model(self, path: str):
+        self._exploration_policy = pickle.load(open(path + "dqp_bayesianoptimizer.dump", "rb"))
 
     def update(self):
         if self._batch_counter >= self._batch_size:
