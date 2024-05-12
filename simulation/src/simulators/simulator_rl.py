@@ -43,10 +43,10 @@ class SimulatorRL:
         return self
 
     def data_to_csv(self):
-        pass
+        raise NotImplementedError()
 
     def plot_any_plottable_data(self):
-        pass
+        raise NotImplementedError()
 
     def register_load_agent(self, file: str) -> 'SimulatorRL':
         return self
@@ -55,14 +55,11 @@ class SimulatorRL:
         self.env_str = env_str
         return self
 
-    def train_stable_baselines_algorithm(self) -> 'SimulatorRL':
-        return self
-
     def hyperopt_experiment(self):
         return self
 
     def _test_with_random_policy(self):
-        pass
+        raise NotImplementedError()
 
     def train_agents(self, num_episodes: int, agent_id_list: list[str] = None, concurrent=False, logging=False) \
             -> 'SimulatorRL':
@@ -94,7 +91,7 @@ class SimulatorRL:
                         agent_id_list: list[str] = None,
                         concurrent=False,
                         logging=False):
-        pass
+        raise NotImplementedError()
 
     def play(self, agent_id: str, num_episodes: int) -> None:
         agent = self._agents[agent_id]
