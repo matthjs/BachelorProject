@@ -2,6 +2,7 @@ from threading import current_thread
 
 import gymnasium as gym
 import hydra
+from stable_baselines3.common.base_class import BaseAlgorithm
 
 from agent.abstractagent import AbstractAgent
 from agent.gaussianprocessdpagent import GaussianProcessDPAgent
@@ -101,4 +102,8 @@ class AgentFactory:
 
     @staticmethod
     def create_agent_configured(agent_type: str, cfg: "DictConfig", env_str: str) -> AbstractAgent:
+        pass
+
+    @staticmethod
+    def create_stable_baselines_agent(agent_type: str, cfg: "DictConfig", env_str: str) -> BaseAlgorithm:
         pass
