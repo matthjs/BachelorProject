@@ -54,6 +54,7 @@ class AbstractAgent(ABC):
     #     for model, model_name in enumerate(self.models):
     #         model.save()
 
+    @staticmethod
     def load_model(self, path: str):
         pass
 

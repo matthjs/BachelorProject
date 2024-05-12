@@ -2,6 +2,7 @@ from threading import current_thread
 
 import gymnasium as gym
 import hydra
+from stable_baselines3 import DQN
 from stable_baselines3.common.base_class import BaseAlgorithm
 
 from agent.abstractagent import AbstractAgent
@@ -9,10 +10,12 @@ from agent.gaussianprocessdpagent import GaussianProcessDPAgent
 from agent.gpqagent import GPQAgent
 from agent.gpsarsaagent import GPSarsaAgent
 from agent.randomagent import RandomAgent
+from agent.sbadapter import StableBaselinesAdapter
 from builders.dqnagentbuilder import DQNAgentBuilder
 from builders.qagentbuilder import QAgentBuilder
 from torchrl.data import LazyTensorStorage
-
+from omegaconf import OmegaConf
+from hydra import compose, initialize
 
 class AgentFactory:
     """
@@ -101,9 +104,51 @@ class AgentFactory:
         raise ValueError("Invalid agent type")
 
     @staticmethod
-    def create_agent_configured(agent_type: str, cfg: "DictConfig", env_str: str) -> AbstractAgent:
-        pass
+    def create_agent_configured(agent_type: str, env_str: str, cfg) -> AbstractAgent:
+        env = gym.make(env_str)
 
-    @staticmethod
-    def create_stable_baselines_agent(agent_type: str, cfg: "DictConfig", env_str: str) -> BaseAlgorithm:
-        pass
+        if agent_type == "gpq_agent":
+            return GPQAgent(
+                gp_model_str=cfg.model.gp_model_str,
+                env=env,
+                discount_factor=cfg.model.discount_factor,
+                batch_size=cfg.model.batch_size,
+                replay_buffer_size=cfg.model.replay_buffer_size,
+                exploring_starts=cfg.model.exploring_starts,
+                max_dataset_size=cfg.model.max_dataset_size,
+                sparsification_threshold=cfg.model.sparsification_threshold
+            )
+        elif agent_type == "gpsarsa_agent":
+            return GPSarsaAgent(
+                gp_model_str=cfg.model.gp_model_str,
+                env=env,
+                discount_factor=cfg.model.discount_factor,
+                batch_size=cfg.model.batch_size,
+                replay_buffer_size=cfg.model.replay_buffer_size,
+                exploring_starts=cfg.model.exploring_starts,
+                max_dataset_size=cfg.model.max_dataset_size,
+                sparsification_threshold=cfg.model.sparsification_threshold
+            )
+        elif agent_type == "sb_dqn":
+            # noinspection PyProtectedMember
+            return StableBaselinesAdapter(
+                DQN(
+                    policy=cfg.model.policy,
+                    env=env,
+                    learning_rate=cfg.model.learning_rate,
+                    batch_size=cfg.model.batch_size,
+                    buffer_size=cfg.model.buffer_size,
+                    learning_starts=cfg.model.learning_starts,
+                    gamma=cfg.model.gamma,
+                    target_update_interval=cfg.model.target_update_interval,
+                    train_freq=cfg.model.train_freq,
+                    gradient_steps=cfg.model.gradient_steps,
+                    exploration_fraction=cfg.model.exploration_fraction,
+                    exploration_final_eps=cfg.model.exploration_final_eps,
+                    policy_kwargs=cfg.model.policy_kwargs
+                )
+            )
+        elif agent_type == "random":
+            return RandomAgent(env)
+
+        raise ValueError("Unsupported agent type")

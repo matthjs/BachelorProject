@@ -1,5 +1,5 @@
 import pickle
-
+import gymnasium as gym
 import torch
 from torchrl.data import ReplayBuffer, LazyTensorStorage, SamplerWithoutReplacement
 
@@ -20,22 +20,22 @@ class GPSarsaAgent(AbstractAgent):
     """
     def __init__(self,
                  gp_model_str: str,
-                 state_space,
-                 action_space,
+                 env: gym.Env,
                  discount_factor: float,
                  batch_size,
                  replay_buffer_size,
                  exploring_starts,
                  max_dataset_size,
-                 sparsification_treshold=None):
-        super(GPSarsaAgent, self).__init__({}, state_space, action_space)
+                 sparsification_threshold=None):
+        super(GPSarsaAgent, self).__init__({}, env.observation_space, env.action_space)
 
         self._exploration_policy = BayesianOptimizerRL(
             model_str=gp_model_str,
             max_dataset_size=max_dataset_size,
             random_draws=exploring_starts,
-            state_size=state_space.shape[0],
-            action_space=action_space,
+            state_size=env.observation_space.shape[0],
+            action_space=env.action_space,
+            sparsfication_treshold=sparsification_threshold
         )
 
         self._replay_buffer = ReplayBuffer(storage=LazyTensorStorage(
@@ -57,6 +57,7 @@ class GPSarsaAgent(AbstractAgent):
         with open(path + "gpsarsa_bayesianoptimizer.dump", "wb") as f:
             pickle.dump(self._exploration_policy, f)
 
+    @staticmethod
     def load_model(self, path: str):
         self._exploration_policy = pickle.load(open(path + "gpsarsa)bayesianoptimizer.dump", "rb"))
 

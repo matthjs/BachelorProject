@@ -1,0 +1,8 @@
+model:
+  gp_model_str: "exact_gp"
+  discount_factor: 0.99
+  batch_size: 64
+  replay_buffer_size: 64
+  exploring_starts: 1000
+  max_dataset_size: 10000
+  sparsification_threshold: None

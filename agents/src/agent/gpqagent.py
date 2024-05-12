@@ -1,14 +1,11 @@
 import pickle
-
+import gymnasium as gym
 import torch
 from torchrl.data import ReplayBuffer, LazyTensorStorage, SamplerWithoutReplacement
 
 from agent.abstractagent import AbstractAgent
-from exploration.gpepsilongreedy import GPEpsilonGreedy
 from gp.bayesianoptimizer_rl import BayesianOptimizerRL
-from modelfactory.modelfactory import ModelFactory
 from trainers.gpqtrainer import GPQTrainer
-from trainers.gptrainer import GaussianProcessTrainer
 from util.fetchdevice import fetch_device
 from util.processstate import process_state
 
@@ -16,23 +13,24 @@ from util.processstate import process_state
 class GPQAgent(AbstractAgent):
     def __init__(self,
                  gp_model_str: str,
-                 state_space,
-                 action_space,
+                 env: gym.Env,
                  discount_factor: float,
-                 batch_size,
-                 replay_buffer_size,
-                 exploring_starts,
-                 max_dataset_size,
-                 sparsification_treshold=None):
-        super(GPQAgent, self).__init__({}, state_space, action_space)
+                 batch_size: int,
+                 replay_buffer_size: int,       # batch_size == replay_buffer_size
+                 exploring_starts: int,
+                 max_dataset_size: int,
+                 sparsification_threshold=None):
+        super(GPQAgent, self).__init__({}, env.observation_space, env.action_space)
+
+        print("!!!", sparsification_threshold)
 
         self._exploration_policy = BayesianOptimizerRL(
             model_str=gp_model_str,
             max_dataset_size=max_dataset_size,
             random_draws=exploring_starts,
-            state_size=state_space.shape[0],
-            action_space=action_space,
-            sparsfication_treshold=sparsification_treshold
+            state_size=env.observation_space.shape[0],
+            action_space=env.action_space,
+            sparsfication_treshold=sparsification_threshold
         )
 
         self._replay_buffer = ReplayBuffer(storage=LazyTensorStorage(
@@ -54,6 +52,7 @@ class GPQAgent(AbstractAgent):
         with open(path + "dqp_bayesianoptimizer.dump", "wb") as f:
             pickle.dump(self._exploration_policy, f)
 
+    @staticmethod
     def load_model(self, path: str):
         self._exploration_policy = pickle.load(open(path + "dqp_bayesianoptimizer.dump", "rb"))
 

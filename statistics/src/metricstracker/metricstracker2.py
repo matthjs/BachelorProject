@@ -1,6 +1,6 @@
 import os
 import threading
-from typing import List, Optional, Union, Dict, Tuple, SupportsFloat
+from typing import List, Optional, Union, Dict, Tuple, SupportsFloat, Any
 from collections import defaultdict
 
 import numpy as np
@@ -131,7 +131,7 @@ class MetricsTracker2:
             mean_returns.append(mean)
             variance_returns.append(var)
 
-    def latest_average_return(self, agent_id: str) -> Optional[float]:
+    def latest_return(self, agent_id: str) -> tuple[Any, Any] | None:
         """
         Get the latest recorded average return value for a specific agent.
 
@@ -139,9 +139,9 @@ class MetricsTracker2:
         :return: The latest recorded average return value for the agent, or None if no return has been recorded.
         """
         with self._lock:
-            return_values, _ = self._return_history.get(agent_id)
-            if return_values:
-                return return_values[-1]
+            return_means, return_vars = self._return_history.get(agent_id)
+            if return_means:
+                return return_means[-1], return_vars[-1]
             else:
                 return None
 
