@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from loguru import logger
 
@@ -51,5 +52,8 @@ class RewardCallback(AbstractCallback):
         You can plot here, but this is preferably done in the simulator class.
         :return:
         """
-        pass
+        mean, variance = self.metrics_tracker.latest_mean_variance("return", self.agent_id)
+
+        if self.verbose > 0:
+            print(f"Avg return - {self.agent_id} - {mean:.3f} +- {np.sqrt(variance):.3f}")
 
