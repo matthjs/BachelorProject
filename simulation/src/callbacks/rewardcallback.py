@@ -57,4 +57,3 @@ class RewardCallback(AbstractCallback):
 
         if self.logging:
             print(f"Avg return - {self.agent_id} - {mean:.3f} +- {np.sqrt(variance):.3f}")
-

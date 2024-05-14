@@ -2,7 +2,7 @@ from threading import current_thread
 
 import gymnasium as gym
 import hydra
-from stable_baselines3 import DQN
+from stable_baselines3 import DQN, PPO
 from stable_baselines3.common.base_class import BaseAlgorithm
 
 from agent.abstractagent import AbstractAgent
@@ -146,6 +146,21 @@ class AgentFactory:
                     exploration_fraction=cfg.model.exploration_fraction,
                     exploration_final_eps=cfg.model.exploration_final_eps,
                     policy_kwargs=eval(cfg.model.policy_kwargs)
+                )
+            )
+        elif agent_type == "sb_ppo":
+            return StableBaselinesAdapter(
+                PPO(
+                    policy=cfg.model.policy,
+                    env=env,
+                    n_steps=cfg.model.n_steps,
+                    batch_size=cfg.model.batch_size,
+                    gae_lambda=cfg.model.gae_lambda,
+                    gamma=cfg.model.gamma,
+                    n_epochs=cfg.model.n_epochs,
+                    ent_coef=cfg.model.ent_coef,
+                    learning_rate=cfg.model.learning_rate,
+                    clip_range=cfg.model.clip_range
                 )
             )
         elif agent_type == "random":

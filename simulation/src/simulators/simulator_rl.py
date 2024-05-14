@@ -1,20 +1,14 @@
-from datetime import time
-
-import numpy as np
 import pandas as pd
 import gymnasium as gym
-from loguru import logger
-from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.callbacks import StopTrainingOnMaxEpisodes
 
-from agent.abstractagent import AbstractAgent
 from agentfactory.agentfactory import AgentFactory
 from callbacks.abstractcallback import AbstractCallback
 from callbacks.rewardcallback import RewardCallback
 from callbacks.sbcallbackadapter import StableBaselinesCallbackAdapter
-from metricstracker.metricstracker2 import MetricsTracker2
 from metricstracker.metricstrackerregistry import MetricsTrackerRegistry
 from hydra import compose, initialize
+import cloudpickle
 
 
 class SimulatorRL:
@@ -68,9 +62,11 @@ class SimulatorRL:
     def data_to_csv(self) -> 'SimulatorRL':
         return self
 
-    def plot_any_plottable_data(self) -> 'SimulatorRL':
+    def plot_any_plottable_data(self, plot_dir: str = "../plots/") -> 'SimulatorRL':
         tracker = self.metrics_tracker_registry.get_tracker("train")
-        tracker.plot_metric(metric_name="return", title=self.env_str + "_" + list(self.agents.keys()).__str__())
+        tracker.plot_metric(metric_name="return",
+                            plot_path=plot_dir + self.env_str,
+                            title=self.env_str + "_" + list(self.agents.keys()).__str__())
         return self
 
     def register_load_agent(self, file: str) -> 'SimulatorRL':
@@ -85,6 +81,23 @@ class SimulatorRL:
 
     def _test_with_random_policy(self):
         raise NotImplementedError()
+
+    def save(self, agent_id_list: list[str] = None) -> 'SimulatorRL':
+        if agent_id_list is None:
+            agent_id_list = list(self.agents.keys())  # do all agents if agent_id_list not specified.
+
+        # I am being really lazy here. Try and see if cloudpickle suffices.
+        # Even though for StableBaselines agents there is the .save() .load methods.
+        print(self.agents_configs)
+
+        return self
+
+
+
+    def load(self, agent_id_list: list[str] = None) -> 'SimulatorRL':
+
+
+        return self
 
     def train_agents(self,
                      num_episodes: int,
@@ -253,4 +266,4 @@ class SimulatorRL:
 
         model = agent.stable_baselines_unwrapped()
 
-        model.learn(total_timesteps=9999999999999, callback=sb_callbacks)
+        model.learn(total_timesteps=int(5e4), callback=sb_callbacks)

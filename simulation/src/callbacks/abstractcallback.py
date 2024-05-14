@@ -1,9 +1,9 @@
+import threading
 from abc import ABC, abstractmethod
 
 import pandas as pd
 
 from agent.abstractagent import AbstractAgent
-from callbacks.attributewrapper import AttributeWrapper
 
 
 class AbstractCallback(ABC):
@@ -18,6 +18,8 @@ class AbstractCallback(ABC):
         self.agent_config = None
         self.metrics_tracker_registry = None
         self.df = None
+
+        self._lock = threading.Lock()
 
     def init_callback(self,
                       mode: str,

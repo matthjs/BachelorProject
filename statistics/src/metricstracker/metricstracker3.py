@@ -34,7 +34,7 @@ class MetricsTracker3:
         self._aggregates[metric_name] = {}
         self._aggregates_history[metric_name] = defaultdict(lambda: ([], []))
 
-    def plot_metric(self, metric_name, x_axis_label="Episodes", y_axis_label='Average', title="History") -> None:
+    def plot_metric(self, metric_name, plot_path="./", x_axis_label="Episodes", y_axis_label='Average', title="History") -> None:
         """
         Plot the metrics to a matplotlib figure.
         """
@@ -53,19 +53,21 @@ class MetricsTracker3:
                                 alpha=0.2)
 
             ax.set_title(metric_name + " " + title)
-            ax.set_xlabel(x_axis_label + " " + metric_name)
-            ax.set_ylabel(y_axis_label)
+            ax.set_xlabel(x_axis_label)
+            ax.set_ylabel(y_axis_label + " " + metric_name)
             ax.legend()
             ax.grid(True)
 
             plt.tight_layout()
-            plt.show()
+
             # Create directory if it does not exist
             plot_dir = '../plots'
             if not os.path.exists(plot_dir):
                 os.makedirs(plot_dir)
 
-            plt.savefig('../plots/result.png')
+            plt.savefig(plot_path)
+
+            plt.show()
 
     def record_scalar(self, metric_name: str, agent_id: str, val: float) -> None:
         """
