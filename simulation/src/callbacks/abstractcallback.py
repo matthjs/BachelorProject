@@ -11,7 +11,7 @@ class AbstractCallback(ABC):
         self.mode = None
         self.num_steps = 0  # type: int
         self.num_episodes = 0
-        self.verbose = 0
+        self.logging = False
         self.extra = None
         self.agent = None
         self.agent_id = None
@@ -26,13 +26,12 @@ class AbstractCallback(ABC):
                       agent_config,
                       df: pd.DataFrame,
                       metrics_tracker_registry,
-                      verbose=0,
+                      logging=False,
                       extra=None):
         if mode not in ["train", "eval"]:
             raise ValueError(f"Invalid mode {mode}.")
         self.mode = mode
 
-        self.data_map = {}
         self.agent = agent
         self.agent_id = agent_id
         self.agent_config = agent_config
@@ -40,6 +39,7 @@ class AbstractCallback(ABC):
         self.metrics_tracker_registry = metrics_tracker_registry
         self.extra = extra
         self.old_obs = None
+        self.logging = logging
 
     def on_step(self, action, reward, new_obs, done) -> bool:
         self.num_steps += 1

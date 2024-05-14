@@ -9,10 +9,13 @@ from stable_baselines3.common.callbacks import StopTrainingOnMaxEpisodes
 
 from agent.abstractagent import AbstractAgent
 from agentfactory.agentfactory import AgentFactory
+from callbacks.abstractcallback import AbstractCallback
+from callbacks.rewardcallback import RewardCallback
 from callbacks.sbcallbackadapter import StableBaselinesCallbackAdapter
 from metricstracker.metricstracker2 import MetricsTracker2
 from metricstracker.metricstrackerregistry import MetricsTrackerRegistry
 from hydra import compose, initialize
+
 
 class SimulatorRL:
     """
@@ -46,6 +49,7 @@ class SimulatorRL:
         # We first want to record the performance of the random policy
         # so we can compare later
         self.agents["random"] = self.agent_factory.create_agent("random", env_str)
+        self.agents_configs["random"] = None
 
     def _config_obj(self, agent_type: str, agent_id: str, env_str: str, config_path: str = "../../../configs"):
         with initialize(config_path=config_path + "/" + agent_type):
@@ -82,11 +86,19 @@ class SimulatorRL:
     def _test_with_random_policy(self):
         raise NotImplementedError()
 
-    def train_agents(self, num_episodes: int, agent_id_list: list[str] = None, concurrent=False, logging=False) \
+    def train_agents(self,
+                     num_episodes: int,
+                     agent_id_list: list[str] = None,
+                     callbacks: list[AbstractCallback] = None,
+                     concurrent=False,
+                     logging=True) \
             -> 'SimulatorRL':
         # Number of episodes should probably be in config but ah well.
         if agent_id_list is None:
             agent_id_list = list(self.agents.keys())  # do all agents if agent_id_list not specified.
+
+        if callbacks is None:
+            callbacks = [RewardCallback()]
 
         if not concurrent:
             for agent_id in agent_id_list:
@@ -94,55 +106,26 @@ class SimulatorRL:
                     raise ValueError("agent_id not in agents dictionary")
 
                 if self.agents[agent_id].is_stable_baselines_wrapper():
-                    self._stable_baselines_train(agent_id, num_episodes, logging)
+                    self._stable_baselines_train(agent_id, num_episodes, callbacks, logging)
                 else:
-                    self._agent_train_env_interaction_gym(agent_id, num_episodes, logging)
+                    self._agent_env_interaction_gym("train", agent_id, num_episodes, callbacks, logging)
         else:
             raise NotImplementedError("OOPS I did not implement this yet my bad.")
 
         return self
 
-    def evaluate_episode_reward(self, num_episodes: int, agent_id: str, eval_env: gym.Env) -> tuple[float, float]:
-        """
-        Return mean and std of the return (undiscounted sum of rewards) G = R_1 + R_2 + ... R_M over n episodes.
-        :param eval_env:
-        :param num_episodes:
-        :param agent_id:
-        :return:
-        """
-        tracker = self.metrics_tracker_registry.get_tracker("eval")
-        agent = self.agents[agent_id]
-        obs, info = eval_env.reset()
-
-        episode_reward = 0
-
-        while True:
-            old_obs = obs
-            action = agent.policy(obs)
-            obs, reward, terminated, truncated, info = eval_env.step(action)
-            episode_reward += reward
-
-            if terminated or truncated:
-                num_episodes -= 1
-                tracker.record_scalar("return", agent_id, episode_reward)
-                episode_reward = 0
-                obs, info = eval_env.reset()
-
-            if num_episodes == 0:
-                break
-
-        eval_env.close()
-        return tracker.latest_mean_variance("return", agent_id)
-
-
     def evaluate_agents(self,
                         eval_env_str: str,
                         num_episodes: int,
                         agent_id_list: list[str] = None,
+                        callbacks: list[AbstractCallback] = None,
                         concurrent=False,
-                        logging=True,
-                        plotting=False) -> 'SimulatorRL':
-        eval_env = gym.make(eval_env_str)
+                        logging=True) -> 'SimulatorRL':
+        if logging:
+            print("Evaluating...")
+
+        if callbacks is None:
+            callbacks = [RewardCallback()]
 
         # Number of episodes should probably be in config but ah well.
         if agent_id_list is None:
@@ -153,13 +136,8 @@ class SimulatorRL:
                 if agent_id not in self.agents:
                     raise ValueError("agent_id not in agents dictionary")
 
-                mean, var = self.evaluate_episode_reward(
-                    num_episodes,
-                    agent_id,
-                    eval_env
-                )
-                if logging:
-                    print(f"Avg return ({num_episodes} ep) - {agent_id} - {mean:.3f} +- {np.sqrt(var):.3f}")
+                self._agent_env_interaction_gym("eval", agent_id, num_episodes, callbacks, logging)
+
         else:
             raise NotImplementedError("OOPS I did not implement this yet my bad.")
 
@@ -183,7 +161,12 @@ class SimulatorRL:
 
         play_env.close()
 
-    def _agent_train_env_interaction_gym(self, agent_id: str, num_episodes: int, logging=False) -> None:
+    def _agent_env_interaction_gym(self,
+                                   mode: str,
+                                   agent_id: str,
+                                   num_episodes: int,
+                                   callbacks: list[AbstractCallback],
+                                   logging) -> None:
         """
         So basically, this is a train loop for the agent. Note that even though the update method is
         run at every time step, this does *not* mean the agent performs the update rule at every time step (batching).
@@ -193,16 +176,30 @@ class SimulatorRL:
         :param logging:
         :return:
         """
+        if mode not in ["train", "eval"]:
+            raise ValueError(f"Invalid mode {mode}.")
+
         env = self.env
         agent = self.agents[agent_id]
-        tracker = self.metrics_tracker_registry.get_tracker("train")
-        episode_reward = 0
-        highest_average_return: float = -9999
+
+        for callback in callbacks:
+            callback.init_callback(
+                mode,
+                agent,
+                agent_id,
+                self.agents_configs[agent_id],
+                self.df,
+                self.metrics_tracker_registry,
+                logging
+            )
 
         obs, info = env.reset()
 
-        if agent.is_stable_baselines_wrapper():
-            raise AttributeError("This function should only be run on True custom agents")
+        if mode == "train" and agent.is_stable_baselines_wrapper():
+            raise AttributeError("This function in train mode should only be run on True custom agents")
+
+        for callback in callbacks:
+            callback.on_training_start()
 
         while True:
             old_obs = obs
@@ -212,37 +209,48 @@ class SimulatorRL:
             agent.record_env_info(info, terminated or truncated)
             agent.add_trajectory((old_obs, action, reward, obs))
 
-            episode_reward += reward
+            if mode == "train":
+                agent.update()
 
-            agent.update()
+            for callback in callbacks:
+                callback.on_step(action, reward, obs, terminated or truncated)
 
             if terminated or truncated:
                 num_episodes -= 1
-                tracker.record_scalar("return", agent_id, episode_reward)
+                for callback in callbacks:
+                    callback.on_episode_end()
                 obs, info = env.reset()
-
-                current_avg_return, _ = tracker.latest_mean_variance("return", agent_id)
-                if current_avg_return > highest_average_return:
-                    highest_average_return = current_avg_return
-                    # Do something maybe
-
-                if logging:
-                    logger.debug(f"Episode reward / highest episode reward"
-                                 f": {episode_reward} / {highest_average_return}")
-
-                episode_reward = 0
 
             if num_episodes == 0:
                 break
 
         env.close()
+        for callback in callbacks:
+            callback.on_training_end()
 
-    def _stable_baselines_train(self, agent_id: str, num_episodes: int, logging=False) -> None:
-        # TODO: Record info such that I can actually compare properly with custom agents.
+    def _stable_baselines_train(self,
+                                agent_id: str,
+                                num_episodes: int,
+                                callbacks: list[AbstractCallback],
+                                logging=True) -> None:
         agent = self.agents[agent_id]
         if not agent.is_stable_baselines_wrapper():
             raise AttributeError("This function should only be run on wrapped StableBaselines agents")
 
+        sb_callbacks = [StopTrainingOnMaxEpisodes(max_episodes=num_episodes, verbose=0)]
+
+        for callback in callbacks:
+            callback.init_callback(
+                "train",
+                agent,
+                agent_id,
+                self.agents_configs[agent_id],
+                self.df,
+                self.metrics_tracker_registry,
+                logging
+            )
+            sb_callbacks.append(StableBaselinesCallbackAdapter(callback))
+
         model = agent.stable_baselines_unwrapped()
 
-        model.learn(total_timesteps=9999999999999, callback=[StableBaselinesCallbackAdapter(None), StopTrainingOnMaxEpisodes(max_episodes=num_episodes, verbose=0)])
+        model.learn(total_timesteps=9999999999999, callback=sb_callbacks)

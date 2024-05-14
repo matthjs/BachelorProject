@@ -11,7 +11,7 @@ if __name__ == "__main__":
      .register_agent("gpsarsa_agent_1", "gpsarsa_agent")
      .register_agent("sb_dqn", "sb_dqn")
      .train_agents(num_episodes=10, concurrent=False, logging=True)
-     .evaluate_agents("CartPole-v1", 10, None, False, True)
+     .evaluate_agents("CartPole-v1", 10)
      .data_to_csv()
      .plot_any_plottable_data())
 

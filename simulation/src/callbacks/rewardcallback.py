@@ -20,9 +20,9 @@ class RewardCallback(AbstractCallback):
                       agent_config,
                       df: pd.DataFrame,
                       metrics_tracker_registry,
-                      verbose=0,
+                      logging=False,
                       extra=None):
-        super().init_callback(mode, agent, agent_id, agent_config, df, metrics_tracker_registry, verbose, extra)
+        super().init_callback(mode, agent, agent_id, agent_config, df, metrics_tracker_registry, logging, extra)
         self.metrics_tracker = metrics_tracker_registry.get_tracker(mode)
 
     def on_step(self, action, reward, new_obs, done) -> bool:
@@ -34,16 +34,17 @@ class RewardCallback(AbstractCallback):
 
     def on_episode_end(self) -> None:
         super().on_episode_end()
-        self.metrics_tracker("return", self.agent_id, self.episode_reward)
+        self.metrics_tracker.record_scalar("return", self.agent_id, self.episode_reward)
 
         current_avg_return, _ = self.metrics_tracker.latest_mean_variance("return", self.agent_id)
         if current_avg_return > self.highest_avg_return:
-            self.highest_average_return = current_avg_return
+            self.highest_avg_return = current_avg_return
             # Do something maybe
 
-        if self.verbose > 0:
-            logger.debug(f"Episode reward / highest episode reward"
-                         f": {self.episode_reward} / {self.highest_avg_return}")
+        if self.logging:
+            pass
+            # logger.debug(f"Episode reward / highest episode reward"
+            #             f": {self.episode_reward} / {self.highest_avg_return}")
 
         self.episode_reward = 0
 
@@ -54,6 +55,6 @@ class RewardCallback(AbstractCallback):
         """
         mean, variance = self.metrics_tracker.latest_mean_variance("return", self.agent_id)
 
-        if self.verbose > 0:
+        if self.logging:
             print(f"Avg return - {self.agent_id} - {mean:.3f} +- {np.sqrt(variance):.3f}")
 

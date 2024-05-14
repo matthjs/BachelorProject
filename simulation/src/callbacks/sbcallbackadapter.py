@@ -71,7 +71,7 @@ class StableBaselinesCallbackAdapter(BaseCallback):
         new_obs = new_obs_t[0] if len(new_obs_t) == 1 else new_obs_t
         done = done_t.item() if len(done_t) == 1 else done_t
 
-        print(action, reward, new_obs, done)
+        # print(action, reward, new_obs, done)
 
         return self.callback.on_step(action, reward, new_obs, done)
 
