@@ -5,15 +5,13 @@ import pandas as pd
 from agent.abstractagent import AbstractAgent
 from callbacks.attributewrapper import AttributeWrapper
 
-class AbstractCallback(ABC):
-    def __init__(self, mode, verbose: int = 0):
-        if mode not in ["train", "eval"]:
-            raise ValueError(f"Invalid mode {mode}.")
 
-        self.mode = mode
+class AbstractCallback(ABC):
+    def __init__(self):
+        self.mode = None
         self.num_steps = 0  # type: int
         self.num_episodes = 0
-        self.verbose = verbose
+        self.verbose = 0
         self.extra = None
         self.agent = None
         self.agent_id = None
@@ -22,12 +20,18 @@ class AbstractCallback(ABC):
         self.df = None
 
     def init_callback(self,
+                      mode: str,
                       agent: AbstractAgent,
                       agent_id: str,
                       agent_config,
                       df: pd.DataFrame,
                       metrics_tracker_registry,
+                      verbose=0,
                       extra=None):
+        if mode not in ["train", "eval"]:
+            raise ValueError(f"Invalid mode {mode}.")
+        self.mode = mode
+
         self.data_map = {}
         self.agent = agent
         self.agent_id = agent_id
@@ -46,10 +50,8 @@ class AbstractCallback(ABC):
     def on_episode_end(self) -> None:
         self.num_episodes += 1
 
-    @abstractmethod
     def on_training_start(self) -> None:
         pass
 
-    @abstractmethod
     def on_training_end(self) -> None:
         pass
