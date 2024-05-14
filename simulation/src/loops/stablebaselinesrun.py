@@ -60,10 +60,10 @@ def dqn_train2(env_str="CartPole-v1", total_time_step=int(5e4)):
 
 
 # Set up fake display; otherwise rendering will fail
-import os
+#import os
 
-os.system("Xvfb :1 -screen 0 1024x768x24 &")
-os.environ['DISPLAY'] = ':1'
+#os.system("Xvfb :1 -screen 0 1024x768x24 &")
+#os.environ['DISPLAY'] = ':1'
 
 
 # !apt-get install ffmpeg freeglut3-dev xvfb  -y # For visualization

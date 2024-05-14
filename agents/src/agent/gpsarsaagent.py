@@ -29,6 +29,8 @@ class GPSarsaAgent(AbstractAgent):
                  sparsification_threshold=None):
         super(GPSarsaAgent, self).__init__({}, env.observation_space, env.action_space)
 
+        print("!!!", sparsification_threshold)
+
         self._exploration_policy = BayesianOptimizerRL(
             model_str=gp_model_str,
             max_dataset_size=max_dataset_size,

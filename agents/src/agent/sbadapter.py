@@ -15,7 +15,7 @@ class StableBaselinesAdapter(AbstractAgent):
         pass
 
     def policy(self, state):
-        return self._sb_model.predict(state)
+        return self._sb_model.predict(state)[0]
 
     def is_stable_baselines_wrapper(self):
         return True

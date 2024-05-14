@@ -116,7 +116,7 @@ class AgentFactory:
                 replay_buffer_size=cfg.model.replay_buffer_size,
                 exploring_starts=cfg.model.exploring_starts,
                 max_dataset_size=cfg.model.max_dataset_size,
-                sparsification_threshold=cfg.model.sparsification_threshold
+                sparsification_threshold=eval(cfg.model.sparsification_threshold)
             )
         elif agent_type == "gpsarsa_agent":
             return GPSarsaAgent(
@@ -127,7 +127,7 @@ class AgentFactory:
                 replay_buffer_size=cfg.model.replay_buffer_size,
                 exploring_starts=cfg.model.exploring_starts,
                 max_dataset_size=cfg.model.max_dataset_size,
-                sparsification_threshold=cfg.model.sparsification_threshold
+                sparsification_threshold=eval(cfg.model.sparsification_threshold)
             )
         elif agent_type == "sb_dqn":
             # noinspection PyProtectedMember
@@ -145,7 +145,7 @@ class AgentFactory:
                     gradient_steps=cfg.model.gradient_steps,
                     exploration_fraction=cfg.model.exploration_fraction,
                     exploration_final_eps=cfg.model.exploration_final_eps,
-                    policy_kwargs=cfg.model.policy_kwargs
+                    policy_kwargs=eval(cfg.model.policy_kwargs)
                 )
             )
         elif agent_type == "random":
