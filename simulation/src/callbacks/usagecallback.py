@@ -32,6 +32,10 @@ class UsageCallback(AbstractCallback):
                       extra=None):
         super().init_callback(mode, agent, agent_id, agent_config, df, metrics_tracker_registry, logging, extra)
 
+    def _save_to_dataframe(self, execution_time):
+        self.df.loc[self.df['agent_id'] == self.agent_id, "execution time (sec) " + self.mode] \
+            = round(execution_time, 3)
+
     def on_training_start(self) -> None:
         self.start_time = time.time()
         self.memory_before = get_memory_usage()
@@ -55,3 +59,5 @@ class UsageCallback(AbstractCallback):
         if self.logging:
             print(f"Execution time {execution_time:.3f} sec")
             print(f"Mem usage change {memory_usage_diff} KB")
+
+        self._save_to_dataframe(execution_time)

@@ -18,20 +18,20 @@ def test_load_experiment():
 
 
 if __name__ == "__main__":
-    sim = SimulatorRL("CartPole-v1")
+    sim = SimulatorRL("CartPole-v1", experiment_id="experiment!")
     (sim
      .register_agent("gpq_agent_1", "gpq_agent")
      .register_agent("gpsarsa_agent_1", "gpsarsa_agent")
      .register_agent("sb_dqn", "sb_dqn")
      .register_agent("sb_ppo", "sb_ppo")
-     .train_agents(num_episodes=100, concurrent=False, logging=True,
+     .train_agents(num_episodes=10, concurrent=False,
                    callbacks=[RewardCallback(), UsageCallback()])
      .evaluate_agents("CartPole-v1", 10,
                       callbacks=[RewardCallback(), UsageCallback()])
      .data_to_csv()
-     .plot_any_plottable_data()
-     .save_agents())
+     .plot_any_plottable_data())
+     # .save_agents())
 
     sim.play("sb_ppo", 1)
 
-    test_load_experiment()
+    # test_load_experiment()

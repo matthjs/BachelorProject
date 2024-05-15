@@ -150,8 +150,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                                                input_transform=self._input_transform,
                                                outcome_transform=self._outcome_transform).to(self.device)
 
-        print(self._current_gp.covar_module)
-
         self._random_draws = random_draws
 
     def get_current_gp(self):
@@ -164,7 +162,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         if self._random_draws > 0:
             return
 
-        # No linear independence test is performed for now, just add to dataset.
         self.extend_dataset(new_train_x, new_train_y)
 
         train_x, train_y = self.dataset()

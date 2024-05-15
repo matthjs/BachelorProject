@@ -2,6 +2,8 @@ import os
 
 import pandas as pd
 import gymnasium as gym
+from loguru import logger
+from scipy.stats import ranksums
 from stable_baselines3.common.callbacks import StopTrainingOnMaxEpisodes
 
 from agentfactory.agentfactory import AgentFactory
@@ -24,7 +26,7 @@ class SimulatorRL:
 
     """
 
-    def __init__(self, env_str: str, experiment_id="simulation"):
+    def __init__(self, env_str: str, experiment_id="simulation", verbose: int = 1):
         self.df = pd.DataFrame()
         self.metrics_tracker_registry = MetricsTrackerRegistry()  # Singleton!
         self.metrics_tracker_registry.register_tracker("train")
@@ -33,6 +35,7 @@ class SimulatorRL:
         self.metrics_tracker_registry.get_tracker("eval").register_metric("return")
 
         self.experiment_id = experiment_id
+        self.verbose = verbose
 
         self.agents = {}
         self.agents_configs = {}
@@ -45,22 +48,40 @@ class SimulatorRL:
         # so we can compare later
         self.agents["random"] = self.agent_factory.create_agent("random", env_str)
         self.agents_configs["random"] = None
+        self._add_agent_to_df("random", "random")
 
     def _config_obj(self, agent_type: str, agent_id: str, env_str: str, config_path: str = "../../../configs"):
-        with initialize(config_path=config_path + "/" + agent_type):
+        with initialize(config_path=config_path + "/" + agent_type, version_base="1.2"):
             cfg = compose(config_name="config_" + agent_id + "_" + env_str)
 
         self.agents_configs[agent_id] = cfg
         return cfg
 
-    def _add_agent_row_to_df(self, agent_id: str, agent_type: str) -> None:
-        pass
+    def _add_agent_to_df(self, agent_id: str, agent_type: str) -> None:
+        new_row_values = {"agent_id": agent_id, "agent_type": agent_type}
+        new_row_df = pd.DataFrame([new_row_values])
+        self.df = pd.concat([self.df, new_row_df], ignore_index=True)
+
+    def _signtest_train_with_random_policy(self, agent_id: str):
+        tracker = self.metrics_tracker_registry.get_tracker("train")
+        means_random, _ = tracker.metric_history("return").get("random")
+        means, _ = tracker.metric_history("return").get(agent_id)
+        statistic, p_value = ranksums(means, means_random, alternative='greater')
+
+        if self.verbose > 0:
+            logger.info(f"{agent_id} p-value: {p_value}")
+
+        self.df.loc[self.df['agent_id'] == agent_id, "p_val_comp_mean_return_random_greater"] = round(p_value, 3)
+        self.df.loc[self.df['agent_id'] == agent_id, "W-statistic"] = round(statistic, 3)
+
 
     def register_agent(self, agent_id: str, agent_type: str) -> 'SimulatorRL':
         cfg = self._config_obj(agent_type, agent_id, self.env_str)
 
         agent = self.agent_factory.create_agent_configured(agent_type, self.env_str, cfg)
         self.agents[agent_id] = agent
+
+        self._add_agent_to_df(agent_id, agent_type)
 
         return self
 
@@ -70,6 +91,13 @@ class SimulatorRL:
         with open(data_dir + agent_id + ".pkl", "rb") as f:
             self.agents[agent_id] = cloudpickle.load(f)
 
+        self._add_agent_to_df(agent_id, agent_type)
+
+        return self
+
+    def load_data_from_csv(self, data_name: str = "simulation", data_path: str = "../data/experiments") \
+            -> 'SimulatorRL':
+        self.df = pd.read_csv(data_path + data_name + ".csv")
         return self
 
     def data_to_csv(self, data_path: str = "../data/experiments") -> 'SimulatorRL':
@@ -78,6 +106,9 @@ class SimulatorRL:
         return self
 
     def plot_any_plottable_data(self, plot_dir: str = "../plots/") -> 'SimulatorRL':
+        if self.verbose > 1:
+            logger.info("Plotting plottable data")
+
         tracker = self.metrics_tracker_registry.get_tracker("train")
         tracker.plot_metric(metric_name="return",
                             plot_path=plot_dir + self.env_str,
@@ -94,19 +125,21 @@ class SimulatorRL:
     def hyperopt_experiment(self):
         return self
 
-    def _test_with_random_policy(self):
-        raise NotImplementedError()
-
     def save_agents(self, agent_id_list: list[str] = None, save_dir="../data/saved_agents/") -> 'SimulatorRL':
+        if self.verbose > 1:
+            logger.info(f"Saving agents to {save_dir}...")
+
         if agent_id_list is None:
             agent_id_list = list(self.agents.keys())  # do all agents if agent_id_list not specified.
 
         # I am being really lazy here. Try and see if cloudpickle suffices.
         # Even though for StableBaselines agents there is the .save() .load methods.
-        print(self.agents_configs)
         for agent_id in agent_id_list:
             with open(save_dir + agent_id + ".pkl", "wb") as f:
                 cloudpickle.dump(self.agents[agent_id], f)
+
+        if self.verbose > 1:
+            logger.info("Done!")
 
         return self
 
@@ -114,27 +147,38 @@ class SimulatorRL:
                      num_episodes: int,
                      agent_id_list: list[str] = None,
                      callbacks: list[AbstractCallback] = None,
-                     concurrent=False,
-                     logging=True) \
+                     concurrent=False) \
             -> 'SimulatorRL':
         # Number of episodes should probably be in config but ah well.
         if agent_id_list is None:
             agent_id_list = list(self.agents.keys())  # do all agents if agent_id_list not specified.
+
+        if self.verbose > 1:
+            logger.info(f"Training agents -> {agent_id_list}")
 
         if callbacks is None:
             callbacks = [RewardCallback()]
 
         if not concurrent:
             for agent_id in agent_id_list:
+                if self.verbose > 1:
+                    logger.info(f"Training agent -> {agent_id}")
+
                 if agent_id not in self.agents:
                     raise ValueError("agent_id not in agents dictionary")
 
+                # Add info to dataframe
+                self.df.loc[self.df['agent_id'] == agent_id, "num_episodes (train)"] = num_episodes
+
                 if self.agents[agent_id].is_stable_baselines_wrapper():
-                    self._stable_baselines_train(agent_id, num_episodes, callbacks, logging)
+                    self._stable_baselines_train(agent_id, num_episodes, callbacks)
                 else:
-                    self._agent_env_interaction_gym("train", agent_id, num_episodes, callbacks, logging)
+                    self._agent_env_interaction_gym("train", agent_id, num_episodes, callbacks)
         else:
             raise NotImplementedError("OOPS I did not implement this yet my bad.")
+
+        for agent_id in agent_id_list:
+            self._signtest_train_with_random_policy(agent_id)
 
         return self
 
@@ -145,9 +189,6 @@ class SimulatorRL:
                         callbacks: list[AbstractCallback] = None,
                         concurrent=False,
                         logging=True) -> 'SimulatorRL':
-        if logging:
-            print("Evaluating...")
-
         if callbacks is None:
             callbacks = [RewardCallback()]
 
@@ -155,13 +196,21 @@ class SimulatorRL:
         if agent_id_list is None:
             agent_id_list = list(self.agents.keys())  # do all agents if agent_id_list not specified.
 
+        if self.verbose > 1:
+            logger.info(f"Evaluating agents -> {agent_id_list}")
+
         if not concurrent:
             for agent_id in agent_id_list:
+                if self.verbose > 1:
+                    logger.info(f"Evaluating -> {agent_id}")
+
+                # Add info to dataframe
+                self.df.loc[self.df['agent_id'] == agent_id, "num_episodes (eval)"] = num_episodes
+
                 if agent_id not in self.agents:
                     raise ValueError("agent_id not in agents dictionary")
 
-                self._agent_env_interaction_gym("eval", agent_id, num_episodes, callbacks, logging)
-
+                self._agent_env_interaction_gym("eval", agent_id, num_episodes, callbacks)
         else:
             raise NotImplementedError("OOPS I did not implement this yet my bad.")
 
@@ -189,8 +238,7 @@ class SimulatorRL:
                                    mode: str,
                                    agent_id: str,
                                    num_episodes: int,
-                                   callbacks: list[AbstractCallback],
-                                   logging) -> None:
+                                   callbacks: list[AbstractCallback]) -> None:
         """
         So basically, this is a train loop for the agent. Note that even though the update method is
         run at every time step, this does *not* mean the agent performs the update rule at every time step (batching).
@@ -214,7 +262,7 @@ class SimulatorRL:
                 self.agents_configs[agent_id],
                 self.df,
                 self.metrics_tracker_registry,
-                logging
+                self.verbose > 0
             )
 
         obs, info = env.reset()
@@ -255,8 +303,7 @@ class SimulatorRL:
     def _stable_baselines_train(self,
                                 agent_id: str,
                                 num_episodes: int,
-                                callbacks: list[AbstractCallback],
-                                logging=True) -> None:
+                                callbacks: list[AbstractCallback]) -> None:
         agent = self.agents[agent_id]
         if not agent.is_stable_baselines_wrapper():
             raise AttributeError("This function should only be run on wrapped StableBaselines agents")
@@ -271,10 +318,10 @@ class SimulatorRL:
                 self.agents_configs[agent_id],
                 self.df,
                 self.metrics_tracker_registry,
-                logging
+                self.verbose > 0
             )
             sb_callbacks.append(StableBaselinesCallbackAdapter(callback))
 
         model = agent.stable_baselines_unwrapped()
 
-        model.learn(total_timesteps=int(5e4), callback=sb_callbacks)
+        model.learn(total_timesteps=int(216942042), callback=sb_callbacks)

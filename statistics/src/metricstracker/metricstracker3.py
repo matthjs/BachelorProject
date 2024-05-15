@@ -34,7 +34,8 @@ class MetricsTracker3:
         self._aggregates[metric_name] = {}
         self._aggregates_history[metric_name] = defaultdict(lambda: ([], []))
 
-    def plot_metric(self, metric_name, plot_path="./", x_axis_label="Episodes", y_axis_label='Average', title="History") -> None:
+    def plot_metric(self, metric_name, plot_path="./", x_axis_label="Episodes", y_axis_label='Average',
+                    title="History") -> None:
         """
         Plot the metrics to a matplotlib figure.
         """

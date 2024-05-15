@@ -26,7 +26,9 @@ class RewardCallback(AbstractCallback):
         self.metrics_tracker = metrics_tracker_registry.get_tracker(mode)
 
     def _save_to_dataframe(self):
-        pass
+        avg_return, avg_variance = self.metrics_tracker.latest_mean_variance("return", self.agent_id)
+        self.df.loc[self.df['agent_id'] == self.agent_id, "avg return " + self.mode] = round(avg_return, 3)
+        self.df.loc[self.df['agent_id'] == self.agent_id, "stdev return " + self.mode] = round(np.sqrt(avg_variance), 3)
 
     def on_step(self, action, reward, new_obs, done) -> bool:
         super().on_step(action, reward, new_obs, done)
@@ -59,3 +61,5 @@ class RewardCallback(AbstractCallback):
 
         if self.logging:
             print(f"Avg return - {self.agent_id} - {mean:.3f} +- {np.sqrt(variance):.3f}")
+
+        self._save_to_dataframe()
