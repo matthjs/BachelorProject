@@ -12,7 +12,7 @@ if __name__ == "__main__":
     (sim
      .register_agent("gpq_agent_1", "gpq_agent")
      .register_agent("gpsarsa_agent_1", "gpsarsa_agent")
-      .register_agent("sb_dqn", "sb_dqn")
+     .register_agent("sb_dqn", "sb_dqn")
      .register_agent("sb_ppo", "sb_ppo")
      .train_agents(num_episodes=100, concurrent=False, logging=True,
                    callbacks=[RewardCallback(), UsageCallback()])
@@ -20,6 +20,6 @@ if __name__ == "__main__":
                       callbacks=[RewardCallback(), UsageCallback()])
      .data_to_csv()
      .plot_any_plottable_data()
-     .save())
+     .save_agents())
 
     sim.play("sb_ppo", 1)

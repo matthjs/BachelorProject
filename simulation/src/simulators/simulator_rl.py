@@ -25,13 +25,15 @@ class SimulatorRL:
 
     """
 
-    def __init__(self, env_str: str):
+    def __init__(self, env_str: str, experiment_id="simulation"):
         self.df = pd.DataFrame()
         self.metrics_tracker_registry = MetricsTrackerRegistry()  # Singleton!
         self.metrics_tracker_registry.register_tracker("train")
         self.metrics_tracker_registry.get_tracker("train").register_metric("return")
         self.metrics_tracker_registry.register_tracker("eval")
         self.metrics_tracker_registry.get_tracker("eval").register_metric("return")
+
+        self.experiment_id = experiment_id
 
         self.agents = {}
         self.agents_configs = {}
@@ -59,7 +61,8 @@ class SimulatorRL:
         self.agents[agent_id] = agent
         return self
 
-    def data_to_csv(self) -> 'SimulatorRL':
+    def data_to_csv(self, data_path: str = "../../../data") -> 'SimulatorRL':
+        self.df.to_csv(data_path + "/" + self.experiment_id + ".csv", index=False)
         return self
 
     def plot_any_plottable_data(self, plot_dir: str = "../plots/") -> 'SimulatorRL':
@@ -82,7 +85,7 @@ class SimulatorRL:
     def _test_with_random_policy(self):
         raise NotImplementedError()
 
-    def save(self, agent_id_list: list[str] = None) -> 'SimulatorRL':
+    def save_agents(self, agent_id_list: list[str] = None) -> 'SimulatorRL':
         if agent_id_list is None:
             agent_id_list = list(self.agents.keys())  # do all agents if agent_id_list not specified.
 
@@ -92,10 +95,10 @@ class SimulatorRL:
 
         return self
 
-
-
-    def load(self, agent_id_list: list[str] = None) -> 'SimulatorRL':
-
+    def load_agents(self, agent_id_list: list[str] = None) -> 'SimulatorRL':
+        for agent_id in agent_id_list:
+            pass
+            # self.agents[agent_id] = cloudpickle.load
 
         return self
 
