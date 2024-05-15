@@ -116,6 +116,8 @@ class AgentFactory:
                 replay_buffer_size=cfg.model.replay_buffer_size,
                 exploring_starts=cfg.model.exploring_starts,
                 max_dataset_size=cfg.model.max_dataset_size,
+                kernel_type=cfg.model.kernel_type,
+                kernel_args=cfg.model.kernel,
                 sparsification_threshold=eval(cfg.model.sparsification_threshold)
             )
         elif agent_type == "gpsarsa_agent":
@@ -127,6 +129,8 @@ class AgentFactory:
                 replay_buffer_size=cfg.model.replay_buffer_size,
                 exploring_starts=cfg.model.exploring_starts,
                 max_dataset_size=cfg.model.max_dataset_size,
+                kernel_type=cfg.model.kernel_type,
+                kernel_args=cfg.model.kernel,
                 sparsification_threshold=eval(cfg.model.sparsification_threshold)
             )
         elif agent_type == "sb_dqn":

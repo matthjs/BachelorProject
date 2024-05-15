@@ -26,6 +26,8 @@ class GPSarsaAgent(AbstractAgent):
                  replay_buffer_size,
                  exploring_starts,
                  max_dataset_size,
+                 kernel_type: str,
+                 kernel_args,
                  sparsification_threshold=None):
         super(GPSarsaAgent, self).__init__({}, env.observation_space, env.action_space)
 
@@ -37,6 +39,8 @@ class GPSarsaAgent(AbstractAgent):
             random_draws=exploring_starts,
             state_size=env.observation_space.shape[0],
             action_space=env.action_space,
+            kernel_type=kernel_type,
+            kernel_args=kernel_args,
             sparsfication_treshold=sparsification_threshold
         )
 

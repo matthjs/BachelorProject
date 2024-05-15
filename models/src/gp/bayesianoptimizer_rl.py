@@ -16,6 +16,7 @@ from botorch.models.transforms.outcome import Standardize
 from torch import optim
 
 from gp.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
+from kernels.kernelfactory import create_kernel
 from util.fetchdevice import fetch_device
 import gymnasium as gym
 
@@ -113,6 +114,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                  max_dataset_size: int,
                  state_size: int,
                  action_space: gym.Space,
+                 kernel_type,
+                 kernel_args,
                  strategy='thompson_sampling',
                  sparsfication_treshold=None):
         self.device = fetch_device()
@@ -122,11 +125,13 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         self._action_size = action_space.n
         self._action_space = action_space
 
-        self._input_transform = None  # InputStandardize(d=state_size + 1)
+        self._input_transform = None # Normalize(d=state_size + 1) # InputStandardize(d=state_size + 1)
         self._outcome_transform = Standardize(m=1)  # I am guessing m should be 1
         # This Standardization is VERY important as we assume the mean function is 0.
         # If not then we will have problems with the Q values.
         self._sparsification_treshold = sparsfication_treshold
+
+        self._kernel_factory = create_kernel(kernel_type, kernel_args)
 
         if model_str == 'exact_gp':
             # TODO: Look into variant where we do not instantiate a new GP
@@ -141,8 +146,11 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         self._current_gp = self.gp_constructor(train_X=torch.zeros(1, state_size + 1, dtype=torch.double),
                                                train_Y=torch.zeros(1, 1, dtype=torch.double),
                                                cat_dims=[self._state_size],
+                                               cont_kernel_factory=self._kernel_factory,
                                                input_transform=self._input_transform,
                                                outcome_transform=self._outcome_transform).to(self.device)
+
+        print(self._current_gp.covar_module)
 
         self._random_draws = random_draws
 
