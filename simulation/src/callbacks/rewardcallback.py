@@ -25,6 +25,9 @@ class RewardCallback(AbstractCallback):
         super().init_callback(mode, agent, agent_id, agent_config, df, metrics_tracker_registry, logging, extra)
         self.metrics_tracker = metrics_tracker_registry.get_tracker(mode)
 
+    def _save_to_dataframe(self):
+        pass
+
     def on_step(self, action, reward, new_obs, done) -> bool:
         super().on_step(action, reward, new_obs, done)
 
@@ -41,10 +44,9 @@ class RewardCallback(AbstractCallback):
             self.highest_avg_return = current_avg_return
             # Do something maybe
 
-        if self.logging:
-            pass
-            # logger.debug(f"Episode reward / highest episode reward"
-            #             f": {self.episode_reward} / {self.highest_avg_return}")
+        if self.logging and self.num_episodes % 20 == 0:
+            logger.debug(f"{self.agent_id } episode reward / highest episode reward"
+                         f": {self.episode_reward} / {self.highest_avg_return}")
 
         self.episode_reward = 0
 

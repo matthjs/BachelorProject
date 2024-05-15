@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import gymnasium as gym
 from stable_baselines3.common.callbacks import StopTrainingOnMaxEpisodes
@@ -19,9 +21,6 @@ class SimulatorRL:
     In dataframe, at least put a comparison of mean reward test there with random
     policy (statistic value and P-value).
     Use Multithreading? May not scale as expected.
-
-    I judged it to be simpler/less confusion to separate custom agents and stable baselines algorithms
-    as opposed to making wrapper classes
 
     """
 
@@ -54,14 +53,27 @@ class SimulatorRL:
         self.agents_configs[agent_id] = cfg
         return cfg
 
+    def _add_agent_row_to_df(self, agent_id: str, agent_type: str) -> None:
+        pass
+
     def register_agent(self, agent_id: str, agent_type: str) -> 'SimulatorRL':
         cfg = self._config_obj(agent_type, agent_id, self.env_str)
 
         agent = self.agent_factory.create_agent_configured(agent_type, self.env_str, cfg)
         self.agents[agent_id] = agent
+
         return self
 
-    def data_to_csv(self, data_path: str = "../../../data") -> 'SimulatorRL':
+    def load_agent(self, agent_id: str, agent_type: str, data_dir="../data/saved_agents/") -> 'SimulatorRL':
+        self._config_obj(agent_type, agent_id, self.env_str)        # side effect agents_config[agent_id] = cfg
+
+        with open(data_dir + agent_id + ".pkl", "rb") as f:
+            self.agents[agent_id] = cloudpickle.load(f)
+
+        return self
+
+    def data_to_csv(self, data_path: str = "../data/experiments") -> 'SimulatorRL':
+        # print(os.getcwd())
         self.df.to_csv(data_path + "/" + self.experiment_id + ".csv", index=False)
         return self
 
@@ -85,20 +97,16 @@ class SimulatorRL:
     def _test_with_random_policy(self):
         raise NotImplementedError()
 
-    def save_agents(self, agent_id_list: list[str] = None) -> 'SimulatorRL':
+    def save_agents(self, agent_id_list: list[str] = None, save_dir="../data/saved_agents/") -> 'SimulatorRL':
         if agent_id_list is None:
             agent_id_list = list(self.agents.keys())  # do all agents if agent_id_list not specified.
 
         # I am being really lazy here. Try and see if cloudpickle suffices.
         # Even though for StableBaselines agents there is the .save() .load methods.
         print(self.agents_configs)
-
-        return self
-
-    def load_agents(self, agent_id_list: list[str] = None) -> 'SimulatorRL':
         for agent_id in agent_id_list:
-            pass
-            # self.agents[agent_id] = cloudpickle.load
+            with open(save_dir + agent_id + ".pkl", "wb") as f:
+                cloudpickle.dump(self.agents[agent_id], f)
 
         return self
 

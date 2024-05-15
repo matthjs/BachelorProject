@@ -1,11 +1,21 @@
-import torch
+from loguru import logger
 
 from callbacks.rewardcallback import RewardCallback
 from callbacks.usagecallback import UsageCallback
-from gp.bayesianoptimizer_rl import append_actions
-from loops.envinteraction import env_interaction_gym, env_interaction_gym2
-from loops.stablebaselinesrun import dqn_train, dqn_evaluate_policy, dqn_train2, dqn_play_cartpole
 from simulators.simulator_rl import SimulatorRL
+
+
+def test_load_experiment():
+    logger.debug("loading experiment...")
+
+    (SimulatorRL("CartPole-v1")
+     .load_agent("gpq_agent_1", "gpq_agent")
+     .load_agent("gpsarsa_agent_1", "gpsarsa_agent")
+     .load_agent("sb_dqn", "sb_dqn")
+     .load_agent("sb_ppo", "sb_ppo")
+     .evaluate_agents("CartPole-v1", 10,
+                      callbacks=[RewardCallback(), UsageCallback()]))
+
 
 if __name__ == "__main__":
     sim = SimulatorRL("CartPole-v1")
@@ -23,3 +33,5 @@ if __name__ == "__main__":
      .save_agents())
 
     sim.play("sb_ppo", 1)
+
+    test_load_experiment()
