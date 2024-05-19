@@ -16,6 +16,7 @@ from botorch.models.transforms.outcome import Standardize
 from torch import optim
 
 from gp.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
+from gp.gpviz import plot_gp_contours_with_uncertainty, plot_gp_surface_with_uncertainty, plot_gp_point_distribution
 from kernels.kernelfactory import create_kernel
 from util.fetchdevice import fetch_device
 import gymnasium as gym
@@ -127,7 +128,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         self._action_space = action_space
         self._state_space = state_space
 
-        self._input_transform = None # Normalize(d=state_size + 1) # InputStandardize(d=state_size + 1)
+        self._input_transform = None  # Normalize(d=state_size + 1) # InputStandardize(d=state_size + 1)
         self._outcome_transform = Standardize(m=1)  # I am guessing m should be 1
         # This Standardization is VERY important as we assume the mean function is 0.
         # If not then we will have problems with the Q values.
@@ -154,6 +155,9 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         self._random_draws = random_draws
 
+        self._dummy_counter = 0
+        self._visualize = False
+
     def get_current_gp(self):
         return self._current_gp
 
@@ -163,6 +167,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         """
         if self._random_draws > 0:
             return
+
+        self._dummy_counter += 1
 
         self.extend_dataset(new_train_x, new_train_y)
 
@@ -260,6 +266,30 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         # Things can be adjusted here later though the magic of *composition*
         action_tensor = simple_thompson_action_sampler(self._current_gp, state, self._action_size)
+
+        if self._dummy_counter == 3:
+            """
+            plot_gp_contours_with_uncertainty(self._current_gp,
+                                              (self._state_space.low[0], self._state_space.high[0]),
+                                              (self._state_space.low[1], self._state_space.high[1]),
+                                              self._action_size,
+                                              highlight_point=(state[0], state[1], action_tensor.item()),
+                                              title='Action-value GP contour'
+                                              )
+            plot_gp_surface_with_uncertainty(self._current_gp,
+                                             (self._state_space.low[0], self._state_space.high[0]),
+                                             (self._state_space.low[1], self._state_space.high[1]),
+                                             self._action_size,
+                                             highlight_point=(state[0], state[1], action_tensor.item()),
+                                             title='Action-value GP'
+                                             )
+            """
+            plot_gp_point_distribution(self._current_gp,
+                                       state,
+                                       self._action_size,
+                                       title=f'Point Distribution for state ({state})')
+            self._dummy_counter = 0
+
         return action_tensor.item()
 
     def state_action_value(self, state_batch: torch.tensor, action_batch: torch.tensor) -> torch.tensor:

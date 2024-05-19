@@ -2569,6 +2569,43 @@ numpy = [
 ]
 
 [[package]]
+name = "opentsne"
+version = "1.0.1"
+description = "Extensible, parallel implementations of t-SNE"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "openTSNE-1.0.1-cp310-cp310-macosx_10_12_universal2.whl", hash = "sha256:ddd79bf4fc1ddb73d89271a9f4dfa637e0e1c374552030c929e16d79b560de00"},
+    {file = "openTSNE-1.0.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:035c78122db8e5f009730d57c36fa84a6cfad5eb5ce1ecba620245ae6703f7a9"},
+    {file = "openTSNE-1.0.1-cp310-cp310-win_amd64.whl", hash = "sha256:a61fa00f58dfc45c5563b1b166af9621e9afcda2673e6eb5bffb84d7f15ef7e5"},
+    {file = "openTSNE-1.0.1-cp311-cp311-macosx_10_12_universal2.whl", hash = "sha256:8f2e08aabe79e48425646377f0f12a2cc11a9159a68b15ae21ea789df0f5944e"},
+    {file = "openTSNE-1.0.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:898ddd80d8bc4369ed747d62ff4a06822e1ed61393e2c5eeaee1d063d0056a3f"},
+    {file = "openTSNE-1.0.1-cp311-cp311-win_amd64.whl", hash = "sha256:876bcc63f119a2bdde255a0665a623cbc5823606a7bc806ac2cb721f4a694af9"},
+    {file = "openTSNE-1.0.1-cp312-cp312-macosx_10_12_universal2.whl", hash = "sha256:7f2900b4ce82ecfd47bf844b604ff4fe74d259b3892561715f75098206b3db63"},
+    {file = "openTSNE-1.0.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1383b5b11913090e3df62281edb7840a7eba4a636e81a246f9f78b67feee02f7"},
+    {file = "openTSNE-1.0.1-cp312-cp312-win_amd64.whl", hash = "sha256:a44f347dd2b9e96fe886cb00aac241234221d337dbbc2382ccd82ebb1f912fae"},
+    {file = "openTSNE-1.0.1-cp37-cp37m-macosx_10_12_x86_64.whl", hash = "sha256:aa47b15b3c618dd2fb99a348dc351bb46f67c14bb77b03833a3ada992bff4cf6"},
+    {file = "openTSNE-1.0.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e03d01992e6d977b93cb32cedebe6fe07b67f1aaa9684726c729cac25a2120f3"},
+    {file = "openTSNE-1.0.1-cp37-cp37m-win_amd64.whl", hash = "sha256:7824509d75e80596cdb6d636363ab11521e23f24278f4d175474998d6dd7baff"},
+    {file = "openTSNE-1.0.1-cp38-cp38-macosx_10_12_x86_64.whl", hash = "sha256:ac27df431bcadcbdd3daa77c76d1a4a8398224bcb7cf5ba5fb9a975f6b86839f"},
+    {file = "openTSNE-1.0.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4b39d45fc40a57a4444c66b83d2b0b6fdbb2e614218a7c4eab2f86e0ed478545"},
+    {file = "openTSNE-1.0.1-cp38-cp38-win_amd64.whl", hash = "sha256:3191fa26c95fefb3a2da1997ed4e63b5837426f272fee614fa67c72b375abcc6"},
+    {file = "openTSNE-1.0.1-cp39-cp39-macosx_10_12_universal2.whl", hash = "sha256:ce20aba565fdf122cdd303b047b4961e6ae19d6a6fb4538fc3729f2112eddb80"},
+    {file = "openTSNE-1.0.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a966c3107c3a68f8958fa50c40d3f62931cdf1744ac54dfd36d042f2818389df"},
+    {file = "openTSNE-1.0.1-cp39-cp39-win_amd64.whl", hash = "sha256:8bdc2084c3746ff221c956bb6f35805f41e8c8a269551054fef1dc42d956c7f4"},
+    {file = "openTSNE-1.0.1.tar.gz", hash = "sha256:51f4dffaa3366ee4a480dd21d5f64eb0fa677248a0c99490aeb8bf311124368c"},
+]
+
+[package.dependencies]
+numpy = ">=1.16.6"
+scikit-learn = ">=0.20"
+scipy = "*"
+
+[package.extras]
+hnsw = ["hnswlib (>=0.4.0,<0.5.0)"]
+pynndescent = ["pynndescent (>=0.5.0,<0.6.0)"]
+
+[[package]]
 name = "opt-einsum"
 version = "3.3.0"
 description = "Optimizing numpys einsum function"
@@ -4437,4 +4474,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "d183441b5d4fe80b529090d7042c54a59b718dfae17cb24313e375034ad24c5c"
+content-hash = "335a62c1ccbe034c0bbb1f342584a51aaa8d749bf3ba0810cf6d6b64654ea217"
