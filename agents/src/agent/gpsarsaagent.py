@@ -41,7 +41,8 @@ class GPSarsaAgent(AbstractAgent):
             action_space=env.action_space,
             kernel_type=kernel_type,
             kernel_args=kernel_args,
-            sparsfication_treshold=sparsification_threshold
+            sparsfication_treshold=sparsification_threshold,
+            state_space=env.observation_space
         )
 
         self._replay_buffer = ReplayBuffer(storage=LazyTensorStorage(

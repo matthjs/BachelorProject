@@ -117,13 +117,15 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                  kernel_type,
                  kernel_args,
                  strategy='thompson_sampling',
-                 sparsfication_treshold=None):
+                 sparsfication_treshold=None,
+                 state_space=None):
         self.device = fetch_device()
         self._data_x = deque(maxlen=max_dataset_size)  # Memory intensive: keep track of N latest samples.
         self._data_y = deque(maxlen=max_dataset_size)
         self._state_size = state_size
         self._action_size = action_space.n
         self._action_space = action_space
+        self._state_space = state_space
 
         self._input_transform = None # Normalize(d=state_size + 1) # InputStandardize(d=state_size + 1)
         self._outcome_transform = Standardize(m=1)  # I am guessing m should be 1
