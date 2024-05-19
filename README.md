@@ -32,3 +32,11 @@ poetry shell
 IDEs like Pycharm will be able to detect the interpreter of this virtual environment.
 
 ## Usage
+
+## TODO
+* Implement Hyperparameter to JSON saving.
+* Add hyperparameter info into CSV file.
+* Finish auto hyperparameter tuning code.
+* General code clean up.
+* Add proper documentation.
+* Add variational GPs and Deep GPs.

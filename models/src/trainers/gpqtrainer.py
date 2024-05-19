@@ -4,16 +4,26 @@ import torch
 from torchrl.data import ReplayBuffer
 
 from gp.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
-from trainers.gptrainer import GaussianProcessTrainer
 from trainers.trainer import AbstractTrainer
 
 
 class GPQTrainer(AbstractTrainer):
+    """
+    Calculates TD targets for batched trajectories. Uses a bayesian optimization module
+    to perform bayesian update.
+    """
     def __init__(self,
                  bayesian_opt_module: AbstractBayesianOptimizerRL,
                  batch_size: int,
                  buf: ReplayBuffer,
                  discount_factor: float):
+        """
+        Constructor.
+        :param bayesian_opt_module: bayesian optimization module to use (e.g., a GP to calculate p(q|D))
+        :param batch_size: how many batches of trajectories are used.
+        :param buf: a ReplayBuffer from the torchrl library.
+        :param discount_factor: `gamma` variable as is seen in the literature.
+        """
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.buf = buf
 
@@ -31,6 +41,11 @@ class GPQTrainer(AbstractTrainer):
         return trajectories[0], trajectories[1], trajectories[2], trajectories[3]
 
     def _construct_target_dataset(self) -> Tuple[torch.tensor, torch.tensor]:
+        """
+        Given a batch of trajectory stored in a buffer, calculate a batch of input output pairs (x_i, y_i)
+        where x_i is a state action pair and y_i is a temporal difference target.
+        :return: state_action_pairs, td_targets.
+        """
         # noinspection DuplicatedCode
         states, actions, rewards, next_states = self._trajectory()
 
@@ -53,7 +68,7 @@ class GPQTrainer(AbstractTrainer):
     def train(self) -> None:
         """
         Performs conditioning on additional training data + optionally refits kernel hyperparameters.
-        NOTE: This is delegated to GaussianProcessTrainer.
+        NOTE: This is delegated to AbstractBayesianOptimizerRL.
         """
         state_action_pairs, td_target = self._construct_target_dataset()
 
