@@ -1,8 +1,33 @@
 from collections import namedtuple
 
-import gym
+import gymnasium as gym
 import torch
+from botorch.models.transforms import Normalize
 from torchrl.data import ReplayBuffer, LazyTensorStorage
+
+
+class Norm:
+    """
+    I am having some issues with mixedGP transform function I do not know why.
+    """
+
+    def __init__(self, in_dim: int, cat_ind: int = 1):
+        self.normalizer = Normalize(d=in_dim)
+        self.reverse_normalizer = Normalize(d=in_dim, reverse=True)
+        self.cat_ind = cat_ind
+
+    def transform(self, data_x: torch.tensor):
+        continuous_features = data_x[:, :-self.cat_ind]
+        continuous_transformed = self.normalizer(continuous_features)
+        categorical_features = data_x[:, -self.cat_ind:]
+        return torch.cat([continuous_transformed, categorical_features], dim=1)
+
+    def untransform(self, data_x):
+        continuous_features = data_x[:, :-self.cat_ind]
+        continuous_transformed = self.reverse_normalizer(continuous_features)
+        categorical_features = data_x[:, -self.cat_ind:]
+        return torch.cat([continuous_transformed, categorical_features], dim=1)
+
 
 def test_e():
     env = gym.make("MountainCar-v0", render_mode="human")

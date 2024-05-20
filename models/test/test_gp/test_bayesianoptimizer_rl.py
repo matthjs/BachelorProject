@@ -1,13 +1,10 @@
 import unittest
 from unittest.mock import MagicMock
 
-import botorch
-import numpy as np
 import torch
 import gymnasium as gym
-from botorch.models.gpytorch import GPyTorchModel
 
-from gp.bayesianoptimizer_rl import BayesianOptimizerRL, append_actions, simple_thompson_action_sampler
+from bayesopt.bayesianoptimizer_rl import BayesianOptimizerRL, append_actions, simple_thompson_action_sampler
 
 
 class TestBayesianOptimizerRL(unittest.TestCase):

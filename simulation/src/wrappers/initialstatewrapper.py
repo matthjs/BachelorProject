@@ -1,7 +1,5 @@
 import gymnasium as gym
 
-import gym
-
 
 class InitialStateWrapper(gym.Wrapper):
     """

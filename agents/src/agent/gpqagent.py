@@ -4,7 +4,7 @@ import torch
 from torchrl.data import ReplayBuffer, LazyTensorStorage, SamplerWithoutReplacement
 
 from agent.abstractagent import AbstractAgent
-from gp.bayesianoptimizer_rl import BayesianOptimizerRL
+from bayesopt.bayesianoptimizer_rl import BayesianOptimizerRL
 from trainers.gpqtrainer import GPQTrainer
 from util.fetchdevice import fetch_device
 from util.processstate import process_state

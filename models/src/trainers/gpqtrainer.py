@@ -3,7 +3,7 @@ from typing import Tuple
 import torch
 from torchrl.data import ReplayBuffer
 
-from gp.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
+from bayesopt.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
 from trainers.trainer import AbstractTrainer
 
 
