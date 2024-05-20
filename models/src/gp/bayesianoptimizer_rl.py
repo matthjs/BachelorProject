@@ -9,7 +9,7 @@ from botorch.posteriors import GPyTorchPosterior
 from gpytorch import ExactMarginalLogLikelihood
 from gpytorch.kernels import Kernel
 from gpytorch.likelihoods import GaussianLikelihood
-from botorch.models.transforms.input import Normalize, InputStandardize
+from botorch.models.transforms.input import Normalize, InputStandardize, ChainedInputTransform
 from loguru import logger
 from matplotlib import pyplot as plt
 from botorch.models.transforms.outcome import Standardize
@@ -20,32 +20,6 @@ from gp.gpviz import plot_gp_contours_with_uncertainty, plot_gp_surface_with_unc
 from kernels.kernelfactory import create_kernel
 from util.fetchdevice import fetch_device
 import gymnasium as gym
-
-
-def visualize_distributions(posterior_distribution, action_size):
-    """
-    Visualize the Gaussian distributions for each action.
-    :param posterior_distribution: Posterior distribution of the Q-function GP model.
-    :param action_size: The number of possible actions.
-    """
-    fig, axs = plt.subplots(action_size, 1, figsize=(8, 6), sharex=True)
-
-    for i in range(action_size):
-        ax = axs[i]
-        mean = posterior_distribution.mean.squeeze()[:, i]
-        std = posterior_distribution.variance.squeeze().sqrt()[:,
-              i]  # Standard deviation is the square root of variance
-        x = torch.arange(len(mean))  # Indices for actions
-
-        # Plot mean and standard deviation as error bars
-        ax.errorbar(x, mean.numpy(), yerr=std.numpy(), fmt='o', label=f'Action {i}')
-        ax.set_ylabel(f'Action {i} Value')
-        ax.set_ylim(mean.min().item() - 1.0, mean.max().item() + 1.0)
-        ax.grid(True)
-
-    plt.xlabel('State-Action Pair Index')
-    plt.tight_layout()
-    plt.show()
 
 
 def append_actions(state: torch.tensor, action_size: int, device=None) -> torch.tensor:
@@ -96,6 +70,29 @@ def simple_thompson_action_sampler(gpq_model: GPyTorchModel,
     return best_action
 
 
+class Norm:
+    """
+    I am having some issues with mixedGP transform function I do not know why.
+    """
+
+    def __init__(self, in_dim: int, cat_ind: int = 1):
+        self.normalizer = Normalize(d=in_dim)
+        self.reverse_normalizer = Normalize(d=in_dim, reverse=True)
+        self.cat_ind = cat_ind
+
+    def transform(self, data_x: torch.tensor):
+        continuous_features = data_x[:, :-self.cat_ind]
+        continuous_transformed = self.normalizer(continuous_features)
+        categorical_features = data_x[:, -self.cat_ind:]
+        return torch.cat([continuous_transformed, categorical_features], dim=1)
+
+    def untransform(self, data_x):
+        continuous_features = data_x[:, :-self.cat_ind]
+        continuous_transformed = self.reverse_normalizer(continuous_features)
+        categorical_features = data_x[:, -self.cat_ind:]
+        return torch.cat([continuous_transformed, categorical_features], dim=1)
+
+
 class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
     """
     Bayesian optimizer.
@@ -128,7 +125,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         self._action_space = action_space
         self._state_space = state_space
 
-        self._input_transform = None  # Normalize(d=state_size + 1) # InputStandardize(d=state_size + 1)
+        self._input_transform = Norm(in_dim=state_size)
         self._outcome_transform = Standardize(m=1)  # I am guessing m should be 1
         # This Standardization is VERY important as we assume the mean function is 0.
         # If not then we will have problems with the Q values.
@@ -146,15 +143,14 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         else:
             raise ValueError(f'Unknown gp model type: {model_str}')
 
-        self._current_gp = self.gp_constructor(train_X=torch.zeros(1, state_size + 1, dtype=torch.double),
-                                               train_Y=torch.zeros(1, 1, dtype=torch.double),
+        self._current_gp = self.gp_constructor(train_X=torch.zeros(100, state_size + 1, dtype=torch.double),
+                                               train_Y=torch.zeros(100, 1, dtype=torch.double),
                                                cat_dims=[self._state_size],
                                                cont_kernel_factory=self._kernel_factory,
-                                               input_transform=self._input_transform,
-                                               outcome_transform=self._outcome_transform).to(self.device)
+                                               input_transform=Normalize(d=state_size + 1),
+                                               outcome_transform=None).to(self.device)
 
         self._random_draws = random_draws
-
         self._dummy_counter = 0
         self._visualize = False
 
@@ -170,15 +166,26 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         self._dummy_counter += 1
 
-        self.extend_dataset(new_train_x, new_train_y)
+        # print("x_new (before) ->", new_train_x)
+        # print("x_new (after) ->", self._input_transform.transform(new_train_x))
+        # print("y_new (before) ->", new_train_y)
+        # print("y_new (after) ->", self._outcome_transform(new_train_y)[0])
+
+        self.extend_dataset(new_train_x,
+                            new_train_y)
 
         train_x, train_y = self.dataset()
+
+        # print("X (before) ->", train_x)
+        # print("X ->", self._input_transform(train_x))
+        # print("Y (before) ->", train_y)
+        # print("Y ->", self._outcome_transform(train_y))
 
         gp = self.gp_constructor(train_X=train_x,
                                  train_Y=train_y,
                                  cat_dims=[self._state_size],
-                                 input_transform=self._input_transform,
-                                 outcome_transform=self._outcome_transform).to(self.device)
+                                 input_transform=Normalize(d=self._state_size + 1),
+                                 outcome_transform=None).to(self.device)
         mll = ExactMarginalLogLikelihood(gp.likelihood, gp)
 
         if hyperparameter_fitting:
@@ -265,7 +272,9 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             return self._action_space.sample()
 
         # Things can be adjusted here later though the magic of *composition*
-        action_tensor = simple_thompson_action_sampler(self._current_gp, state, self._action_size)
+        action_tensor = simple_thompson_action_sampler(self._current_gp,
+                                                       state,
+                                                       self._action_size)
 
         if self._dummy_counter == 3:
             """

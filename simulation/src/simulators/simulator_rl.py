@@ -74,7 +74,6 @@ class SimulatorRL:
         self.df.loc[self.df['agent_id'] == agent_id, "p_val_comp_mean_return_random_greater"] = round(p_value, 3)
         self.df.loc[self.df['agent_id'] == agent_id, "W-statistic"] = round(statistic, 3)
 
-
     def register_agent(self, agent_id: str, agent_type: str) -> 'SimulatorRL':
         cfg = self._config_obj(agent_type, agent_id, self.env_str)
 
@@ -86,7 +85,7 @@ class SimulatorRL:
         return self
 
     def load_agent(self, agent_id: str, agent_type: str, data_dir="../data/saved_agents/") -> 'SimulatorRL':
-        self._config_obj(agent_type, agent_id, self.env_str)        # side effect agents_config[agent_id] = cfg
+        self._config_obj(agent_type, agent_id, self.env_str)  # side effect agents_config[agent_id] = cfg
 
         with open(data_dir + agent_id + ".pkl", "rb") as f:
             self.agents[agent_id] = cloudpickle.load(f)

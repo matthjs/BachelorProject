@@ -28,6 +28,8 @@ def generate_dummy_data(num_samples: int = 50) -> Tuple[torch.Tensor, torch.Tens
     return torch.tensor(inputs, dtype=torch.float64), torch.tensor(targets, dtype=torch.float64).unsqueeze(-1)
 
 
+# R2 visualization
+
 # noinspection DuplicatedCode
 def plot_gp_contours_with_uncertainty(gp_model: GPyTorchModel, x_range: Tuple[float, float],
                                       y_range: Tuple[float, float], d_values: int,
@@ -242,10 +244,10 @@ def plot_gp_point_distribution(gp_model: GPyTorchModel, point: torch.tensor, d_v
     for d in range(d_values):
         with torch.no_grad():
             d_tensor = torch.tensor([d]).to(device=fetch_device())
-            print(d_tensor)
-            print(point)
+            # print(d_tensor)
+            # print(point)
             input_tensor = torch.cat((point, d_tensor), dim=0).unsqueeze(0).to(device=fetch_device())
-            print(input_tensor)
+            # print(input_tensor)
             posterior = gp_model.posterior(input_tensor)
             mean = posterior.mean.item()
             std = posterior.variance.sqrt().item()
