@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import Mock
 
 import torch
-from gp.gp import max_state_action_value
+from gp.variationalgp import max_state_action_value
 
 
 class TestMaxStateActionValue(unittest.TestCase):

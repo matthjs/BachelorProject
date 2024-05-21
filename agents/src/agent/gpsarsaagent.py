@@ -24,7 +24,7 @@ class GPSarsaAgent(AbstractAgent):
                  exploring_starts,
                  max_dataset_size,
                  kernel_type: str,
-                 kernel_args,
+                 kernel_args=None,
                  sparsification_threshold=None):
         super(GPSarsaAgent, self).__init__({}, env.observation_space, env.action_space)
 

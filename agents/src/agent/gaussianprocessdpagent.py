@@ -6,7 +6,7 @@ from agent.abstractdpagent import AbstractDPAgent
 import gymnasium as gym
 import torch
 
-from gp.gp import ExactGaussianProcessRegressor
+from gp.variationalgp import ExactGaussianProcessRegressor
 from trainers.gptrainer import GaussianProcessTrainer
 from util.fetchdevice import fetch_device
 

@@ -306,7 +306,6 @@ class SimulatorRL:
             raise AttributeError("This function should only be run on wrapped StableBaselines agents")
 
         sb_callbacks = [StopTrainingOnMaxEpisodes(max_episodes=num_episodes, verbose=0)]
-        # sb_callbacks = []
 
         for callback in callbacks:
             callback.init_callback(
@@ -322,5 +321,9 @@ class SimulatorRL:
 
         model = agent.stable_baselines_unwrapped()
 
+        # Problem: DQN's epsilon-greedy schedule depends on total_timesteps
+        # parameter, which complicates the use of StopTrainingOnMaxEpisodes.
+        # For instance, if total_timesteps is set arbitrarily large than
+        # DQN will only execute random actions.
         model.learn(total_timesteps=5000, callback=sb_callbacks)
         # model.learn(total_timesteps=int(216942042), callback=sb_callbacks)

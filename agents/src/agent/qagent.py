@@ -11,7 +11,7 @@ class QAgent(ValueAgent):
                  action_space,
                  replay_buffer_size: int,
                  value_model_type_str,
-                 batch_size=200,
+                 batch_size=1,
                  annealing_num_steps=2000,
                  learning_rate=0.01,
                  discount_factor=0.9):

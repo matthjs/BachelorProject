@@ -3,7 +3,7 @@ from hydra import compose, initialize
 
 if __name__ == '__main__':
     # Path to your config file
-    config_path = "./"
+    config_path = "../util/"
 
     # Load the config
     with initialize(config_path=config_path):

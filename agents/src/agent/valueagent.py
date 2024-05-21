@@ -31,10 +31,10 @@ class ValueAgent(AbstractAgent, ABC):
         :param trajectory = (state, action, reward, next_state)
         """
         state, action, reward, next_state = trajectory
-        state_t = torch.as_tensor(state, device=self.device)
+        state_t = torch.as_tensor(state, device=self.device, dtype=torch.double)
         action_t = torch.as_tensor(action, device=self.device)
-        reward_t = torch.as_tensor(reward, device=self.device)
-        next_state_t = torch.as_tensor(next_state, device=self.device)
+        reward_t = torch.as_tensor(reward, device=self.device, dtype=torch.double)
+        next_state_t = torch.as_tensor(next_state, device=self.device, dtype=torch.double)
         self._replay_buffer.add((state_t, action_t, reward_t, next_state_t))
 
     def update(self) -> None:

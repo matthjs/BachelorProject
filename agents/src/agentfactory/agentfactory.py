@@ -29,6 +29,85 @@ class AgentFactory:
         thr.name = agent_type + "_thread_" + str(thr.ident)
 
     @staticmethod
+    def create_agent_configured(agent_type: str, env_str: str, cfg) -> AbstractAgent:
+        env = gym.make(env_str)
+
+        if agent_type == "gpq_agent":
+            return GPQAgent(
+                gp_model_str=cfg.model.gp_model_str,
+                env=env,
+                discount_factor=cfg.model.discount_factor,
+                batch_size=cfg.model.batch_size,
+                replay_buffer_size=cfg.model.replay_buffer_size,
+                exploring_starts=cfg.model.exploring_starts,
+                max_dataset_size=cfg.model.max_dataset_size,
+                kernel_type=cfg.model.kernel_type,
+                kernel_args=cfg.model.kernel,
+                sparsification_threshold=eval(cfg.model.sparsification_threshold)
+            )
+        elif agent_type == "gpsarsa_agent":
+            return GPSarsaAgent(
+                gp_model_str=cfg.model.gp_model_str,
+                env=env,
+                discount_factor=cfg.model.discount_factor,
+                batch_size=cfg.model.batch_size,
+                replay_buffer_size=cfg.model.replay_buffer_size,
+                exploring_starts=cfg.model.exploring_starts,
+                max_dataset_size=cfg.model.max_dataset_size,
+                kernel_type=cfg.model.kernel_type,
+                kernel_args=cfg.model.kernel,
+                sparsification_threshold=eval(cfg.model.sparsification_threshold)
+            )
+        elif agent_type == "sb_dqn":
+            return StableBaselinesAdapter(
+                DQN(
+                    policy=cfg.model.policy,
+                    env=env,
+                    learning_rate=cfg.model.learning_rate,
+                    batch_size=cfg.model.batch_size,
+                    buffer_size=cfg.model.buffer_size,
+                    learning_starts=cfg.model.learning_starts,
+                    gamma=cfg.model.gamma,
+                    target_update_interval=cfg.model.target_update_interval,
+                    train_freq=cfg.model.train_freq,
+                    gradient_steps=cfg.model.gradient_steps,
+                    exploration_fraction=cfg.model.exploration_fraction,
+                    exploration_final_eps=cfg.model.exploration_final_eps,
+                    policy_kwargs=eval(cfg.model.policy_kwargs)
+                )
+            )
+        elif agent_type == "sb_ppo":
+            return StableBaselinesAdapter(
+                PPO(
+                    policy=cfg.model.policy,
+                    env=env,
+                    n_steps=cfg.model.n_steps,
+                    batch_size=cfg.model.batch_size,
+                    gae_lambda=cfg.model.gae_lambda,
+                    gamma=cfg.model.gamma,
+                    n_epochs=cfg.model.n_epochs,
+                    ent_coef=cfg.model.ent_coef,
+                    learning_rate=cfg.model.learning_rate,
+                    clip_range=cfg.model.clip_range
+                )
+            )
+        elif agent_type == "linear_q_agent":
+            return (QAgentBuilder()
+                    .set_env(env)
+                    .set_replay_buffer_size(cfg.model.replay_buffer_size)
+                    .set_batch_size(cfg.model.batch_size)
+                    .set_value_model_type_str(cfg.model.model_type)
+                    .set_buffer_storage_type(LazyTensorStorage)
+                    .set_annealing_num_steps(cfg.model.annealing_num_steps)
+                    .set_learning_rate(cfg.model.learning_rate)
+                    .set_discount_factor(cfg.model.discount_factor)
+                    .build())
+        elif agent_type == "random":
+            return RandomAgent(env)
+
+        raise ValueError("Unsupported agent type")
+
+    @staticmethod
     def create_agent(agent_type: str, env_str: str) -> AbstractAgent:
         """
         Factory method for Agent creation.
@@ -80,8 +159,7 @@ class AgentFactory:
             return GaussianProcessDPAgent(env)
         elif agent_type == "gpq_agent":
             return GPQAgent(gp_model_str="exact_gp",
-                            state_space=obs_space,
-                            action_space=action_space,
+                            env=env,
                             discount_factor=0.99,
                             batch_size=64,
                             replay_buffer_size=64,
@@ -90,84 +168,13 @@ class AgentFactory:
                             sparsification_treshold=0.1)
         elif agent_type == "gpsarsa_agent":
             return GPSarsaAgent(gp_model_str="exact_gp",
-                                state_space=obs_space,
-                                action_space=action_space,
+                                env=env,
                                 discount_factor=0.99,
                                 batch_size=64,
                                 replay_buffer_size=64,
                                 exploring_starts=1000,
-                                max_dataset_size=10000,
-                                sparsification_treshold=None)
+                                max_dataset_size=10000)
         elif agent_type == "random":
             return RandomAgent(env)
 
         raise ValueError("Invalid agent type")
-
-    @staticmethod
-    def create_agent_configured(agent_type: str, env_str: str, cfg) -> AbstractAgent:
-        env = gym.make(env_str)
-
-        if agent_type == "gpq_agent":
-            return GPQAgent(
-                gp_model_str=cfg.model.gp_model_str,
-                env=env,
-                discount_factor=cfg.model.discount_factor,
-                batch_size=cfg.model.batch_size,
-                replay_buffer_size=cfg.model.replay_buffer_size,
-                exploring_starts=cfg.model.exploring_starts,
-                max_dataset_size=cfg.model.max_dataset_size,
-                kernel_type=cfg.model.kernel_type,
-                kernel_args=cfg.model.kernel,
-                sparsification_threshold=eval(cfg.model.sparsification_threshold)
-            )
-        elif agent_type == "gpsarsa_agent":
-            return GPSarsaAgent(
-                gp_model_str=cfg.model.gp_model_str,
-                env=env,
-                discount_factor=cfg.model.discount_factor,
-                batch_size=cfg.model.batch_size,
-                replay_buffer_size=cfg.model.replay_buffer_size,
-                exploring_starts=cfg.model.exploring_starts,
-                max_dataset_size=cfg.model.max_dataset_size,
-                kernel_type=cfg.model.kernel_type,
-                kernel_args=cfg.model.kernel,
-                sparsification_threshold=eval(cfg.model.sparsification_threshold)
-            )
-        elif agent_type == "sb_dqn":
-            # noinspection PyProtectedMember
-            return StableBaselinesAdapter(
-                DQN(
-                    policy=cfg.model.policy,
-                    env=env,
-                    learning_rate=cfg.model.learning_rate,
-                    batch_size=cfg.model.batch_size,
-                    buffer_size=cfg.model.buffer_size,
-                    learning_starts=cfg.model.learning_starts,
-                    gamma=cfg.model.gamma,
-                    target_update_interval=cfg.model.target_update_interval,
-                    train_freq=cfg.model.train_freq,
-                    gradient_steps=cfg.model.gradient_steps,
-                    exploration_fraction=cfg.model.exploration_fraction,
-                    exploration_final_eps=cfg.model.exploration_final_eps,
-                    policy_kwargs=eval(cfg.model.policy_kwargs)
-                )
-            )
-        elif agent_type == "sb_ppo":
-            return StableBaselinesAdapter(
-                PPO(
-                    policy=cfg.model.policy,
-                    env=env,
-                    n_steps=cfg.model.n_steps,
-                    batch_size=cfg.model.batch_size,
-                    gae_lambda=cfg.model.gae_lambda,
-                    gamma=cfg.model.gamma,
-                    n_epochs=cfg.model.n_epochs,
-                    ent_coef=cfg.model.ent_coef,
-                    learning_rate=cfg.model.learning_rate,
-                    clip_range=cfg.model.clip_range
-                )
-            )
-        elif agent_type == "random":
-            return RandomAgent(env)
-
-        raise ValueError("Unsupported agent type")

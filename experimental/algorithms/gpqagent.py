@@ -1,7 +1,7 @@
 from tensordict.nn import TensorDictSequential, TensorDictModule
 from torchrl.envs import GymEnv
 
-from gp.gp import ExactGaussianProcessRegressor
+from gp.variationalgp import ExactGaussianProcessRegressor
 from util.fetchdevice import fetch_device
 
 

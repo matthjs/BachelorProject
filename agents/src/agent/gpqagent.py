@@ -20,7 +20,7 @@ class GPQAgent(AbstractAgent):
                  exploring_starts: int,
                  max_dataset_size: int,
                  kernel_type: str,
-                 kernel_args,
+                 kernel_args=None,      # Kernel args are not really used.
                  sparsification_threshold=None):
         super(GPQAgent, self).__init__({}, env.observation_space, env.action_space)
 
