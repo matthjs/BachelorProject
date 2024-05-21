@@ -182,12 +182,10 @@ class SimulatorRL:
         return self
 
     def evaluate_agents(self,
-                        eval_env_str: str,
                         num_episodes: int,
                         agent_id_list: list[str] = None,
                         callbacks: list[AbstractCallback] = None,
-                        concurrent=False,
-                        logging=True) -> 'SimulatorRL':
+                        concurrent=False) -> 'SimulatorRL':
         if callbacks is None:
             callbacks = [RewardCallback()]
 

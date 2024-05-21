@@ -6,7 +6,8 @@ model:
   exploring_starts: 500
   max_dataset_size: 5000
   sparsification_threshold: None
-  kernel_type: "rff"
+  gp_likelihood_noise_constraint: None
+  kernel_type: "matern"
 
   # Below is not used yet.
   kernel:

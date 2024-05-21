@@ -9,6 +9,7 @@ from gpytorch import ExactMarginalLogLikelihood
 from gpytorch.likelihoods import GaussianLikelihood
 from botorch.models.transforms.input import Normalize
 from botorch.models.transforms.outcome import Standardize
+from loguru import logger
 
 from bayesopt.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
 from bayesopt.acquisition import simple_thompson_action_sampler, upper_confidence_bound_selector, ThompsonSampling, \
@@ -101,20 +102,10 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         self._dummy_counter += 1
 
-        # print("x_new (before) ->", new_train_x)
-        # print("x_new (after) ->", self._input_transform.transform(new_train_x))
-        # print("y_new (before) ->", new_train_y)
-        # print("y_new (after) ->", self._outcome_transform(new_train_y)[0])
-
         self.extend_dataset(new_train_x,
                             new_train_y)
 
         train_x, train_y = self.dataset()
-
-        # print("X (before) ->", train_x)
-        # print("X ->", self._input_transform(train_x))
-        # print("Y (before) ->", train_y)
-        # print("Y ->", self._outcome_transform(train_y))
 
         gp = self.gp_constructor(train_X=train_x,
                                  train_Y=train_y,
@@ -225,6 +216,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                                              title='Action-value GP'
                                              )
             """
+            logger.debug(f"Dataset size {len(self._data_x)}")
             plot_gp_point_distribution(self._current_gp,
                                        state,
                                        self._action_size,
