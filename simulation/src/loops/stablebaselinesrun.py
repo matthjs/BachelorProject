@@ -4,8 +4,6 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecVideoRecorder, VecFrameStack
 from stable_baselines3.common.evaluation import evaluate_policy
 
-from metricstracker.metricstracker import MetricsTracker
-
 
 def dqn_train(env_str='MountainCar-v0', total_time_step=int(1.2e5)):
     env = gym.make(env_str)

@@ -141,6 +141,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         res2 = torch.matmul(res, kernel_vec.t())
         test_val = (kernel_fun(test_point, test_point) - res2).to_dense()
 
+        # print("kernel val", kernel_fun(test_point, test_point).to_dense())
+
         print(f"test result test_val > spars_tresh -> {test_val.item()} > {self._sparsification_treshold}")
         return test_val.item() > self._sparsification_treshold
 
@@ -149,24 +151,10 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         train_x = torch.cat(list(self._data_x))
         covar_matrix = covar_fun(train_x, train_x)
 
-        # Problem: this is a sequential
-        candidates_x = []
-        candidates_y = []
         for x, y in zip(new_train_x, new_train_y):
             if self._linear_independence_test(x.unsqueeze(0), train_x, covar_matrix, covar_fun):
-                candidates_x.append(x)
-                candidates_y.append(y)
-
-        if not candidates_x:
-            return
-
-        candidates_x_tensor = torch.cat(candidates_x)
-        candidates_y_tensor = torch.cat(candidates_y)
-
-        print("TENSOR SHAPE ->", candidates_x_tensor.shape)
-
-        self._data_x.append(candidates_x_tensor)
-        self._data_y.append(candidates_y_tensor)
+                self._data_x.append(x.unsqueeze(0))
+                self._data_y.append(y.unsqueeze(0))
 
     def extend_dataset(self, new_train_x: torch.tensor, new_train_y: torch.tensor) -> None:
         # dequeue evaluates to False if empty.
