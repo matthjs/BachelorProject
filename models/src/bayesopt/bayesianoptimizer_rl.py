@@ -174,8 +174,10 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             self._sparse_add(new_train_x, new_train_y)
             return
 
-        self._data_x.append(new_train_x)
-        self._data_y.append(new_train_y)
+        # Maybe there is a better way to do this
+        for x, y in zip(new_train_x, new_train_y):
+            self._data_x.append(x.unsqueeze(0))
+            self._data_y.append(y.unsqueeze(0))
 
     def dataset(self) -> tuple[torch.tensor, torch.tensor]:
         train_x = torch.cat(list(self._data_x))

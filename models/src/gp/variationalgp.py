@@ -23,8 +23,11 @@ from gpytorch.priors import GammaPrior
 from gpytorch.variational import _VariationalDistribution, _VariationalStrategy, VariationalStrategy
 from torch import Tensor
 
+
 class ExactGaussianProcessRegressor:
     pass
+
+
 class MixedSingleTaskVariationalGP(SingleTaskVariationalGP):
     def __init__(
             self,
