@@ -7,7 +7,7 @@ model:
   max_dataset_size: 1500
   sparsification_threshold: None
   gp_likelihood_noise_constraint: None
-  kernel_type: "matern"
+  kernel_type: "rff"
 
   # Below is not used yet.
   # Probably not use at all, kernel parameters are
