@@ -32,3 +32,16 @@ class QAgent(ValueAgent):
 
         print(f"CONSTRUCTED Q AGENT WITH BATCH_SIZE:{batch_size}, ANNEALING_NUM_STEPS:{annealing_num_steps},"
               f"learning_rate:{learning_rate}, DISCOUNT_FACTOR:{discount_factor}")
+
+        self._hyperparameters = {
+            'value_model': value_model_type_str,
+            'batch_size': batch_size,
+            'replay_buffer_size': replay_buffer_size,
+            'annealing_num_steps': annealing_num_steps,
+            'learning_rate': learning_rate,
+            'discount_factor': discount_factor
+        }
+
+    def hyperparameters(self) -> dict:
+        return self._hyperparameters
+

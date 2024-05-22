@@ -85,3 +85,6 @@ class AbstractAgent(ABC):
     @property
     def env_info(self) -> EnvInfo:
         return self._env_info
+
+    def hyperparameters(self) -> dict:
+        return {}

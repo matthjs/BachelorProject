@@ -2,6 +2,7 @@ from collections import namedtuple
 from threading import current_thread
 
 import torch
+from loguru import logger
 from torchrl.data import ReplayBuffer
 
 from trainers.rltrainer import RLTrainer
@@ -44,21 +45,17 @@ class QTrainer(RLTrainer):
         """
         trajectories = self.buf.sample(batch_size=self.batch_size)
 
-        print("Traj", trajectories)
-
         return trajectories[0], trajectories[1], trajectories[2], trajectories[3]
 
-    def _compute_trajectory_batches(self) -> tuple[torch.tensor, torch.tensor, torch.tensor, torch.tensor, torch.tensor]:
+    def _compute_trajectory_batches(self) -> tuple[torch.tensor, torch.tensor, torch.tensor, torch.tensor]:
         state_batch, action_batch, reward_batch, next_state_batch = self._trajectories()
-
-        print("PRE NEXT STATE BATCH", next_state_batch)
 
         # Compute next_state batch. Here
         non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, next_state_batch)),
                                       device=self.device, dtype=torch.bool)
         non_final_next_state_batch = torch.cat([s for s in next_state_batch if s is not None])
 
-        return state_batch, action_batch, reward_batch, non_final_next_state_batch, non_final_mask
+        return state_batch, action_batch, reward_batch, next_state_batch # non_final_next_state_batch, non_final_mask
 
     def _evaluate_q_network(self, state_batch, action_batch):
         """
@@ -69,8 +66,7 @@ class QTrainer(RLTrainer):
         """
         model_output = self.value_model(state_batch)
         q_values = []
-        print("input shape ->", state_batch.shape)
-        print(state_batch)
+        # print("input shape ->", state_batch.shape)
         for idx, vec in enumerate(model_output):
             # print("idx, vec", idx, vec)
             q_values.append(vec[action_batch[idx]])
@@ -82,22 +78,22 @@ class QTrainer(RLTrainer):
         The computation here takes into account whether we are in a final state or not.
         Because if next_state is a final state then the target is just the reward.
         Based on stable-baselines DQN implementation.
+        :param reward_batch:
         :param next_state_batch:
         :param mask:
         :return: the TD target.
         """
-        # DQN would use torch.no_grad, but I guess in this case you will not.
-
-        with torch.no_grad():
             # max_q_value, _ = torch.max(self.target_model(next_state_batch), dim=0)
-            print("Target input shape ->", next_state_batch.shape)
-            print("Target input ->", next_state_batch)
+        # print("Target input shape ->", next_state_batch.shape)
+            # print("Target input ->", next_state_batch)
 
-            next_state_values = self.target_model(next_state_batch).max()
-            print("target output shape ->", next_state_values.shape)
-            print("Target output ->", next_state_values)
+            # print(self.target_model(next_state_batch))
+        next_state_values, _ = self.target_model(next_state_batch).max(dim=1)
+            # print("Target output ->", next_state_values)
+        # print("target output shape ->", next_state_values.shape)
 
-            td_target = (next_state_values * self.discount_factor) + reward_batch
+        td_target = (next_state_values * self.discount_factor) + reward_batch
+        # print("td target shape ->", td_target.shape)
         return td_target
 
     def train(self) -> None:
@@ -109,10 +105,11 @@ class QTrainer(RLTrainer):
             return
 
         for _ in range(self.gradient_steps):
-            state_batch, action_batch, reward_batch, next_state_batch, non_final_mask = self._compute_trajectory_batches()
+            state_batch, action_batch, reward_batch, next_state_batch = self._compute_trajectory_batches()
 
             state_action_values = self._evaluate_q_network(state_batch, action_batch)
-            td_target = self.evaluate_target_network(next_state_batch, reward_batch, non_final_mask)
+            # print("state action values shape", state_action_values.shape)
+            td_target = self.evaluate_target_network(next_state_batch, reward_batch, None)
 
             # The loss is the MSE of the q-output of the current state and the temporal difference target.
             # Note that the TD target is off-policy in Q-learning.
@@ -120,10 +117,12 @@ class QTrainer(RLTrainer):
 
             # gradient descent step
             self.optimizer.zero_grad()
-            loss.required_grad = True
+
             loss.backward()
             # torch.nn.utils.clip_grad_value_(self.value_model.parameters(), 100)
             self.optimizer.step()
+
+            # logger.debug(f"loss {loss.item():.3f}")
 
             # MetricsTracker().record_loss(current_thread().name, loss.item())
 

@@ -29,7 +29,7 @@ class AgentFactory:
         thr.name = agent_type + "_thread_" + str(thr.ident)
 
     @staticmethod
-    def create_agent_configured(agent_type: str, env_str: str, cfg) -> AbstractAgent:
+    def create_agent_configured(agent_type: str, env_str: str, cfg) -> tuple[AbstractAgent, dict]:
         env = gym.make(env_str)
 
         if agent_type == "gpq_agent":
@@ -44,7 +44,16 @@ class AgentFactory:
                 kernel_type=cfg.model.kernel_type,
                 kernel_args=cfg.model.kernel,
                 sparsification_threshold=eval(cfg.model.sparsification_threshold)
-            )
+            ), {
+                'gp_model_str': cfg.model.gp_model_str,
+                'discount_factor': cfg.model.discount_factor,
+                'batch_size': cfg.model.batch_size,
+                'replay_buffer_size': cfg.model.replay_buffer_size,
+                'exploring_starts': cfg.model.exploring_starts,
+                'max_dataset_size': cfg.model.max_dataset_size,
+                'kernel_type': cfg.model.kernel_type,
+                'sparsification_threshold': eval(cfg.model.sparsification_threshold)
+            }
         elif agent_type == "gpsarsa_agent":
             return GPSarsaAgent(
                 gp_model_str=cfg.model.gp_model_str,
@@ -57,7 +66,16 @@ class AgentFactory:
                 kernel_type=cfg.model.kernel_type,
                 kernel_args=cfg.model.kernel,
                 sparsification_threshold=eval(cfg.model.sparsification_threshold)
-            )
+            ), {
+                'gp_model_str': cfg.model.gp_model_str,
+                'discount_factor': cfg.model.discount_factor,
+                'batch_size': cfg.model.batch_size,
+                'replay_buffer_size': cfg.model.replay_buffer_size,
+                'exploring_starts': cfg.model.exploring_starts,
+                'max_dataset_size': cfg.model.max_dataset_size,
+                'kernel_type': cfg.model.kernel_type,
+                'sparsification_threshold': eval(cfg.model.sparsification_threshold)
+            }
         elif agent_type == "sb_dqn":
             return StableBaselinesAdapter(
                 DQN(
@@ -75,7 +93,20 @@ class AgentFactory:
                     exploration_final_eps=cfg.model.exploration_final_eps,
                     policy_kwargs=eval(cfg.model.policy_kwargs)
                 )
-            )
+            ), {
+                'policy': cfg.model.policy,
+                'learning_rate': cfg.model.learning_rate,
+                'batch_size': cfg.model.batch_size,
+                'buffer_size': cfg.model.buffer_size,
+                'learning_starts': cfg.model.learning_starts,
+                'gamma': cfg.model.gamma,
+                'target_update_interval': cfg.model.target_update_interval,
+                'train_freq': cfg.model.train_freq,
+                'gradient_steps': cfg.model.gradient_steps,
+                'exploration_fraction': cfg.model.exploration_fraction,
+                'exploration_final_eps': cfg.model.exploration_final_eps,
+                'policy_kwargs': eval(cfg.model.policy_kwargs)
+            }
         elif agent_type == "sb_ppo":
             return StableBaselinesAdapter(
                 PPO(
@@ -90,7 +121,17 @@ class AgentFactory:
                     learning_rate=cfg.model.learning_rate,
                     clip_range=cfg.model.clip_range
                 )
-            )
+            ), {
+                'policy': cfg.model.policy,
+                'n_steps': cfg.model.n_steps,
+                'batch_size': cfg.model.batch_size,
+                'gae_lambda': cfg.model.gae_lambda,
+                'gamma': cfg.model.gamma,
+                'n_epochs': cfg.model.n_epochs,
+                'ent_coef': cfg.model.ent_coef,
+                'learning_rate': cfg.model.learning_rate,
+                'clip_range': cfg.model.clip_range
+            }
         elif agent_type == "linear_q_agent":
             return (QAgentBuilder()
                     .set_env(env)
@@ -101,9 +142,16 @@ class AgentFactory:
                     .set_annealing_num_steps(cfg.model.annealing_num_steps)
                     .set_learning_rate(cfg.model.learning_rate)
                     .set_discount_factor(cfg.model.discount_factor)
-                    .build())
+                    .build()), {
+                    'value_model': cfg.model.model_type,
+                    'batch_size': cfg.model.batch_size,
+                    'replay_buffer_size': cfg.model.replay_buffer_size,
+                    'annealing_num_steps': cfg.model.annealing_num_steps,
+                    'learning_rate': cfg.model.learning_rate,
+                    'discount_factor': cfg.model.learning_rate
+        }
         elif agent_type == "random":
-            return RandomAgent(env)
+            return RandomAgent(env), {}
 
         raise ValueError("Unsupported agent type")
 

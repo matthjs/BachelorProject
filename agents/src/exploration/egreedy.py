@@ -9,7 +9,7 @@ from util.fetchdevice import fetch_device
 
 
 def process_state(state):
-    return torch.from_numpy(state).to(device=fetch_device())
+    return torch.from_numpy(state).to(device=fetch_device(), dtype=torch.float64)
 
 
 class EpsilonGreedy(AbstractEpsilonGreedy):
@@ -29,7 +29,6 @@ class EpsilonGreedy(AbstractEpsilonGreedy):
         :param annealing_num_steps: number of steps it will take for epsilon to reach the eps_end value.
         Defaults to 1000.
         """
-        super().__init__(model, action_space, eps_init, eps_end, annealing_num_steps)
         self._model = model
         self._action_space = action_space
         self._epsilon = eps_init

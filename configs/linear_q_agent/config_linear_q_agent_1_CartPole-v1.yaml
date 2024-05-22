@@ -7,7 +7,7 @@ model:
   exploring_starts: 500
   max_dataset_size: 5000
   annealing_num_steps: 3000
-  gradient_steps: 1
+  gradient_steps: 4
 
 training:
   n_timesteps: !!float 5e4

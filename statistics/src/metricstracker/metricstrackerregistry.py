@@ -1,4 +1,3 @@
-from metricstracker.metricstracker2 import MetricsTracker2
 from metricstracker.metricstracker3 import MetricsTracker3
 
 

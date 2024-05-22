@@ -20,6 +20,7 @@ class MetricsTracker3:
         self._aggregates: Dict[str, Dict[str, Welford]] = {}
         " map: metric_name -> {agent_type: ([means], [vars])}"
         self._aggregates_history: Dict[str, Dict[str, tuple]] = {}
+        self._values_history: Dict[str, Dict[str, List[float]]] = {}
 
     def to_csv(self, filename: str) -> None:
         """
@@ -32,6 +33,7 @@ class MetricsTracker3:
 
     def register_metric(self, metric_name: str) -> None:
         self._aggregates[metric_name] = {}
+        self._values_history[metric_name] = {}
         self._aggregates_history[metric_name] = defaultdict(lambda: ([], []))
 
     def plot_metric(self, metric_name, plot_path="./", x_axis_label="Episodes", y_axis_label='Average',
@@ -82,9 +84,11 @@ class MetricsTracker3:
                 raise AttributeError(f"Metric name {metric_name} not registered")
             if agent_id not in self._aggregates[metric_name]:
                 self._aggregates[metric_name][agent_id] = Welford()
+                self._values_history[metric_name][agent_id] = []
 
             # Update mean, var estimate
             self._aggregates[metric_name][agent_id].update_aggr(val)
+            self._values_history[metric_name][agent_id].append(val)
             means, variances = self._aggregates_history[metric_name][agent_id]
             mean, variance = self._aggregates[metric_name][agent_id].get_curr_mean_variance()
             means.append(mean)
@@ -107,3 +111,7 @@ class MetricsTracker3:
     def metric_history(self, metric_name: str) -> dict[str, tuple]:
         with self._lock:
             return self._aggregates_history[metric_name]
+
+    def value_history(self, metric_name: str) -> dict[str, List[float]]:
+        with self._lock:
+            return self._values_history[metric_name]

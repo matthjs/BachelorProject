@@ -18,10 +18,12 @@ class AbstractCallback(ABC):
         self.agent_config = None
         self.metrics_tracker_registry = None
         self.df = None
+        self.experiment_id = None
 
         self._lock = threading.Lock()
 
     def init_callback(self,
+                      experiment_id: str,
                       mode: str,
                       agent: AbstractAgent,
                       agent_id: str,
@@ -34,6 +36,7 @@ class AbstractCallback(ABC):
             raise ValueError(f"Invalid mode {mode}.")
         self.mode = mode
 
+        self.experiment_id = experiment_id
         self.agent = agent
         self.agent_id = agent_id
         self.agent_config = agent_config

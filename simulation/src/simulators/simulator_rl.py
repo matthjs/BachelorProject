@@ -26,7 +26,7 @@ class SimulatorRL:
 
     """
 
-    def __init__(self, env_str: str, experiment_id="simulation", verbose: int = 1):
+    def __init__(self, env_str: str, experiment_id="simulation", verbose: int = 2):
         self.df = pd.DataFrame()
         self.metrics_tracker_registry = MetricsTrackerRegistry()  # Singleton!
         self.metrics_tracker_registry.register_tracker("train")
@@ -57,8 +57,10 @@ class SimulatorRL:
         self.agents_configs[agent_id] = cfg
         return cfg
 
-    def _add_agent_to_df(self, agent_id: str, agent_type: str) -> None:
-        new_row_values = {"agent_id": agent_id, "agent_type": agent_type}
+    def _add_agent_to_df(self, agent_id: str, agent_type: str, hyperparams=None) -> None:
+        if hyperparams is None:
+            hyperparams = {}
+        new_row_values = {"agent_id": agent_id, "agent_type": agent_type, "hyperparams": hyperparams}
         new_row_df = pd.DataFrame([new_row_values])
         self.df = pd.concat([self.df, new_row_df], ignore_index=True)
 
@@ -69,18 +71,30 @@ class SimulatorRL:
         statistic, p_value = ranksums(means, means_random, alternative='greater')
 
         if self.verbose > 0:
-            logger.info(f"{agent_id} p-value: {p_value}")
+            logger.info(f"{agent_id} p-value (cuml): {p_value}")
 
-        self.df.loc[self.df['agent_id'] == agent_id, "p_val_comp_mean_return_random_greater"] = round(p_value, 3)
-        self.df.loc[self.df['agent_id'] == agent_id, "W-statistic"] = round(statistic, 3)
+        self.df.loc[self.df['agent_id'] == agent_id, "p_val_cuml_return_train_>"] = round(p_value, 3)
+        self.df.loc[self.df['agent_id'] == agent_id, "W-statistic_cuml"] = round(statistic, 3)
+
+    def _signtest_eval_with_random_policy(self, agent_id: str):
+        tracker = self.metrics_tracker_registry.get_tracker("eval")
+        return_history_random = tracker.value_history("return").get("random")
+        return_history = tracker.value_history("return").get(agent_id)
+        statistic, p_value = ranksums(return_history, return_history_random, alternative='greater')
+
+        if self.verbose > 0:
+            logger.info(f"{agent_id} p-value (returns eval): {p_value}")
+
+        self.df.loc[self.df['agent_id'] == agent_id, "p_val_return_eval_>"] = round(p_value, 3)
+        self.df.loc[self.df['agent_id'] == agent_id, "W-statistic_return_eval"] = round(statistic, 3)
 
     def register_agent(self, agent_id: str, agent_type: str) -> 'SimulatorRL':
         cfg = self._config_obj(agent_type, agent_id, self.env_str)
 
-        agent = self.agent_factory.create_agent_configured(agent_type, self.env_str, cfg)
+        agent, hyperparams = self.agent_factory.create_agent_configured(agent_type, self.env_str, cfg)
         self.agents[agent_id] = agent
 
-        self._add_agent_to_df(agent_id, agent_type)
+        self._add_agent_to_df(agent_id, agent_type, hyperparams)
 
         return self
 
@@ -125,6 +139,11 @@ class SimulatorRL:
         return self
 
     def save_agents(self, agent_id_list: list[str] = None, save_dir="../data/saved_agents/") -> 'SimulatorRL':
+        save_dir = save_dir + self.experiment_id + "/"
+
+        # Ensure the save directory exists
+        os.makedirs(save_dir, exist_ok=True)
+
         if self.verbose > 1:
             logger.info(f"Saving agents to {save_dir}...")
 
@@ -211,6 +230,9 @@ class SimulatorRL:
         else:
             raise NotImplementedError("OOPS I did not implement this yet my bad.")
 
+        for agent_id in agent_id_list:
+            self._signtest_eval_with_random_policy(agent_id)
+
         return self
 
     def play(self, agent_id: str, num_episodes: int) -> None:
@@ -253,6 +275,7 @@ class SimulatorRL:
 
         for callback in callbacks:
             callback.init_callback(
+                self.experiment_id,
                 mode,
                 agent,
                 agent_id,
@@ -309,6 +332,7 @@ class SimulatorRL:
 
         for callback in callbacks:
             callback.init_callback(
+                self.experiment_id,
                 "train",
                 agent,
                 agent_id,
@@ -325,5 +349,5 @@ class SimulatorRL:
         # parameter, which complicates the use of StopTrainingOnMaxEpisodes.
         # For instance, if total_timesteps is set arbitrarily large than
         # DQN will only execute random actions.
-        model.learn(total_timesteps=5000, callback=sb_callbacks)
+        model.learn(total_timesteps=int(5e4), callback=sb_callbacks)
         # model.learn(total_timesteps=int(216942042), callback=sb_callbacks)

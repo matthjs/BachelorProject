@@ -22,6 +22,7 @@ class UsageCallback(AbstractCallback):
         self.memory_before = None
 
     def init_callback(self,
+                      experiment_id: str,
                       mode: str,
                       agent: AbstractAgent,
                       agent_id: str,
@@ -30,7 +31,7 @@ class UsageCallback(AbstractCallback):
                       metrics_tracker_registry,
                       logging=False,
                       extra=None):
-        super().init_callback(mode, agent, agent_id, agent_config, df, metrics_tracker_registry, logging, extra)
+        super().init_callback(experiment_id, mode, agent, agent_id, agent_config, df, metrics_tracker_registry, logging, extra)
 
     def _save_to_dataframe(self, execution_time):
         self.df.loc[self.df['agent_id'] == self.agent_id, "execution time (sec) " + self.mode] \

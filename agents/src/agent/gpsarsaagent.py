@@ -57,6 +57,17 @@ class GPSarsaAgent(AbstractAgent):
             discount_factor=discount_factor
         )
 
+        self._hyperparameters = {
+            'gp_model': gp_model_str,
+            'discount_factor': discount_factor,
+            'batch_size': batch_size,
+            'replay_buffer_size': replay_buffer_size,
+            'exploring_starts': exploring_starts,
+            'max_dataset_size': max_dataset_size,
+            'kernel_type': kernel_type,
+            'sparsification_treshold': sparsification_threshold
+        }
+
     def save_model(self, path: str):
         with open(path + "gpsarsa_bayesianoptimizer.dump", "wb") as f:
             pickle.dump(self._exploration_policy, f)
@@ -92,3 +103,6 @@ class GPSarsaAgent(AbstractAgent):
 
     def policy(self, state):
         return self._exploration_policy.choose_next_action(process_state(state))
+
+    def hyperparameters(self) -> dict:
+        return self._hyperparameters

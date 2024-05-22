@@ -17,6 +17,7 @@ class LinearModel(nn.Module):
         """
         super(LinearModel, self).__init__()
         self._linear = nn.Linear(input_size, output_size)
+        self.double()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """

@@ -19,11 +19,12 @@ def test_load_experiment():
 if __name__ == "__main__":
     sim = SimulatorRL("CartPole-v1", experiment_id="experiment_UCB")
     (sim
+     .register_agent("linear_q_agent_1", "linear_q_agent")
      .register_agent("gpq_agent_1", "gpq_agent")
      .register_agent("gpsarsa_agent_1", "gpsarsa_agent")
      .register_agent("sb_dqn_1", "sb_dqn")
      .register_agent("sb_ppo_1", "sb_ppo")
-     .train_agents(num_episodes=150, concurrent=False,
+     .train_agents(num_episodes=10, concurrent=False,
                    callbacks=[RewardCallback(), UsageCallback()])
      .evaluate_agents(10, callbacks=[RewardCallback(), UsageCallback()])
      .data_to_csv()
