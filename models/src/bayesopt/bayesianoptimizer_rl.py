@@ -14,7 +14,8 @@ from loguru import logger
 from bayesopt.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
 from bayesopt.acquisition import simple_thompson_action_sampler, upper_confidence_bound_selector, ThompsonSampling, \
     UpperConfidenceBound, GPEpsilonGreedy
-from gp.gpviz import plot_gp_point_distribution
+from gp.gpviz import plot_gp_point_distribution, plot_gp_contours_with_uncertainty, plot_gp_surface_with_uncertainty
+from gp.gpviz2 import plot_gp_contours_with_uncertainty2
 from kernels.kernelfactory import create_kernel
 from util.fetchdevice import fetch_device
 import gymnasium as gym
@@ -66,7 +67,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             # Then again, maybe it does not really matter.
             self.gp_constructor = MixedSingleTaskGP
             self.likelihood_constructor = GaussianLikelihood
-            # Just use the standard Matern kernel for now.
         else:
             raise ValueError(f'Unknown gp model type: {model_str}')
 
@@ -190,23 +190,23 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         action_tensor = self._gp_action_selector.action(self._current_gp, state)
 
         if self._dummy_counter == 3:
+            plot_gp_contours_with_uncertainty2(self._current_gp,
+                                               4,
+                                               self._action_size,
+                                               (2, 3),
+                                               highlight_point=(state[2], state[3], action_tensor.item()),
+                                               title='Action-value GP contour'
+                                               )
             """
-            plot_gp_contours_with_uncertainty(self._current_gp,
-                                              (self._state_space.low[0], self._state_space.high[0]),
-                                              (self._state_space.low[1], self._state_space.high[1]),
-                                              self._action_size,
-                                              highlight_point=(state[0], state[1], action_tensor.item()),
-                                              title='Action-value GP contour'
-                                              )
             plot_gp_surface_with_uncertainty(self._current_gp,
-                                             (self._state_space.low[0], self._state_space.high[0]),
-                                             (self._state_space.low[1], self._state_space.high[1]),
+                                             (0, 1),
+                                             (0, 1),
                                              self._action_size,
-                                             highlight_point=(state[0], state[1], action_tensor.item()),
+                                             highlight_point=(state[2], state[3], action_tensor.item()),
                                              title='Action-value GP'
                                              )
-            """
             logger.debug(f"Dataset size {len(self._data_x)}")
+            """
             plot_gp_point_distribution(self._current_gp,
                                        state,
                                        self._action_size,

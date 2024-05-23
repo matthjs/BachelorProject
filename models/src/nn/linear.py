@@ -19,6 +19,18 @@ class LinearModel(nn.Module):
         self._linear = nn.Linear(input_size, output_size)
         self.double()
 
+    def _normalize_to_unit_cube(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Normalize the input tensor to the unit cube [0, 1].
+
+        :param x: Input tensor of shape (batch_size, input_size).
+        :return: Normalized tensor of shape (batch_size, input_size).
+        """
+        min_vals = torch.min(x, dim=0, keepdim=True).values
+        max_vals = torch.max(x, dim=0, keepdim=True).values
+        normalized_x = (x - min_vals) / (max_vals - min_vals)
+        return normalized_x
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass of the linear model.
@@ -26,6 +38,7 @@ class LinearModel(nn.Module):
         :param x: Input tensor of shape (batch_size, input_size).
         :return: Output tensor of shape (batch_size, output_size).
         """
+        x = self._normalize_to_unit_cube(x)
         out = self._linear(x)
         return out
 
