@@ -1,6 +1,3 @@
-"""
-This module is probably not necessary anymore, since botorch GPs are also GPytorch GPs.
-"""
 from botorch.models import SingleTaskVariationalGP
 from typing import Any, Callable, Dict, List, Optional, Type, Union
 
@@ -28,6 +25,7 @@ class ExactGaussianProcessRegressor:
     pass
 
 
+# noinspection PyPep8Naming
 class MixedSingleTaskVariationalGP(SingleTaskVariationalGP):
     def __init__(
             self,
@@ -95,6 +93,7 @@ class MixedSingleTaskVariationalGP(SingleTaskVariationalGP):
                 one has to instantiate the transform with `transform_on_train` == False
                 and pass in the already transformed input.
         """
+
         if len(cat_dims) == 0:
             raise ValueError(
                 "Must specify categorical dimensions for MixedSingleTaskGP"
@@ -121,6 +120,8 @@ class MixedSingleTaskVariationalGP(SingleTaskVariationalGP):
                     lengthscale_constraint=GreaterThan(1e-04),
                 )
 
+        """
+        Delegate likelihood instantiation to SingleTaskVariationalGP.
         if likelihood is None:
             # This Gamma prior is quite close to the Horseshoe prior
             min_noise = 1e-5 if train_X.dtype == torch.float else 1e-6
@@ -131,7 +132,7 @@ class MixedSingleTaskVariationalGP(SingleTaskVariationalGP):
                 ),
                 noise_prior=GammaPrior(0.9, 10.0),
             )
-
+        """
         d = train_X.shape[-1]
         cat_dims = normalize_indices(indices=cat_dims, d=d)
         ord_dims = sorted(set(range(d)) - set(cat_dims))
