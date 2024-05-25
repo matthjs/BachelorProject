@@ -1,0 +1,3 @@
+agent_id,agent_type,hyperparams,num_episodes (train),avg return train,stdev return train,execution time (sec) train,p_val_cuml_return_train_>,W-statistic_cuml,num_episodes (eval),avg return eval,stdev return eval,execution time (sec) eval,p_val_return_eval_>,W-statistic_return_eval
+random,random,{},150.0,22.687,11.745,0.034,0.5,0.0,10.0,22.8,10.922,0.005,0.5,0.0
+linear_q_agent_1,linear_q_agent,"{'value_model': 'linear', 'batch_size': 64, 'replay_buffer_size': 128, 'annealing_num_steps': 3000, 'learning_rate': 0.0023, 'discount_factor': 0.0023}",150.0,22.153,13.363,32.67,0.03,1.874,10.0,22.6,11.017,0.086,0.619,-0.302

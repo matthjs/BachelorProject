@@ -1,4 +1,3 @@
-from botorch.models import SingleTaskVariationalGP
 from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 import torch
@@ -19,6 +18,8 @@ from gpytorch.likelihoods.likelihood import Likelihood
 from gpytorch.priors import GammaPrior
 from gpytorch.variational import _VariationalDistribution, _VariationalStrategy, VariationalStrategy
 from torch import Tensor
+
+from gp.approxgpcopy import SingleTaskVariationalGP
 
 
 class ExactGaussianProcessRegressor:
@@ -174,6 +175,7 @@ class MixedSingleTaskVariationalGP(SingleTaskVariationalGP):
                 )
             )
             covar_module = sum_kernel + prod_kernel
+            print("FINISHED CONSTRUCTING COMBINED KERNEL.")
         super().__init__(
             train_X=train_X,
             train_Y=train_Y,
