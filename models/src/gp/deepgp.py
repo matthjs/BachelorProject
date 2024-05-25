@@ -104,6 +104,7 @@ class BotorchDeepGP(DeepGP, GPyTorchModel):
         self.last_layer = last_layer
         self.likelihood = GaussianLikelihood()
         self._num_outputs = 1
+        self.double()
 
     def forward(self, inputs):
         hidden_rep1 = self.hidden_layer(inputs)

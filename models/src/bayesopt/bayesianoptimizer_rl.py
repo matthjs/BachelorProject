@@ -126,9 +126,9 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         train_x, train_y = self.dataset()
 
-        print(train_x.shape)
-        print(train_y.shape)
-        print(train_y.squeeze(1).shape)
+        # print(train_x.shape)
+        # print(train_y.shape)
+        # print(train_y.squeeze(1).shape)
 
         gp = self._construct_gp(train_x, train_y)
 
