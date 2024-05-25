@@ -14,8 +14,10 @@ from loguru import logger
 from bayesopt.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
 from bayesopt.acquisition import simple_thompson_action_sampler, upper_confidence_bound_selector, ThompsonSampling, \
     UpperConfidenceBound, GPEpsilonGreedy
+from gp.fitvariationalgp import fit_variational_gp
 from gp.gpviz import plot_gp_point_distribution, plot_gp_contours_with_uncertainty, plot_gp_surface_with_uncertainty
 from gp.gpviz2 import plot_gp_contours_with_uncertainty2
+from gp.variationalgp import MixedSingleTaskVariationalGP
 from kernels.kernelfactory import create_kernel
 from util.fetchdevice import fetch_device
 import gymnasium as gym
@@ -61,21 +63,14 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         self._kernel_factory = create_kernel(kernel_type, kernel_args)
 
-        if model_str == 'exact_gp':
-            # TODO: Look into variant where we do not instantiate a new GP
-            # every time.
-            # Then again, maybe it does not really matter.
-            self.gp_constructor = MixedSingleTaskGP
-            self.likelihood_constructor = GaussianLikelihood
-        else:
+        if model_str not in ['exact_gp', 'variational_gp']:
             raise ValueError(f'Unknown gp model type: {model_str}')
 
-        self._current_gp = self.gp_constructor(train_X=torch.zeros(100, state_size + 1, dtype=torch.double),
-                                               train_Y=torch.zeros(100, 1, dtype=torch.double),
-                                               cat_dims=[self._state_size],
-                                               cont_kernel_factory=self._kernel_factory,
-                                               input_transform=Normalize(d=state_size + 1),
-                                               outcome_transform=None).to(self.device)
+        self._gp_mode = model_str
+
+        self._current_gp = None
+        self._current_gp = self._construct_gp(torch.zeros(100, state_size + 1, dtype=torch.double),
+                                              torch.zeros(100, 1, dtype=torch.double))
 
         self._random_draws = random_draws
         self._dummy_counter = 0
@@ -89,6 +84,30 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             self._gp_action_selector = UpperConfidenceBound(action_size=self._action_size)
         elif strategy == 'GPEpsilonGreedy':
             self._gp_action_selector = GPEpsilonGreedy(action_space=action_space)
+
+    def _construct_gp(self, train_x, train_y) -> GPyTorchModel:
+        del self._current_gp
+
+        if self._gp_mode == 'exact_gp':
+            return MixedSingleTaskGP(
+                train_X=train_x,
+                train_Y=train_y,
+                cat_dims=[self._state_size],
+                cont_kernel_factory=self._kernel_factory,
+                input_transform=Normalize(d=self._state_size + 1),  # TODO, this will break for actions n > 2
+                outcome_transform=None
+            ).to(self.device)
+        elif self._gp_mode == 'variational_gp':
+            # Do not use RFF with variational GP.
+            return MixedSingleTaskVariationalGP(
+                train_X=train_x,
+                train_Y=train_y,
+                cat_dims=[self._state_size],
+                cont_kernel_factory=self._kernel_factory,
+                inducing_points=128,     # TODO, make this configurable,
+                input_transform=Normalize(d=self._state_size + 1),
+                outcome_transform=None
+            ).to(self.device)
 
     def get_current_gp(self):
         return self._current_gp
@@ -107,15 +126,18 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         train_x, train_y = self.dataset()
 
-        gp = self.gp_constructor(train_X=train_x,
-                                 train_Y=train_y,
-                                 cat_dims=[self._state_size],
-                                 input_transform=Normalize(d=self._state_size + 1),
-                                 outcome_transform=None).to(self.device)
-        mll = ExactMarginalLogLikelihood(gp.likelihood, gp)
+        print(train_x.shape)
+        print(train_y.shape)
+        print(train_y.squeeze(1).shape)
+
+        gp = self._construct_gp(train_x, train_y)
 
         if hyperparameter_fitting:
-            fit_gpytorch_mll(mll)
+            if self._gp_mode == 'exact_gp':
+                mll = ExactMarginalLogLikelihood(gp.likelihood, gp)
+                fit_gpytorch_mll(mll)
+            elif self._gp_mode == 'variational_gp':
+                fit_variational_gp(gp, train_x, train_y)
 
         self._current_gp = gp
 
@@ -170,6 +192,10 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
     def dataset(self) -> tuple[torch.tensor, torch.tensor]:
         train_x = torch.cat(list(self._data_x))
         train_y = torch.cat(list(self._data_y))
+
+        # train_x -> (dataset_size, input_dim) -> OK
+        # train_y -> (dataset_size, 1) -> NOT OK => (, dataset_size)
+
         return train_x, train_y
 
     def choose_next_action(self, state: torch.tensor) -> int:
@@ -190,6 +216,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         action_tensor = self._gp_action_selector.action(self._current_gp, state)
 
         if self._dummy_counter == 3:
+            """
             plot_gp_contours_with_uncertainty2(self._current_gp,
                                                4,
                                                self._action_size,
@@ -197,7 +224,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                                                highlight_point=(state[2], state[3], action_tensor.item()),
                                                title='Action-value GP contour'
                                                )
-            """
+
             plot_gp_surface_with_uncertainty(self._current_gp,
                                              (0, 1),
                                              (0, 1),
