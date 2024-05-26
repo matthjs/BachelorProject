@@ -103,6 +103,8 @@ class ThompsonSampling(GPActionSelector):
         posterior_distribution: GPyTorchPosterior = gpq_model.posterior(state_action_pairs)
         sampled_q_values = posterior_distribution.rsample()
 
+        # shape [1, 2, 1] 1 sample of (2, 1)
+
         best_action = torch.argmax(sampled_q_values, dim=1)
 
         return best_action
@@ -116,6 +118,7 @@ class UpperConfidenceBound(GPActionSelector):
     def action(self, gpq_model: GPyTorchModel, state_tensor: torch.tensor) -> torch.tensor:
         state_action_pairs = append_actions(state_tensor, self.action_size)
         posterior_distribution = gpq_model.posterior(state_action_pairs)
+
         confident_q_values = posterior_distribution.mean + self.beta * torch.sqrt(posterior_distribution.variance)
         confident_q_values = confident_q_values.unsqueeze(0)
 

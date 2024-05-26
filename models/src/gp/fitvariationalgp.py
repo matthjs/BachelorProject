@@ -9,7 +9,7 @@ from torch.utils.data import TensorDataset, DataLoader
 def fit_variational_gp(model: GPyTorchModel,
                        train_x: torch.tensor,
                        train_y: torch.tensor,  # IMPORTANT, train_y should be (, N) shaped.
-                       batch_size=32,  # Probably because train_y.numel() (?)
+                       batch_size=64,  # Probably because train_y.numel() (?)
                        num_epochs=10,
                        learning_rate=0.01,
                        logging=False) -> None:
@@ -49,3 +49,4 @@ def fit_variational_gp(model: GPyTorchModel,
             optimizer.step()
 
     model.eval()
+

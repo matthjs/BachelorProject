@@ -44,7 +44,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                  action_space: gym.Space,
                  kernel_type,
                  kernel_args,
-                 strategy='thompson_sampling',
+                 strategy='upper_confidence_bound',
                  sparsfication_treshold=None,
                  state_space=None):
         self.device = fetch_device()
