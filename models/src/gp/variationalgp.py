@@ -101,7 +101,6 @@ class MixedSingleTaskVariationalGP(SingleTaskVariationalGP):
             )
         self._ignore_X_dims_scaling_check = cat_dims
         input_batch_shape = train_X.shape[:-2]
-        print("check", input_batch_shape)
         aug_batch_shape = copy.deepcopy(input_batch_shape)
         if num_outputs > 1:
             aug_batch_shape += torch.Size((num_outputs,))

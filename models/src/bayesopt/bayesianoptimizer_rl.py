@@ -69,8 +69,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         self._gp_mode = model_str
 
         self._current_gp = None
-        self._current_gp = self._construct_gp(torch.zeros(100, state_size + 1, dtype=torch.double),
-                                              torch.zeros(100, 1, dtype=torch.double))
+        self._current_gp = self._construct_gp(torch.zeros(10, state_size + 1, dtype=torch.double),
+                                              torch.zeros(10, 1, dtype=torch.double))
 
         self._random_draws = random_draws
         self._dummy_counter = 0
@@ -94,7 +94,9 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 train_Y=train_y,
                 cat_dims=[self._state_size],
                 cont_kernel_factory=self._kernel_factory,
-                input_transform=Normalize(d=self._state_size + 1),  # TODO, this will break for actions n > 2
+                input_transform=Normalize(
+                    d=self._state_size + 1,
+                    indices=list(range(self._state_size))),     # ONLY normalize state part.
                 outcome_transform=None
             ).to(self.device)
         elif self._gp_mode == 'variational_gp':

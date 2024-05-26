@@ -3,11 +3,12 @@ model:
   discount_factor: 0.99
   batch_size: 32
   replay_buffer_size: 64
-  exploring_starts: 250
+  exploring_starts: 100
   max_dataset_size: 3000
   sparsification_threshold: None
   gp_likelihood_noise_constraint: None
   kernel_type: "rbf"
+  strategy: "upper_confidence_bound"
 
   kernel:
     matern_kernel:
