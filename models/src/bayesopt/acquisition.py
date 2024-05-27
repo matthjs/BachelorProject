@@ -100,7 +100,7 @@ class ThompsonSampling(GPActionSelector):
         """
         state_action_pairs = append_actions(state_tensor, self.action_size)
 
-        posterior_distribution: GPyTorchPosterior = gpq_model.posterior(state_action_pairs)
+        posterior_distribution: GPyTorchPosterior = gpq_model.posterior(state_action_pairs, observation_noise=True)
         sampled_q_values = posterior_distribution.rsample()
 
         # shape [1, 2, 1] 1 sample of (2, 1)
@@ -117,7 +117,7 @@ class UpperConfidenceBound(GPActionSelector):
 
     def action(self, gpq_model: GPyTorchModel, state_tensor: torch.tensor) -> torch.tensor:
         state_action_pairs = append_actions(state_tensor, self.action_size)
-        posterior_distribution = gpq_model.posterior(state_action_pairs)
+        posterior_distribution = gpq_model.posterior(state_action_pairs, observation_noise=True)
 
         confident_q_values = posterior_distribution.mean + self.beta * torch.sqrt(posterior_distribution.variance)
         confident_q_values = confident_q_values.unsqueeze(0)
@@ -136,7 +136,7 @@ class GPEpsilonGreedy(GPActionSelector):
                  action_space: gym.Space,
                  eps_init=1.0,
                  eps_end=0.1,
-                 annealing_num_steps=5000):
+                 annealing_num_steps=4000):
         """
         :param model: action-value function estimate.
         :param action_space:
@@ -160,8 +160,8 @@ class GPEpsilonGreedy(GPActionSelector):
     def action(self, gpq_model: GPyTorchModel, state_tensor: torch.tensor) -> torch.tensor:
         if np.random.uniform(0, 100) >= self._epsilon * 100:
             state_action_pairs = append_actions(state_tensor, self._action_space.n)
-            posterior_distribution = gpq_model.posterior(state_action_pairs)
-            best_action = torch.argmax(posterior_distribution.mean, dim=1)
+            posterior_distribution = gpq_model.posterior(state_action_pairs, observation_noise=True)
+            best_action, _ = torch.argmax(posterior_distribution.mean, dim=1)
             return best_action
 
         return torch.tensor([[self._action_space.sample()]], device=fetch_device())

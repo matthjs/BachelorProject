@@ -124,7 +124,7 @@ class SimulatorRL:
 
         tracker = self.metrics_tracker_registry.get_tracker("train")
         tracker.plot_metric(metric_name="return",
-                            plot_path=plot_dir + self.env_str,
+                            plot_path=plot_dir + self.env_str + self.experiment_id,
                             title=self.env_str + "_" + list(self.agents.keys()).__str__())
         return self
 

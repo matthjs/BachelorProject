@@ -44,7 +44,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                  action_space: gym.Space,
                  kernel_type,
                  kernel_args,
-                 strategy='upper_confidence_bound',
+                 strategy='GPEpsilonGreedy',
                  sparsfication_treshold=None,
                  state_space=None):
         self.device = fetch_device()
@@ -215,6 +215,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             self._random_draws -= 1
             return self._action_space.sample()
 
+        self._gp_action_selector.update()
+
         action_tensor = self._gp_action_selector.action(self._current_gp, state)
 
         if self._dummy_counter == 3:
@@ -254,7 +256,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         """
         with torch.no_grad():
             next_state_action_pairs = torch.cat((state_batch, action_batch), dim=1).to(self.device)
-            q_val = self._current_gp.posterior(next_state_action_pairs).mean
+            q_val = self._current_gp.posterior(next_state_action_pairs, observation_noise=True).mean
 
         return q_val
 
@@ -280,7 +282,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
                 # print(state_action_pairs.shape)
 
-                mean_qs = self._current_gp.posterior(state_action_pairs).mean  # batch_size amount of q_values.
+                mean_qs = self._current_gp.posterior(state_action_pairs, observation_noise=True).mean  # batch_size amount of q_values.
                 q_values.append(mean_qs)
                 # print(f"S X A: \n{state_action_pairs}, q_values: {mean_qs}\n")
 
