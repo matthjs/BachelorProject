@@ -33,6 +33,7 @@ opentsne = "^1.0.1"
 iprogress = "^0.4"
 ipywidgets = "^8.1.2"
 matplotlib = "^3.9.0"
+zeus-ml = "^0.9.1"
 
 
 [build-system]
