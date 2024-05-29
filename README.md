@@ -35,10 +35,10 @@ IDEs like Pycharm will be able to detect the interpreter of this virtual environ
 
 ## TODO
 * Fix sparsification scheme if possible.
-* Make the kernels and acquistion function more easily configurable.
+* ~~Make the kernels and acquistion function more easily configurable.~~
 * Implement Hyperparameter to JSON saving.
 * Add hyperparameter info into CSV file.
 * Finish auto hyperparameter tuning code.
 * General code clean up.
 * Add proper documentation.
-* Add variational GPs and Deep GPs.
+* ~~Add variational GPs and Deep GPs.~~

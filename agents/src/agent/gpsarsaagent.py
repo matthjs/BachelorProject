@@ -25,7 +25,8 @@ class GPSarsaAgent(AbstractAgent):
                  max_dataset_size,
                  kernel_type: str,
                  kernel_args=None,
-                 sparsification_threshold=None):
+                 sparsification_threshold=None,
+                 strategy="thompson_sampling"):
         super(GPSarsaAgent, self).__init__({}, env.observation_space, env.action_space)
 
         print("!!!", sparsification_threshold)
@@ -39,7 +40,8 @@ class GPSarsaAgent(AbstractAgent):
             kernel_type=kernel_type,
             kernel_args=kernel_args,
             sparsfication_treshold=sparsification_threshold,
-            state_space=env.observation_space
+            state_space=env.observation_space,
+            strategy=strategy
         )
 
         self._replay_buffer = ReplayBuffer(storage=LazyTensorStorage(

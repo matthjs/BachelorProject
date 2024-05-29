@@ -43,7 +43,8 @@ class AgentFactory:
                 max_dataset_size=cfg.model.max_dataset_size,
                 kernel_type=cfg.model.kernel_type,
                 kernel_args=cfg.model.kernel,
-                sparsification_threshold=eval(cfg.model.sparsification_threshold)
+                sparsification_threshold=eval(cfg.model.sparsification_threshold),
+                strategy=cfg.model.strategy
             ), {
                 'gp_model_str': cfg.model.gp_model_str,
                 'discount_factor': cfg.model.discount_factor,
@@ -52,7 +53,8 @@ class AgentFactory:
                 'exploring_starts': cfg.model.exploring_starts,
                 'max_dataset_size': cfg.model.max_dataset_size,
                 'kernel_type': cfg.model.kernel_type,
-                'sparsification_threshold': eval(cfg.model.sparsification_threshold)
+                'sparsification_threshold': eval(cfg.model.sparsification_threshold),
+                'strategy': cfg.model.strategy
             }
         elif agent_type == "gpsarsa_agent":
             return GPSarsaAgent(
@@ -65,7 +67,8 @@ class AgentFactory:
                 max_dataset_size=cfg.model.max_dataset_size,
                 kernel_type=cfg.model.kernel_type,
                 kernel_args=cfg.model.kernel,
-                sparsification_threshold=eval(cfg.model.sparsification_threshold)
+                sparsification_threshold=eval(cfg.model.sparsification_threshold),
+                strategy=cfg.model.strategy
             ), {
                 'gp_model_str': cfg.model.gp_model_str,
                 'discount_factor': cfg.model.discount_factor,
@@ -74,7 +77,8 @@ class AgentFactory:
                 'exploring_starts': cfg.model.exploring_starts,
                 'max_dataset_size': cfg.model.max_dataset_size,
                 'kernel_type': cfg.model.kernel_type,
-                'sparsification_threshold': eval(cfg.model.sparsification_threshold)
+                'sparsification_threshold': eval(cfg.model.sparsification_threshold),
+                'strategy': cfg.model.strategy
             }
         elif agent_type == "sb_dqn":
             return StableBaselinesAdapter(
