@@ -35,11 +35,10 @@ class GPSarsaAgent(AbstractAgent):
             model_str=gp_model_str,
             max_dataset_size=max_dataset_size,
             random_draws=exploring_starts,
-            state_size=env.observation_space.shape[0],
             action_space=env.action_space,
             kernel_type=kernel_type,
             kernel_args=kernel_args,
-            sparsfication_treshold=sparsification_threshold,
+            sparsification_treshold=sparsification_threshold,
             state_space=env.observation_space,
             strategy=strategy
         )
