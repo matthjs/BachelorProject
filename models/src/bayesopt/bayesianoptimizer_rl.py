@@ -17,6 +17,7 @@ from bayesopt.acquisition import simple_thompson_action_sampler, upper_confidenc
 from gp.fitvariationalgp import fit_variational_gp
 from gp.gpviz import plot_gp_point_distribution, plot_gp_contours_with_uncertainty, plot_gp_surface_with_uncertainty
 from gp.gpviz2 import plot_gp_contours_with_uncertainty2
+from gp.mixeddeepgp import BotorchDeepGPMixed
 from gp.variationalgp import MixedSingleTaskVariationalGP
 from kernels.kernelfactory import create_kernel
 from util.fetchdevice import fetch_device
@@ -63,14 +64,14 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         self._kernel_factory = create_kernel(kernel_type, kernel_args)
 
-        if model_str not in ['exact_gp', 'variational_gp']:
+        if model_str not in ['exact_gp', 'variational_gp', 'deep_gp']:
             raise ValueError(f'Unknown gp model type: {model_str}')
 
         self._gp_mode = model_str
 
         self._current_gp = None
-        self._current_gp = self._construct_gp(torch.zeros(10, state_size + 1, dtype=torch.double),
-                                              torch.zeros(10, 1, dtype=torch.double))
+        self._current_gp = self._construct_gp(torch.ones(10, state_size + 1, dtype=torch.double),
+                                              torch.ones(10, 1, dtype=torch.double))
 
         self._random_draws = random_draws
         self._dummy_counter = 0
@@ -107,8 +108,19 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 cat_dims=[self._state_size],
                 cont_kernel_factory=self._kernel_factory,
                 inducing_points=128,     # TODO, make this configurable,
-                input_transform=Normalize(d=self._state_size + 1),
+                input_transform=Normalize(d=self._state_size + 1,
+                                          indices=list(range(self._state_size))),
                 outcome_transform=None
+            ).to(self.device)
+        elif self._gp_mode == 'deep_gp':
+            # Do not use RFF with deep GP.
+            return BotorchDeepGPMixed(
+                train_x_shape=train_x.shape,
+                cat_dims=[self._state_size],
+                cont_kernel_factory=self._kernel_factory,
+                num_inducing_points=128,
+                input_transform=Normalize(d=self._state_size + 1,
+                                          indices=list(range(self._state_size)))
             ).to(self.device)
 
     def get_current_gp(self):
@@ -123,16 +135,20 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         self._dummy_counter += 1
 
-        self.extend_dataset(new_train_x,
-                            new_train_y)
+        # See: https://docs.gpytorch.ai/en/stable/examples/08_Advanced_Usage/SVGP_Model_Updating.html
+        if True or self._gp_mode == 'variational_gp' or self._gp_mode == 'deep_gp':
+            # Variational GPs can be conditioned in an online way, but this returns an exact GP,
+            # which means we want to reinitialize a GP here.
+            # There is a paper that proposes an online/mini-batch updatable variational GP.
+            # But that one is not implemented in Botorch and does not allow you to learn
+            # the inducing points.
+            self.extend_dataset(new_train_x,
+                                new_train_y)
 
-        train_x, train_y = self.dataset()
-
-        # print(train_x.shape)
-        # print(train_y.shape)
-        # print(train_y.squeeze(1).shape)
-
-        gp = self._construct_gp(train_x, train_y)
+            train_x, train_y = self.dataset()
+            gp = self._construct_gp(train_x, train_y)
+        else:       # For exact GP it is more efficient to do online updates this way.
+            gp = self._current_gp.condition_on_observations(new_train_x, new_train_y).double()
 
         if hyperparameter_fitting:
             if self._gp_mode == 'exact_gp':

@@ -154,13 +154,17 @@ class BotorchDeepGPMixed(DeepGP, GPyTorchModel):
                  num_hidden_dims=10,
                  cont_kernel_factory: Optional[
                      Callable[[torch.Size, int, List[int]], Kernel]
-                 ] = None
+                 ] = None,
+                 num_inducing_points=128,
+                 input_transform=None,
+                 outcome_transform=None
                  ):
         hidden_layer = DeepGPMixedHiddenLayer(
             input_dims=train_x_shape[-1],
             cat_dims=cat_dims,
             output_dims=num_hidden_dims,
             cont_kernel_factory=cont_kernel_factory,
+            num_inducing=num_inducing_points,
             mean_type="linear",
         )
 
@@ -169,6 +173,7 @@ class BotorchDeepGPMixed(DeepGP, GPyTorchModel):
             cat_dims=cat_dims,
             output_dims=None,
             cont_kernel_factory=cont_kernel_factory,
+            num_inducing=num_inducing_points,
             mean_type="constant",
         )
 
@@ -179,6 +184,11 @@ class BotorchDeepGPMixed(DeepGP, GPyTorchModel):
         self.likelihood = GaussianLikelihood()
         self._num_outputs = 1
         self.double()
+
+        if outcome_transform is not None:
+            self.outcome_transform = outcome_transform
+        if input_transform is not None:
+            self.input_transform = input_transform
 
     def forward(self, inputs):
         hidden_rep1 = self.hidden_layer(inputs)
