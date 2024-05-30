@@ -46,4 +46,4 @@ IDEs like Pycharm will be able to detect the interpreter of this virtual environ
 # BUGS:
 * Online updates (Fantasization) for exact GPs is not working???
 * Deep GPs are bugged in pipeline probably simple fix.
-* Exact GP optimization (fit_gpytorch_mll) is broken on Lunar Lander.
+* Exact GP hyperparameter optimization (fit_gpytorch_mll) is broken on Lunar Lander.

@@ -1,5 +1,6 @@
 from collections import deque
 
+import botorch.settings
 import torch
 from botorch import fit_gpytorch_mll
 from botorch.models import MixedSingleTaskGP
@@ -14,7 +15,7 @@ from loguru import logger
 from bayesopt.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
 from bayesopt.acquisition import simple_thompson_action_sampler, upper_confidence_bound_selector, ThompsonSampling, \
     UpperConfidenceBound, GPEpsilonGreedy
-from gp.fitvariationalgp import fit_variational_gp
+from gp.fitvariationalgp import fit_gp
 from gp.gpviz import plot_gp_point_distribution, plot_gp_contours_with_uncertainty, plot_gp_surface_with_uncertainty
 from gp.gpviz2 import plot_gp_contours_with_uncertainty2
 from gp.mixeddeepgp import BotorchDeepGPMixed
@@ -84,8 +85,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         # Initialize GP settings. The GP is filled with a few dummy values.
         self._gp_mode = model_str
         self._current_gp = None
-        self._current_gp = self._construct_gp(torch.zeros(100, state_size + 1, dtype=torch.double),
-                                              torch.zeros(100, 1, dtype=torch.double))
+        self._current_gp = self._construct_gp(torch.zeros(10, state_size + 1, dtype=torch.double),
+                                              torch.zeros(10, 1, dtype=torch.double))
 
         # Initialize actions selector.
         self._gp_action_selector = None
@@ -149,32 +150,38 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         :param hyperparameter_fitting: whether to fit the kernel hyperparameters or not.
         :return:
         """
-        if self._random_draws > 0:
-            return
+        with botorch.settings.debug(True):
+            if self._random_draws > 0:
+                return
 
-        self._dummy_counter += 1
+            # print("NEW_X", new_train_x)
 
-        # See: https://docs.gpytorch.ai/en/stable/examples/08_Advanced_Usage/SVGP_Model_Updating.html
-        if True or self._gp_mode == 'variational_gp' or self._gp_mode == 'deep_gp':
-            # Variational GPs can be conditioned in an online way, but this returns an exact GP,
-            # which means we want to reinitialize a GP here.
-            # There is a paper that proposes an online/mini-batch updatable variational GP.
-            # But that one is not implemented in Botorch and does not allow you to learn
-            # the inducing points.
-            self.extend_dataset(new_train_x, new_train_y)
-            train_x, train_y = self.dataset()
-            gp = self._construct_gp(train_x, train_y)
-        else:       # For exact GP it is more efficient to do online updates this way.
-            gp = self._current_gp.condition_on_observations(new_train_x, new_train_y).double()
+            self._dummy_counter += 1
 
-        if hyperparameter_fitting:
-            if self._gp_mode == 'exact_gp':
-                mll = ExactMarginalLogLikelihood(gp.likelihood, gp)
-                fit_gpytorch_mll(mll)
-            elif self._gp_mode == 'variational_gp':
-                fit_variational_gp(gp, train_x, train_y)
+            # See: https://docs.gpytorch.ai/en/stable/examples/08_Advanced_Usage/SVGP_Model_Updating.html
+            if True or self._gp_mode == 'variational_gp' or self._gp_mode == 'deep_gp':
+                # Variational GPs can be conditioned in an online way, but this returns an exact GP,
+                # which means we want to reinitialize a GP here.
+                # There is a paper that proposes an online/mini-batch updatable variational GP.
+                # But that one is not implemented in Botorch and does not allow you to learn
+                # the inducing points.
+                self.extend_dataset(new_train_x, new_train_y)
+                train_x, train_y = self.dataset()
+                gp = self._construct_gp(train_x, train_y)
+            else:       # For exact GP it is more efficient to do online updates this way.
+                gp = self._current_gp.condition_on_observations(new_train_x, new_train_y).double()
 
-        self._current_gp = gp
+            if hyperparameter_fitting:
+                if self._gp_mode == 'exact_gp':
+                    # train_inputs and train_targets should be equal to train_x and train_y
+                    fit_gp(gp, gp.train_inputs[0], gp.train_targets, self._gp_mode, logging=True)
+                    # mll = ExactMarginalLogLikelihood(gp.likelihood, gp)
+                    # fit_gpytorch_mll(mll)       # Bugger for Lunar Lander,
+                    # -> `scipy.optimize.minimize`: ABNORMAL_TERMINATION_IN_LNSRCH
+                elif self._gp_mode == 'variational_gp':
+                    fit_gp(gp, train_x, train_y, self._gp_mode, logging=True)
+
+            self._current_gp = gp
 
     def get_current_gp(self):
         """

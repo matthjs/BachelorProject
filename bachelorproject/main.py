@@ -17,10 +17,10 @@ def test_load_experiment():
 
 
 if __name__ == "__main__":
-    sim = SimulatorRL("LunarLander-v2", experiment_id="experiment_dummy62")
+    sim = SimulatorRL("CartPole-v1", experiment_id="experiment_dummy62")
     (sim
      # .register_agent("linear_q_agent_1", "linear_q_agent")
-     .register_agent("gpsarsa_agent_2", "gpsarsa_agent")
+     .register_agent("gpsarsa_agent_1", "gpsarsa_agent")
      # .register_agent("gpsarsa_agent_2", "gpsarsa_agent")
      #.register_agent("gpsarsa_agent_1", "gpsarsa_agent")
      # .register_agent("sb_dqn_1", "sb_dqn")
