@@ -154,8 +154,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             if self._random_draws > 0:
                 return
 
-            # print("NEW_X", new_train_x)
-
             self._dummy_counter += 1
 
             # See: https://docs.gpytorch.ai/en/stable/examples/08_Advanced_Usage/SVGP_Model_Updating.html
@@ -176,10 +174,10 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                     # train_inputs and train_targets should be equal to train_x and train_y
                     fit_gp(gp, gp.train_inputs[0], gp.train_targets, self._gp_mode, logging=True)
                     # mll = ExactMarginalLogLikelihood(gp.likelihood, gp)
-                    # fit_gpytorch_mll(mll)       # Bugger for Lunar Lander,
+                    # fit_gpytorch_mll(mll, approx_mll=True)       # Bugger for Lunar Lander,
                     # -> `scipy.optimize.minimize`: ABNORMAL_TERMINATION_IN_LNSRCH
                 elif self._gp_mode == 'variational_gp':
-                    fit_gp(gp, train_x, train_y, self._gp_mode, logging=True)
+                    fit_gp(gp, train_x, train_y, self._gp_mode, logging=False)
 
             self._current_gp = gp
 

@@ -14,8 +14,8 @@ def fit_gp(model: GPyTorchModel,
            train_y: torch.tensor,  # IMPORTANT, train_y should be (, N) shaped.
            gp_mode: str,
            batch_size=64,  # Probably because train_y.numel() (?)
-           num_epochs=10,
-           learning_rate=0.01,
+           num_epochs=100,      # 60
+           learning_rate=0.001,
            logging=False
            ) -> None:
     """
@@ -50,15 +50,18 @@ def fit_gp(model: GPyTorchModel,
                               shuffle=True)
 
     # TODO: REFACTOR
+    # Exact GP Optimization does not allow for mini-batching.
     if gp_mode == 'exact_gp':
-        for _ in range(num_epochs):
+        for epoch in range(num_epochs):
             optimizer.zero_grad()
             output = model(train_x)
-            loss = -mll(output, train_y)
+            loss = -mll(output, train_y)        # Problem is here.
             loss.backward()
-            if logging:
+            if epoch % 20 == 0 and logging:
                 logger.debug(f"mll loss: {loss}")
             optimizer.step()
+            if loss < 0:        # Prevents numerical problems.
+                break
 
     else:
         for _ in range(num_epochs):

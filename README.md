@@ -47,3 +47,4 @@ IDEs like Pycharm will be able to detect the interpreter of this virtual environ
 * Online updates (Fantasization) for exact GPs is not working???
 * Deep GPs are bugged in pipeline probably simple fix.
 * Exact GP hyperparameter optimization (fit_gpytorch_mll) is broken on Lunar Lander.
+* Optimizing exact GP without using fit_gpytorch_mll fixes the problem with Lunar Lander but causes numerical issues on CartPole. FIXED: Break out of the loop when negative mll becomes negative otherwise youthat is what is causing the numerical problems.
