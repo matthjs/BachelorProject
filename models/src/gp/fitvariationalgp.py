@@ -1,5 +1,6 @@
 from enum import Enum, auto
 
+import gpytorch
 import torch
 from botorch.models import SingleTaskVariationalGP
 from botorch.models.gpytorch import GPyTorchModel
@@ -45,38 +46,41 @@ def fit_gp(model: GPyTorchModel,
         mll = VariationalELBO(model.likelihood, model.model, train_y.numel())
     else:
         mll = ExactMarginalLogLikelihood(model.likelihood, model)
-    train_loader = DataLoader(TensorDataset(train_x, train_y),
-                              batch_size=batch_size,
-                              shuffle=True)
 
     # TODO: REFACTOR
+    print("YOOO!")
     # Exact GP Optimization does not allow for mini-batching.
-    if gp_mode == 'exact_gp':
-        for epoch in range(num_epochs):
-            optimizer.zero_grad()
-            output = model(train_x)
-            loss = -mll(output, train_y)        # Problem is here.
-            loss.backward()
-            if epoch % 20 == 0 and logging:
-                logger.debug(f"mll loss: {loss}")
-            optimizer.step()
-            if loss < 0:        # Prevents numerical problems.
-                break
-
-    else:
-        for _ in range(num_epochs):
-            # Within each iteration, we will go over each minibatch of data
-            # Batching causes "RuntimeError: You must train on the training inputs!" error with exactGPs.
-            for x_batch, y_batch in train_loader:
+    with gpytorch.settings.debug(True):
+        if gp_mode == 'exact_gp':
+            for epoch in range(num_epochs):
                 optimizer.zero_grad()
-                output = model(x_batch)
-
-                loss = -mll(output, y_batch)  # mean() necessary?
+                output = model(train_x)
+                loss = -mll(output, train_y)        # Problem is here.
                 loss.backward()
-
-                if logging:
-                    logger.debug(f"variational loss {loss}")
-
+                if epoch % 20 == 0 and logging:
+                    logger.debug(f"mll loss: {loss}")
                 optimizer.step()
+                if loss < 0:        # Prevents numerical problems.
+                    break
+
+        else:
+            train_loader = DataLoader(TensorDataset(train_x, train_y),
+                                      batch_size=batch_size,
+                                      shuffle=True)
+
+            for _ in range(num_epochs):
+                # Within each iteration, we will go over each minibatch of data
+                # Batching causes "RuntimeError: You must train on the training inputs!" error with exactGPs.
+                for x_batch, y_batch in train_loader:
+                    optimizer.zero_grad()
+                    output = model(x_batch)
+
+                    loss = -mll(output, y_batch)  # mean() necessary?
+                    loss.backward()
+
+                    if logging:
+                        logger.debug(f"variational loss {loss}")
+
+                    optimizer.step()
 
     model.eval()

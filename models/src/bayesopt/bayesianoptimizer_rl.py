@@ -70,6 +70,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         self._random_draws = random_draws
         self._dummy_counter = 0
         self._visualize = False
+        self._stupid_flag_that_should_be_removed = True
 
         # self._input_transform = Normalize(d=state_size + 1)
         # self._outcome_transform = Standardize(m=1)  # I am guessing m should be 1
@@ -112,7 +113,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 train_Y=train_y,
                 cat_dims=[self._state_size],
                 cont_kernel_factory=self._kernel_factory,
-                input_transform=Normalize(
+                input_transform=Normalize(     # TODO: Normalization causes issue with condition_on_observations
                     d=self._state_size + 1,
                     indices=list(range(self._state_size))),     # ONLY normalize state part.
                 outcome_transform=None
@@ -157,7 +158,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             self._dummy_counter += 1
 
             # See: https://docs.gpytorch.ai/en/stable/examples/08_Advanced_Usage/SVGP_Model_Updating.html
-            if True or self._gp_mode == 'variational_gp' or self._gp_mode == 'deep_gp':
+            if True or self._stupid_flag_that_should_be_removed or self._gp_mode == 'variational_gp' or self._gp_mode == 'deep_gp':
                 # Variational GPs can be conditioned in an online way, but this returns an exact GP,
                 # which means we want to reinitialize a GP here.
                 # There is a paper that proposes an online/mini-batch updatable variational GP.
@@ -166,12 +167,19 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 self.extend_dataset(new_train_x, new_train_y)
                 train_x, train_y = self.dataset()
                 gp = self._construct_gp(train_x, train_y)
+                self._stupid_flag_that_should_be_removed = False
             else:       # For exact GP it is more efficient to do online updates this way.
+                # print("curr->", self._current_gp.train_inputs[0])
+                # print("to add->", new_train_x)
                 gp = self._current_gp.condition_on_observations(new_train_x, new_train_y).double()
+                # CHECK THAT DEVICE IS ON CUDA
+                del self._current_gp
 
             if hyperparameter_fitting:
                 if self._gp_mode == 'exact_gp':
                     # train_inputs and train_targets should be equal to train_x and train_y
+                    # print("result->", gp.train_inputs[0])
+                    # print(gp.train_targets.shape)
                     fit_gp(gp, gp.train_inputs[0], gp.train_targets, self._gp_mode, logging=True)
                     # mll = ExactMarginalLogLikelihood(gp.likelihood, gp)
                     # fit_gpytorch_mll(mll, approx_mll=True)       # Bugger for Lunar Lander,

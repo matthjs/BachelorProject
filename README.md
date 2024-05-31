@@ -48,3 +48,4 @@ IDEs like Pycharm will be able to detect the interpreter of this virtual environ
 * Deep GPs are bugged in pipeline probably simple fix.
 * Exact GP hyperparameter optimization (fit_gpytorch_mll) is broken on Lunar Lander.
 * Optimizing exact GP without using fit_gpytorch_mll fixes the problem with Lunar Lander but causes numerical issues on CartPole. FIXED: Break out of the loop when negative mll becomes negative otherwise youthat is what is causing the numerical problems.
+* Gradual increase in VRAM usage even though the dataset should be capped? What is going on. IMPORTANT TO FIGURE OUT, BECAUSE IT MIGHT BE THAT WE CAN AFFORD BIGGER DATASET BUDGETS.
