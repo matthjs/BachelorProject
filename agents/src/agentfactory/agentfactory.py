@@ -1,9 +1,7 @@
 from threading import current_thread
 
 import gymnasium as gym
-import hydra
 from stable_baselines3 import DQN, PPO
-from stable_baselines3.common.base_class import BaseAlgorithm
 
 from agent.abstractagent import AbstractAgent
 from agent.gaussianprocessdpagent import GaussianProcessDPAgent
@@ -14,8 +12,7 @@ from agent.sbadapter import StableBaselinesAdapter
 from builders.dqnagentbuilder import DQNAgentBuilder
 from builders.qagentbuilder import QAgentBuilder
 from torchrl.data import LazyTensorStorage
-from omegaconf import OmegaConf
-from hydra import compose, initialize
+
 
 class AgentFactory:
     """
@@ -147,13 +144,13 @@ class AgentFactory:
                     .set_learning_rate(cfg.model.learning_rate)
                     .set_discount_factor(cfg.model.discount_factor)
                     .build()), {
-                    'value_model': cfg.model.model_type,
-                    'batch_size': cfg.model.batch_size,
-                    'replay_buffer_size': cfg.model.replay_buffer_size,
-                    'annealing_num_steps': cfg.model.annealing_num_steps,
-                    'learning_rate': cfg.model.learning_rate,
-                    'discount_factor': cfg.model.learning_rate
-        }
+                'value_model': cfg.model.model_type,
+                'batch_size': cfg.model.batch_size,
+                'replay_buffer_size': cfg.model.replay_buffer_size,
+                'annealing_num_steps': cfg.model.annealing_num_steps,
+                'learning_rate': cfg.model.learning_rate,
+                'discount_factor': cfg.model.learning_rate
+            }
         elif agent_type == "random":
             return RandomAgent(env), {}
 

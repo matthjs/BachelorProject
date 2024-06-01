@@ -79,6 +79,9 @@ class GPQAgent(AbstractAgent):
             self._batch_counter = 0
         self._batch_counter += 1
 
+    def updatable(self) -> bool:
+        return self._batch_counter >= self._batch_size
+
     # noinspection DuplicatedCode
     def add_trajectory(self, trajectory: tuple) -> None:
         """

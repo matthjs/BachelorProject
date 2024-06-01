@@ -88,3 +88,6 @@ class AbstractAgent(ABC):
 
     def hyperparameters(self) -> dict:
         return {}
+
+    def updatable(self) -> bool:
+        return True

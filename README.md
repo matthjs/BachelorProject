@@ -44,8 +44,14 @@ IDEs like Pycharm will be able to detect the interpreter of this virtual environ
 * ~~Add variational GPs and Deep GPs.~~
 
 # BUGS:
-* Online updates (Fantasization) for exact GPs is not working???
+* Online updates (Fantasization) for exact GPs works, but the problem is that you cannot cap the dataset size. From testing the time and space complexity does not appear to be too different. However one key difference is that the hyperparameters from the previous fit are retained, which results in a different GP fit. The compromise can be to copy the fitted hyperparameters (kernel parameters + noise variance).
 * Deep GPs are bugged in pipeline probably simple fix.
 * Exact GP hyperparameter optimization (fit_gpytorch_mll) is broken on Lunar Lander.
 * Optimizing exact GP without using fit_gpytorch_mll fixes the problem with Lunar Lander but causes numerical issues on CartPole. FIXED: Break out of the loop when negative mll becomes negative otherwise youthat is what is causing the numerical problems.
-* Gradual increase in VRAM usage even though the dataset should be capped? What is going on. IMPORTANT TO FIGURE OUT, BECAUSE IT MIGHT BE THAT WE CAN AFFORD BIGGER DATASET BUDGETS.
+* Gradual increase in VRAM usage even though the dataset should be capped? What is going on. IMPORTANT TO FIGURE OUT, BECAUSE IT MIGHT BE THAT WE CAN AFFORD BIGGER DATASET BUDGETS. Actually double check if this is still n issue
+## NOTES
+* I have verified that exact GP inference is indeed $O(N^2)$. Time complexity still needs to be verified. TODO: Compare time with fit_gpytorch_mll and space usage with other algorithms.
+* Problem: Memory usage for exactGP does not scale properly, variational GPs cope decently and appear to scale more linearly but posterior is an approximation.
+* For linear Q-learning, perhaps it is easier and more meaningful to make a comparison to StableBaselines3 DQN algorithm with a linear model.
+* TODO: Develop Callbacks that track time, space and energy usage.
+* LOOK INTO SPECTRAL MIXTURE KERNEL

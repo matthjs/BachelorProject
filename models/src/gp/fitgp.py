@@ -35,7 +35,6 @@ def fit_gp(model: GPyTorchModel,
     model.train()
     # Conditionally squeeze
     if train_y.dim() > 1 and train_y.shape[1] == 1:
-        print("YO!")
         train_y = train_y.squeeze(1)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -48,14 +47,13 @@ def fit_gp(model: GPyTorchModel,
         mll = ExactMarginalLogLikelihood(model.likelihood, model)
 
     # TODO: REFACTOR
-    print("YOOO!")
     # Exact GP Optimization does not allow for mini-batching.
     with gpytorch.settings.debug(True):
-        if gp_mode == 'exact_gp':
+        if True or gp_mode == 'exact_gp':
             for epoch in range(num_epochs):
                 optimizer.zero_grad()
                 output = model(train_x)
-                loss = -mll(output, train_y)        # Problem is here.
+                loss = -mll(output, train_y)
                 loss.backward()
                 if epoch % 20 == 0 and logging:
                     logger.debug(f"mll loss: {loss}")
@@ -68,7 +66,7 @@ def fit_gp(model: GPyTorchModel,
                                       batch_size=batch_size,
                                       shuffle=True)
 
-            for _ in range(num_epochs):
+            for epoch in range(num_epochs):
                 # Within each iteration, we will go over each minibatch of data
                 # Batching causes "RuntimeError: You must train on the training inputs!" error with exactGPs.
                 for x_batch, y_batch in train_loader:
@@ -78,8 +76,8 @@ def fit_gp(model: GPyTorchModel,
                     loss = -mll(output, y_batch)  # mean() necessary?
                     loss.backward()
 
-                    if logging:
-                        logger.debug(f"variational loss {loss}")
+                    if epoch % 20 == 0 and logging:
+                        logger.debug(f"variational loss on minibatch {loss}")
 
                     optimizer.step()
 
