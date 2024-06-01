@@ -18,7 +18,7 @@ def test_load_experiment():
 
 
 if __name__ == "__main__":
-    sim = SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_70")
+    sim = SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_72")
     (sim
      # .register_agent("linear_q_agent_1", "linear_q_agent")
      # .register_agent("gpq_agent_1", "gpq_agent")
