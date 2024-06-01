@@ -101,7 +101,7 @@ class SimulatorRL:
     def load_agent(self, agent_id: str, agent_type: str, data_dir="../data/saved_agents/") -> 'SimulatorRL':
         self._config_obj(agent_type, agent_id, self.env_str)  # side effect agents_config[agent_id] = cfg
 
-        with open(data_dir + agent_id + ".pkl", "rb") as f:
+        with open(data_dir + self.experiment_id + "/" + agent_id + ".pkl", "rb") as f:
             self.agents[agent_id] = cloudpickle.load(f)
 
         self._add_agent_to_df(agent_id, agent_type)

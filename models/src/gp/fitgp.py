@@ -1,43 +1,61 @@
-from enum import Enum, auto
+import os
+from typing import Optional
 
 import gpytorch
 import torch
-from botorch.models import SingleTaskVariationalGP
 from botorch.models.gpytorch import GPyTorchModel
 from gpytorch import ExactMarginalLogLikelihood
 from gpytorch.mlls import VariationalELBO, DeepApproximateMLL
 from loguru import logger
 from torch.utils.data import TensorDataset, DataLoader
 
+from util.save import load_model_and_optimizer, save_model_and_optimizer, load_model, save_model
+
 
 def fit_gp(model: GPyTorchModel,
-           train_x: torch.tensor,
-           train_y: torch.tensor,  # IMPORTANT, train_y should be (, N) shaped.
+           train_x: torch.Tensor,
+           train_y: torch.Tensor,
            gp_mode: str,
-           batch_size=64,  # Probably because train_y.numel() (?)
-           num_epochs=100,      # 60
-           learning_rate=0.001,
-           logging=False
-           ) -> None:
+           batch_size: int = 64,
+           num_epochs: int = 15,
+           learning_rate: float = 0.001,
+           logging: bool = False,
+           checkpoint_path: Optional[str] = None) -> None:
     """
-    Fit a variational Gaussian processes. Fit variational parameters of
-    approximate posterior and inducing points. Uses Adam optimizer for stochastic
-    gradient descent.
-    :param model: an instance of SingleTaskVariationalGP
-    :param train_x: a (batch_size, D) sized tensor.
-    :param train_y: a (,D) sized tensor.
-        :param gp_mode:
-    :param batch_size: mini-batching is used instead of going over entire dataset per epoch.
-    :param num_epochs: how many train passes over the dataset.
-    :param learning_rate: adam optimizer parameter.
-    :param logging: log losses during training or no.
+    Fit a variational Gaussian process model. This function fits the variational parameters of the
+    approximate posterior and inducing points. It uses the Adam optimizer for stochastic gradient descent.
+
+    :param model: The GPytorch model instance.
+    :type model: GPyTorchModel
+    :param train_x: The training input tensor of shape (batch_size, D).
+    :type train_x: Tensor
+    :param train_y: The training output tensor of shape (batch_size,).
+    :type train_y: Tensor
+    :param gp_mode: The mode of the Gaussian Process ('deep_gp', 'variational_gp', or 'exact_gp').
+    :type gp_mode: str
+    :param batch_size: The batch size for mini-batching. Defaults to 64.
+    :type batch_size: int
+    :param num_epochs: The number of training epochs. Defaults to 100.
+    :type num_epochs: int
+    :param learning_rate: The learning rate for the Adam optimizer. Defaults to 0.001.
+    :type learning_rate: float
+    :param logging: Whether to log losses during training. Defaults to False.
+    :type logging: bool
+    :param checkpoint_path: The file path to save checkpoints during training. If None, checkpoints are not saved. Defaults to None.
+    :type checkpoint_path: Optional[str]
     """
     model.train()
     # Conditionally squeeze
     if train_y.dim() > 1 and train_y.shape[1] == 1:
         train_y = train_y.squeeze(1)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    if checkpoint_path and os.path.exists(checkpoint_path):
+        load_model(model, checkpoint_path)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+        logger.info(f"Loaded model from {checkpoint_path}")
+    else:
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+
     # The loss of variational GP is an ELBO one like Gaussian NN.
     if gp_mode == 'deep_gp':
         mll = DeepApproximateMLL(VariationalELBO(model.likelihood, model, train_y.numel()))
@@ -82,3 +100,6 @@ def fit_gp(model: GPyTorchModel,
                     optimizer.step()
 
     model.eval()
+    if checkpoint_path:
+        save_model(model, checkpoint_path)
+        logger.info(f"Saved model to {checkpoint_path}")

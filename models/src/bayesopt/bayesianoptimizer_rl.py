@@ -1,5 +1,6 @@
 from collections import deque
 
+import time
 import botorch.settings
 import torch
 from botorch import fit_gpytorch_mll
@@ -15,7 +16,7 @@ from loguru import logger
 from bayesopt.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
 from bayesopt.acquisition import simple_thompson_action_sampler, upper_confidence_bound_selector, ThompsonSampling, \
     UpperConfidenceBound, GPEpsilonGreedy
-from gp.fitvariationalgp import fit_gp
+from gp.fitgp import fit_gp
 from gp.gpviz import plot_gp_point_distribution, plot_gp_contours_with_uncertainty, plot_gp_surface_with_uncertainty
 from gp.gpviz2 import plot_gp_contours_with_uncertainty2
 from gp.mixeddeepgp import BotorchDeepGPMixed
@@ -89,6 +90,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         self._current_gp = self._construct_gp(torch.zeros(10, state_size + 1, dtype=torch.double),
                                               torch.zeros(10, 1, dtype=torch.double))
 
+
         # Initialize actions selector.
         self._gp_action_selector = None
         if strategy == 'thompson_sampling':
@@ -114,8 +116,9 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 cat_dims=[self._state_size],
                 cont_kernel_factory=self._kernel_factory,
                 input_transform=Normalize(     # TODO: Normalization causes issue with condition_on_observations
-                    d=self._state_size + 1,
-                    indices=list(range(self._state_size))),     # ONLY normalize state part.
+                     transform_on_fantasize=False,
+                     d=self._state_size + 1,
+                     indices=list(range(self._state_size))),     # ONLY normalize state part.
                 outcome_transform=None
             ).to(self.device)
         elif self._gp_mode == 'variational_gp':
@@ -125,7 +128,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 train_Y=train_y,
                 cat_dims=[self._state_size],
                 cont_kernel_factory=self._kernel_factory,
-                inducing_points=128,     # TODO, make this configurable,
+                inducing_points=1024,     # TODO, make this configurable,
                 input_transform=Normalize(d=self._state_size + 1,
                                           indices=list(range(self._state_size))),
                 outcome_transform=None
@@ -137,7 +140,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 train_x_shape=train_x.shape,
                 cat_dims=[self._state_size],
                 cont_kernel_factory=self._kernel_factory,
-                num_inducing_points=128,
+                num_inducing_points=2048,
                 input_transform=Normalize(d=self._state_size + 1,
                                           indices=list(range(self._state_size)))
             ).to(self.device)
@@ -169,6 +172,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 gp = self._construct_gp(train_x, train_y)
                 self._stupid_flag_that_should_be_removed = False
             else:       # For exact GP it is more efficient to do online updates this way.
+                self._data_x.clear()
+                self._data_y.clear()
                 # print("curr->", self._current_gp.train_inputs[0])
                 # print("to add->", new_train_x)
                 gp = self._current_gp.condition_on_observations(new_train_x, new_train_y).double()
@@ -176,16 +181,22 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 del self._current_gp
 
             if hyperparameter_fitting:
+                start_time = time.time()
                 if self._gp_mode == 'exact_gp':
                     # train_inputs and train_targets should be equal to train_x and train_y
-                    # print("result->", gp.train_inputs[0])
+                    print("Dataset size ->", gp.train_inputs[0].shape)
+                    # print("result->", gp.train_inputs[0][-33:])
                     # print(gp.train_targets.shape)
-                    fit_gp(gp, gp.train_inputs[0], gp.train_targets, self._gp_mode, logging=True)
+                    fit_gp(gp, gp.train_inputs[0], gp.train_targets, self._gp_mode, logging=True,
+                           checkpoint_path='gp_model_checkpoint.pth')
                     # mll = ExactMarginalLogLikelihood(gp.likelihood, gp)
-                    # fit_gpytorch_mll(mll, approx_mll=True)       # Bugger for Lunar Lander,
+                    # fit_gpytorch_mll(mll)       # Bugger for Lunar Lander,
                     # -> `scipy.optimize.minimize`: ABNORMAL_TERMINATION_IN_LNSRCH
                 elif self._gp_mode == 'variational_gp':
-                    fit_gp(gp, train_x, train_y, self._gp_mode, logging=False)
+                    print("Dataset size ->", train_x.shape)
+                    fit_gp(gp, train_x, train_y, self._gp_mode, logging=True,
+                           checkpoint_path='gp_model_checkpoint.pth')
+                logger.debug(f"Time taken -> {time.time() - start_time} seconds")
 
             self._current_gp = gp
 

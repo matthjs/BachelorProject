@@ -1,10 +1,10 @@
 model:
-  gp_model_str: "deep_gp"
+  gp_model_str: "variational_gp"
   discount_factor: 0.99
   batch_size: 32
   replay_buffer_size: 64
   exploring_starts: 100
-  max_dataset_size: 3000
+  max_dataset_size: 2000
   sparsification_threshold: None
   gp_likelihood_noise_constraint: None
   kernel_type: "rbf"
