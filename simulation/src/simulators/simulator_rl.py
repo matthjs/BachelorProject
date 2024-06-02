@@ -16,7 +16,6 @@ import cloudpickle
 
 from util.usageplotter import plot_complexities
 
-
 class SimulatorRL:
     """
     Idea, have this class collect relevant information into a dataframe, which can
@@ -139,17 +138,20 @@ class SimulatorRL:
                     plot_complexities(value,
                                       f"Time Usage {agent_id}",
                                       "Update Index",
-                                      "Time (seconds)")
+                                      "Time (seconds)",
+                                      plot_dir=plot_dir + "/" + self.experiment_id)
                 elif info_attr == "update_energy":
                     plot_complexities(value,
                                       f"Energy Usage {agent_id}",
                                       "Update Index",
-                                      "Energy (Joule)")
+                                      "Energy (Joule)",
+                                      plot_dir=plot_dir + "/" + self.experiment_id)
                 elif info_attr == "update_memory":
                     plot_complexities(value,
                                       f"VRAM usage {agent_id}",
                                       "Update Index",
-                                      "Memory Usage (GB)")
+                                      "Memory Usage (GB)",
+                                      plot_dir=plot_dir + "/" + self.experiment_id)
 
         return self
 

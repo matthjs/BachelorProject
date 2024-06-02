@@ -6,11 +6,12 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
 
-def plot_complexities2(datasets, xlabel='X-axis', ylabel='Y-axis', plot_dir=None):
+def plot_complexities2(datasets, xlabel='X-axis', ylabel='Y-axis', plot_dir=None, filename=None):
     """
     Plot a generic dataset of values [v1, v2, v3]
     and additionally displays the mean and fits a linear regression
     and degree 2 polynomial regression model.
+    :param filename:
     :param datasets:
     :param xlabel:
     :param ylabel:
@@ -55,7 +56,7 @@ def plot_complexities2(datasets, xlabel='X-axis', ylabel='Y-axis', plot_dir=None
     if plot_dir is not None:
         if not os.path.exists(plot_dir):
             os.makedirs(plot_dir)
-        plt.savefig(plot_dir)
+        plt.savefig(plot_dir + filename)
 
     plt.show()
 
@@ -65,6 +66,7 @@ def plot_complexities(data, dataset_name='Dataset', xlabel='X-axis', ylabel='Y-a
     Plot a generic dataset of values [v1, v2, v3]
     and additionally displays the mean and fits a linear regression
     and degree 2 polynomial regression model.
+    :param filename:
     :param data: List of values
     :param dataset_name: Name of the dataset for labeling
     :param xlabel: Label for the x-axis
@@ -72,7 +74,7 @@ def plot_complexities(data, dataset_name='Dataset', xlabel='X-axis', ylabel='Y-a
     :param plot_dir: Directory to save the plot, if specified
     :return: None
     """
-    print("D", data)
+    # print("D", data)
 
     plt.figure(figsize=(10, 6))
 
