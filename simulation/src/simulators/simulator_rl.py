@@ -14,6 +14,8 @@ from metricstracker.metricstrackerregistry import MetricsTrackerRegistry
 from hydra import compose, initialize
 import cloudpickle
 
+from util.usageplotter import plot_complexities
+
 
 class SimulatorRL:
     """
@@ -39,6 +41,7 @@ class SimulatorRL:
 
         self.agents = {}
         self.agents_configs = {}
+        self.agents_info = {}
 
         self.agent_factory = AgentFactory()
         self.env_str = env_str
@@ -49,6 +52,7 @@ class SimulatorRL:
         self.agents["random"] = self.agent_factory.create_agent("random", env_str)
         self.agents_configs["random"] = None
         self._add_agent_to_df("random", "random")
+        self.agents_info["random"] = {}
 
     def _config_obj(self, agent_type: str, agent_id: str, env_str: str, config_path: str = "../../../configs"):
         with initialize(config_path=config_path + "/" + agent_type, version_base="1.2"):
@@ -95,6 +99,7 @@ class SimulatorRL:
         self.agents[agent_id] = agent
 
         self._add_agent_to_df(agent_id, agent_type, hyperparams)
+        self.agents_info[agent_id] = {}
 
         return self
 
@@ -105,6 +110,7 @@ class SimulatorRL:
             self.agents[agent_id] = cloudpickle.load(f)
 
         self._add_agent_to_df(agent_id, agent_type)
+        self.agents_info[agent_id] = {}
 
         return self
 
@@ -126,6 +132,25 @@ class SimulatorRL:
         tracker.plot_metric(metric_name="return",
                             plot_path=plot_dir + self.env_str + self.experiment_id,
                             title=self.env_str + "_" + list(self.agents.keys()).__str__())
+
+        for agent_id, info in self.agents_info.items():
+            for info_attr, value in info.items():
+                if info_attr == "update_times":
+                    plot_complexities(value,
+                                      f"Time Usage {agent_id}",
+                                      "Update Index",
+                                      "Time (seconds)")
+                elif info_attr == "update_energy":
+                    plot_complexities(value,
+                                      f"Energy Usage {agent_id}",
+                                      "Update Index",
+                                      "Energy (Joule)")
+                elif info_attr == "update_memory":
+                    plot_complexities(value,
+                                      f"VRAM usage {agent_id}",
+                                      "Update Index",
+                                      "Memory Usage (GB)")
+
         return self
 
     def register_load_agent(self, file: str) -> 'SimulatorRL':
@@ -282,7 +307,8 @@ class SimulatorRL:
                 self.agents_configs[agent_id],
                 self.df,
                 self.metrics_tracker_registry,
-                self.verbose > 0
+                self.verbose > 0,
+                self.agents_info[agent_id]
             )
 
         obs, info = env.reset()
@@ -302,7 +328,14 @@ class SimulatorRL:
             agent.add_trajectory((old_obs, action, reward, obs))
 
             if mode == "train":
-                agent.update()
+                if agent.updatable():
+                    for callback in callbacks:
+                        callback.on_update_start()
+                    agent.update()
+                    for callback in callbacks:
+                        callback.on_update_end()
+                else:
+                    agent.update()
 
             for callback in callbacks:
                 callback.on_step(action, reward, obs, terminated or truncated)
@@ -339,15 +372,18 @@ class SimulatorRL:
                 self.agents_configs[agent_id],
                 self.df,
                 self.metrics_tracker_registry,
-                self.verbose > 0
+                self.verbose > 0,
+                self.agents_info[agent_id]
             )
+            # Adapter pattern, ensure custom callbacks are compatible with
+            # stable baselines callbacks.
             sb_callbacks.append(StableBaselinesCallbackAdapter(callback))
 
         model = agent.stable_baselines_unwrapped()
 
         # Problem: DQN's epsilon-greedy schedule depends on total_timesteps
         # parameter, which complicates the use of StopTrainingOnMaxEpisodes.
-        # For instance, if total_timesteps is set arbitrarily large than
+        # For instance, if total_timesteps is set arbitrarily large then
         # DQN will only execute random actions.
         model.learn(total_timesteps=int(5e4), callback=sb_callbacks)
         # model.learn(total_timesteps=int(216942042), callback=sb_callbacks)

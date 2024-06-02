@@ -15,6 +15,7 @@ class GPSarsaAgent(AbstractAgent):
     One advantage of the SARSA agent is that it is actually compatible with continuous action spaces
     provided you do not have greedy action selection.
     """
+
     def __init__(self,
                  gp_model_str: str,
                  env: gym.Env,
@@ -44,9 +45,9 @@ class GPSarsaAgent(AbstractAgent):
         )
 
         self._replay_buffer = ReplayBuffer(storage=LazyTensorStorage(
-                                           max_size=replay_buffer_size,
-                                           device=fetch_device()),
-                                           sampler=SamplerWithoutReplacement())    # IMPORTANT FOR ON-POLICY.
+            max_size=replay_buffer_size,
+            device=fetch_device()),
+            sampler=SamplerWithoutReplacement())  # IMPORTANT FOR ON-POLICY.
 
         self._batch_counter = 0
         self._batch_size = batch_size
@@ -84,7 +85,7 @@ class GPSarsaAgent(AbstractAgent):
         self._batch_counter += 1
 
     def updatable(self) -> bool:
-        return self._batch_counter >= self._batch_size
+        return self._exploration_policy.random_draws() <= 0 and self._batch_counter >= self._batch_size
 
     # noinspection DuplicatedCode
     def add_trajectory(self, trajectory: tuple) -> None:

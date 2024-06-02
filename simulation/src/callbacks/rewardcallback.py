@@ -29,6 +29,8 @@ class RewardCallback(AbstractCallback):
                       extra=None):
         super().init_callback(experiment_id, mode, agent, agent_id, agent_config, df, metrics_tracker_registry, logging, extra)
         self.metrics_tracker = metrics_tracker_registry.get_tracker(mode)
+        self.episode_reward = 0
+        self.highest_avg_return = -9999999
 
     def _save_to_dataframe(self):
         avg_return, avg_variance = self.metrics_tracker.latest_mean_variance("return", self.agent_id)

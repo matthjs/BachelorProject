@@ -60,3 +60,9 @@ class AbstractCallback(ABC):
 
     def on_training_end(self) -> None:
         pass
+
+    def on_update_start(self) -> None:
+        pass
+
+    def on_update_end(self) -> None:
+        pass

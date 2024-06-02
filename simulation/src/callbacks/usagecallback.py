@@ -2,24 +2,27 @@ import time
 
 import pandas as pd
 import resource
+
+from zeus.monitor import ZeusMonitor
+
 from agent.abstractagent import AbstractAgent
 from callbacks.abstractcallback import AbstractCallback
-
-
-# Function to measure memory usage
-def get_memory_usage():
-    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+from util.memory_usage import get_gpu_memory_usage
 
 
 class UsageCallback(AbstractCallback):
-    """
-    Warning: memory usage functionality probably not that reliable.
-    """
 
     def __init__(self):
         super().__init__()
-        self.start_time = None
-        self.memory_before = None
+        self.start_memory_usage = 0.0
+        self.update_start_memory_usage = 0.0
+
+        # We also want to look if time, memory and energy usage increases with each update.
+        self.update_times = []
+        self.update_memory = []
+        self.update_energy = []
+
+        self.energy_monitor = ZeusMonitor()
 
     def init_callback(self,
                       experiment_id: str,
@@ -32,14 +35,27 @@ class UsageCallback(AbstractCallback):
                       logging=False,
                       extra=None):
         super().init_callback(experiment_id, mode, agent, agent_id, agent_config, df, metrics_tracker_registry, logging, extra)
+        self.start_memory_usage = 0.0
+        self.update_start_memory_usage = 0.0
 
-    def _save_to_dataframe(self, execution_time):
+        # We also want to look if time, memory and energy usage increases with each update.
+        self.update_times = []
+        self.update_memory = []
+        self.update_energy = []
+
+        self.energy_monitor = ZeusMonitor()
+
+    def _save_to_dataframe(self, execution_time, memory_usage, energy_usage):
         self.df.loc[self.df['agent_id'] == self.agent_id, "execution time (sec) " + self.mode] \
             = round(execution_time, 3)
+        self.df.loc[self.df['agent_id'] == self.agent_id, "VRAM usage (GB) " + self.mode] \
+            = round(memory_usage, 3)
+        self.df.loc[self.df['agent_id'] == self.agent_id, "Energy usage (J) " + self.mode] \
+            = round(energy_usage, 3)
 
     def on_training_start(self) -> None:
-        self.start_time = time.time()
-        self.memory_before = get_memory_usage()
+        self.start_memory_usage = get_gpu_memory_usage()[1]
+        self.energy_monitor.begin_window("training")
 
     def on_step(self, action, reward, new_obs, done) -> bool:
         super().on_step(action, reward, new_obs, done)
@@ -49,16 +65,33 @@ class UsageCallback(AbstractCallback):
     def on_episode_end(self) -> None:
         super().on_episode_end()
 
+    def on_update_start(self) -> None:
+        # self.update_start_memory_usage = get_gpu_memory_usage()[1]
+        self.energy_monitor.begin_window("updating")
+
+    def on_update_end(self) -> None:
+        update_memory_usage = get_gpu_memory_usage()[1] - self.start_memory_usage
+        measurement = self.energy_monitor.end_window("updating")
+
+        self.update_times.append(measurement.time)
+        self.update_memory.append(update_memory_usage)
+        self.update_energy.append(measurement.total_energy)
+
     def on_training_end(self) -> None:
         """
         You can plot here, but this is preferably done in the simulator class.
         :return:
         """
-        end_time = time.time()
-        execution_time = end_time - self.start_time
-        memory_usage_diff = get_memory_usage() - self.memory_before
+        memory_usage_diff = get_gpu_memory_usage()[1] - self.start_memory_usage
+        measurement = self.energy_monitor.end_window("training")
         if self.logging:
-            print(f"Execution time {execution_time:.3f} sec")
-            print(f"Mem usage change {memory_usage_diff} KB")
+            print(f"Training execution time {measurement.time:.3f} sec")
+            print(f"Training VRAM usage {memory_usage_diff:.3f} GB")
+            print(f"Training energy usage {measurement.total_energy:.3f} J")
 
-        self._save_to_dataframe(execution_time)
+        self._save_to_dataframe(measurement.time, memory_usage_diff, measurement.total_energy)
+
+        if self.mode == "train":
+            self.extra["update_times"] = self.update_times
+            self.extra["update_energy"] = self.update_energy
+            self.extra["update_memory"] = self.update_memory
