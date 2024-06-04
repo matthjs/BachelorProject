@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3.9"
 services:
   app:
     build:
@@ -8,8 +8,11 @@ services:
       - "8888:8888"    # Prob not necessary
     stdin_open: true # docker run -i
     tty: true        # docker run -t
+    environment:
+      - DISPLAY=${DISPLAY}
     volumes:
       - .:/app
+      - /tmp/.X11-unix:/tmp/.X11-unix
     # https://docs.docker.com/compose/gpu-support/\
     deploy:           # Ensure docker container can "see" gpu
       resources:

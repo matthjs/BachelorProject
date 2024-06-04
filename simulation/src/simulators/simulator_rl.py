@@ -16,6 +16,7 @@ import cloudpickle
 
 from util.usageplotter import plot_complexities
 
+
 class SimulatorRL:
     """
     Idea, have this class collect relevant information into a dataframe, which can

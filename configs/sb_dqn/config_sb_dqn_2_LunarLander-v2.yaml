@@ -10,7 +10,7 @@ model:
   gradient_steps: -1
   exploration_fraction: 0.12
   exploration_final_eps: 0.1
-  policy_kwargs: "dict(net_arch=[256, 256])"
+  policy_kwargs: "dict(net_arch=[])"
 
 training:
   n_timesteps: !!float 5e4

@@ -4,6 +4,9 @@ from modelfactory.modelfactory import ModelFactory
 from trainers.qtrainer import QTrainer
 
 
+# ! Not used !
+
+
 class QAgent(ValueAgent):
     def __init__(self,
                  models,
@@ -44,4 +47,3 @@ class QAgent(ValueAgent):
 
     def hyperparameters(self) -> dict:
         return self._hyperparameters
-

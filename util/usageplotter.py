@@ -115,7 +115,7 @@ def plot_complexities(data, dataset_name='Dataset', xlabel='X-axis', ylabel='Y-a
             os.makedirs(plot_dir)
         plt.savefig(os.path.join(plot_dir, f'{dataset_name}.png'))
 
-    plt.show()
+    # plt.show()
 
 
 if __name__ == "__main__":
