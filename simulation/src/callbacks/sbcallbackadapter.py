@@ -44,6 +44,12 @@ class StableBaselinesCallbackAdapter(BaseCallback):
         """
         self.callback.on_training_start()
 
+    def on_rollout_start(self) -> None:
+        self.callback.on_update_start()
+
+    def on_rollout_end(self) -> None:
+        self.callback.on_update_end()
+
     def _on_step(self) -> bool:
         """
         This method will be called by the model after each call to `env.step()`.

@@ -11,6 +11,7 @@ from bayesopt.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
 from bayesopt.acquisition import ThompsonSampling, \
     UpperConfidenceBound, GPEpsilonGreedy
 from gp.custommixedgp import MixedSingleTaskGP
+from gp.deepgp import DeepGPModel
 from gp.fitgp import GPFitter
 from gp.gpviz import plot_gp_point_distribution
 from gp.mixeddeepgp import BotorchDeepGPMixed
@@ -64,10 +65,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         self._visualize = False
         self._stupid_flag_that_should_be_removed = True
 
-        # self._input_transform = Normalize(d=state_size + 1)
-        # self._outcome_transform = Standardize(m=1)  # I am guessing m should be 1
-        # This Standardization is VERY important as we assume the mean function is 0.
-        # If not then we will have problems with the Q values.
         self._sparsification_treshold = sparsification_treshold
 
         self._kernel_factory, self.use_scale_kernel = create_kernel(kernel_type, kernel_args)
@@ -121,19 +118,23 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 train_Y=train_y,
                 cat_dims=[self._state_size],
                 cont_kernel_factory=self._kernel_factory,
-                inducing_points=1024,  # TODO, make this configurable,
+                inducing_points=256,  # TODO, make this configurable,
                 input_transform=Normalize(d=self._state_size + 1,
                                           indices=list(range(self._state_size))),
                 outcome_transform=None
             ).to(self.device)
         elif self._gp_mode == 'deep_gp':
-            # Do not use RFF with deep GP.
-            # Broken.
-            return BotorchDeepGPMixed(
+            # TODO make this more configrable
+            return DeepGPModel(
                 train_x_shape=train_x.shape,
+                hidden_layers_config=[
+                    {"output_dims": 1, "mean_type": "linear"},
+                    {"output_dims": 1, "mean_type": "linear"},
+                    {"output_dims": 1, "mean_type": "linear"},
+                    {"output_dims": None, "mean_type": "constant"}
+                ],
                 cat_dims=[self._state_size],
-                cont_kernel_factory=self._kernel_factory,
-                num_inducing_points=128,
+                num_inducing_points=256,
                 input_transform=Normalize(d=self._state_size + 1,
                                           indices=list(range(self._state_size)))
             ).to(self.device)

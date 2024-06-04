@@ -31,7 +31,9 @@ class DeepGPModel(DeepGP, GPyTorchModel):
                  train_x_shape,
                  hidden_layers_config: List[Dict[str, Any]],
                  num_inducing_points=128,
-                 cat_dims: Optional[List[int]] = None):
+                 cat_dims: Optional[List[int]] = None,
+                 input_transform=None,
+                 outcome_transform=None):
         """
         NOTE: Currently does not allow you to customize the kernel functions used.
         Args:
@@ -76,6 +78,11 @@ class DeepGPModel(DeepGP, GPyTorchModel):
         self._num_outputs = 1
         self.double()
         self.intermediate_outputs = None
+
+        if outcome_transform is not None:
+            self.outcome_transform = outcome_transform
+        if input_transform is not None:
+            self.input_transform = input_transform
 
     def forward(self, inputs):
         x = inputs
