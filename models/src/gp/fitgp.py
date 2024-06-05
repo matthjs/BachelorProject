@@ -82,12 +82,14 @@ class GPFitter:
                     optimizer.zero_grad()
                     output = model(train_x)
                     loss = -mll(output, train_y)
+
+                    if epoch % 10 == 0 and logging:
+                        logger.debug(f"mll loss: {loss}")
+
                     if loss < 0:  # Prevents numerical problems.
                         break
 
                     loss.backward()
-                    if epoch % 20 == 0 and logging:
-                        logger.debug(f"mll loss: {loss}")
                     optimizer.step()
 
 

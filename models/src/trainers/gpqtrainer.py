@@ -30,6 +30,7 @@ class GPQTrainer(AbstractTrainer):
         self.bayesian_opt_module = bayesian_opt_module
         self.batch_size = batch_size
         self.discount_factor = discount_factor
+        self.learning_rate = 0.005 # 0.0023
 
     def _trajectory(self) -> tuple:
         """
@@ -58,10 +59,13 @@ class GPQTrainer(AbstractTrainer):
         # Compute TD(0) target.
         # The max() operation over actions inherently means this can only be done
         # for discrete action spaces.
+        current_q_values = self.bayesian_opt_module.state_action_value(states, actions)
         max_q_values, _ = self.bayesian_opt_module.max_state_action_value(next_states)
         # Convert rewards from [batch_size] -> [batch_size, 1] so that it is compatible with max_q_values of shape [
         # batch_size, 1]
-        td_targets = rewards.unsqueeze(1) + self.discount_factor * max_q_values
+        # td_targets = rewards.unsqueeze(1) + self.discount_factor * max_q_values
+        td_targets = current_q_values + self.learning_rate * (
+                    rewards.unsqueeze(1) + self.discount_factor * max_q_values - current_q_values)
 
         return state_action_pairs, td_targets
 
