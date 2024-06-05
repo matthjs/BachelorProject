@@ -19,20 +19,20 @@ def test_load_experiment():
 
 if __name__ == "__main__":
     # 81 thompson sampling also did ok
-    sim = SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_83")
+    sim = SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_86")
     (sim
      # .register_agent("linear_q_agent_1", "linear_q_agent")
      # .register_agent("gpq_agent_1", "gpq_agent")
      .register_agent("gpsarsa_agent_2", "gpsarsa_agent")
-     # .register_agent("gpsarsa_agent_3", "gpsarsa_agent")
+     # .register_agent("gpsarsa_agent_2", "gpsarsa_agent")
      # .register_agent("sb_dqn_1", "sb_dqn")
      # .register_agent("sb_dqn_2", "sb_dqn")
      # .register_agent("sb_ppo_1", "sb_ppo")
-     .train_agents(num_episodes=100, concurrent=False,
+     .train_agents(num_episodes=200, concurrent=False,
                    callbacks=[RewardCallback(), UsageCallback()])
      .evaluate_agents(10, callbacks=[RewardCallback(), UsageCallback()])
      .data_to_csv()
      .plot_any_plottable_data()
      .save_agents())
 
-    sim.play("sb_dqn_1", 10)
+    sim.play("gpsarsa_agent_2", 10)

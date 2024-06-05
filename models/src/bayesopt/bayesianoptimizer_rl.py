@@ -118,7 +118,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 train_Y=train_y,
                 cat_dims=[self._state_size],
                 cont_kernel_factory=self._kernel_factory,
-                inducing_points=256,  # TODO, make this configurable,
+                inducing_points=1800,  # TODO, make this configurable,
                 input_transform=Normalize(d=self._state_size + 1,
                                           indices=list(range(self._state_size))),
                 outcome_transform=None
@@ -297,7 +297,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         action_tensor = self._gp_action_selector.action(self._current_gp, state)
 
-        if self._dummy_counter == 3:
+        if self._dummy_counter == 10:
             self._visualize_data(state)
 
         return action_tensor.item()
