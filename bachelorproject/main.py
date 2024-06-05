@@ -8,7 +8,7 @@ from simulators.simulator_rl import SimulatorRL
 def test_load_experiment():
     logger.debug("loading experiment...")
 
-    (SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_78")        # 75
+    (SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_75")        # 75
      # .load_agent("gpq_agent_1", "gpq_agent")
      .load_agent("gpsarsa_agent_1", "gpsarsa_agent")
      # .load_agent("sb_dqn_1", "sb_dqn")
@@ -18,6 +18,8 @@ def test_load_experiment():
 
 
 if __name__ == "__main__":
+    test_load_experiment()
+
     sim = SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_79")
     (sim
      # .register_agent("linear_q_agent_1", "linear_q_agent")
