@@ -6,11 +6,14 @@ from agent.abstractdpagent import AbstractDPAgent
 import gymnasium as gym
 import torch
 
-from gp.variationalgp import ExactGaussianProcessRegressor
+from gp.mixedvariationalgp import ExactGaussianProcessRegressor
 from trainers.gptrainer import GaussianProcessTrainer
 from util.fetchdevice import fetch_device
 
 from wrappers.initialstatewrapper import InitialStateWrapper
+
+
+# ! Not used !
 
 
 def mountain_car_reward_fun(state) -> torch.tensor:
@@ -254,5 +257,3 @@ class GaussianProcessDPAgent(AbstractDPAgent):
             self.iterate()
 
         return self._greedy_action_selection(state)
-
-

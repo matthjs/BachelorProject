@@ -4,7 +4,7 @@ import torch
 from gpytorch import ExactMarginalLogLikelihood
 from torch import optim
 
-from gp.variationalgp import ExactGaussianProcessRegressor
+from gp.mixedvariationalgp import ExactGaussianProcessRegressor
 
 
 class GaussianProcessTrainer:

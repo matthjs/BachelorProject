@@ -16,17 +16,27 @@ from torchrl.data import LazyTensorStorage
 
 class AgentFactory:
     """
-    Naive factory method implementation for
-    RL agent creation.
+    Naive factory method implementation for RL agent creation.
     """
 
     @staticmethod
     def set_thread_id(agent_type: str) -> None:
+        """
+        Set the thread ID for the current thread.
+        :param agent_type: The type of agent.
+        """
         thr = current_thread()
         thr.name = agent_type + "_thread_" + str(thr.ident)
 
     @staticmethod
     def create_agent_configured(agent_type: str, env_str: str, cfg) -> tuple[AbstractAgent, dict]:
+        """
+        Create an RL agent based on the provided configuration.
+        :param agent_type: The type of agent to create.
+        :param env_str: The name of the Gym environment.
+        :param cfg: The configuration for the agent.
+        :return: A tuple containing the created agent and its configuration.
+        """
         env = gym.make(env_str)
 
         if agent_type == "gpq_agent":

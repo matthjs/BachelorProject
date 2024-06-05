@@ -7,6 +7,9 @@ from agent.abstractagent import AbstractAgent
 from util.fetchdevice import fetch_device
 
 
+# ! Not used !
+
+
 class ValueAgent(AbstractAgent, ABC):
 
     def __init__(self,
@@ -19,8 +22,8 @@ class ValueAgent(AbstractAgent, ABC):
         """
         super().__init__(models, state_space, action_space)
         self._replay_buffer = ReplayBuffer(storage=buffer_storage_type(
-                                           max_size=replay_buffer_size,
-                                           device=fetch_device()))
+            max_size=replay_buffer_size,
+            device=fetch_device()))
         self._exploration_policy = None
         self._trainer = None
 

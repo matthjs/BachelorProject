@@ -22,7 +22,7 @@ class GPFitter:
                  train_y: torch.Tensor,
                  gp_mode: str,
                  batch_size: int = 64,
-                 num_epochs: int = 15,
+                 num_epochs: int = 20,
                  learning_rate: float = 0.001,
                  logging: bool = False,
                  checkpoint_path: Optional[str] = None) -> None:
@@ -82,12 +82,14 @@ class GPFitter:
                     optimizer.zero_grad()
                     output = model(train_x)
                     loss = -mll(output, train_y)
+                    if loss < 0:  # Prevents numerical problems.
+                        break
+
                     loss.backward()
                     if epoch % 20 == 0 and logging:
                         logger.debug(f"mll loss: {loss}")
                     optimizer.step()
-                    if loss < 0:  # Prevents numerical problems.
-                        break
+
 
             else:
                 train_loader = DataLoader(TensorDataset(train_x, train_y),

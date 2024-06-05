@@ -3,24 +3,19 @@ from collections import deque
 import time
 import botorch.settings
 import torch
-from botorch import fit_gpytorch_mll
-from botorch.models import MixedSingleTaskGP
 from botorch.models.gpytorch import GPyTorchModel
-from botorch.posteriors import GPyTorchPosterior
-from gpytorch import ExactMarginalLogLikelihood
-from gpytorch.likelihoods import GaussianLikelihood
 from botorch.models.transforms.input import Normalize
-from botorch.models.transforms.outcome import Standardize
 from loguru import logger
 
 from bayesopt.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
-from bayesopt.acquisition import simple_thompson_action_sampler, upper_confidence_bound_selector, ThompsonSampling, \
+from bayesopt.acquisition import ThompsonSampling, \
     UpperConfidenceBound, GPEpsilonGreedy
+from gp.custommixedgp import MixedSingleTaskGP
+from gp.deepgp import DeepGPModel
 from gp.fitgp import GPFitter
-from gp.gpviz import plot_gp_point_distribution, plot_gp_contours_with_uncertainty, plot_gp_surface_with_uncertainty
-from gp.gpviz2 import plot_gp_contours_with_uncertainty2
+from gp.gpviz import plot_gp_point_distribution
 from gp.mixeddeepgp import BotorchDeepGPMixed
-from gp.variationalgp import MixedSingleTaskVariationalGP
+from gp.mixedvariationalgp import MixedSingleTaskVariationalGP
 from kernels.kernelfactory import create_kernel
 from util.fetchdevice import fetch_device
 import gymnasium as gym
@@ -28,15 +23,13 @@ import gymnasium as gym
 
 class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
     """
-    Bayesian optimizer.
-    To be used in the context of model-free RL
-    with discrete action spaces.
+    Bayesian optimizer for model-free RL with discrete action spaces.
     WARNING: This class is getting a bit big.
     """
 
     def __init__(self,
                  model_str: str,
-                 random_draws: int,
+                 exploring_starts: int,
                  max_dataset_size: int,
                  state_space: gym.Space,
                  action_space: gym.Space,
@@ -47,20 +40,19 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                  ):
         """
         Constructor.
-        :param model_str: what gp model to use (exact_gp, variational_gp, deep_gp).
-        :param random_draws: (this name is bad), number of choose_next_action() calls before the GP gets updated.
-        :param max_dataset_size: max dataset size to apply,
-        :param state_space: the state space of the environment.
-        :param action_space: the action space of the environemnt (has to be discrete).
-        :param kernel_type: type of kernel to be used for states (matern, rff, rbf).
-        :param kernel_args: only applicable for rff for specifying number of samples (is a data object).
-        :param strategy: acquisition function/behavioral policy to use.
-        :param sparsification_treshold: if set, attempts to run a sparsification algorithm for the dataset.
+
+        :param model_str: What GP model to use ('exact_gp', 'variational_gp', 'deep_gp').
+        :param exploring_starts: Number of choose_next_action() calls before the GP gets updated.
+        :param max_dataset_size: Max dataset size to apply.
+        :param state_space: The state space of the environment.
+        :param action_space: The action space of the environment (has to be discrete).
+        :param kernel_type: Type of kernel to be used for states ('matern', 'rff', 'rbf').
+        :param kernel_args: Only applicable for RFF for specifying number of samples (is a data object).
+        :param strategy: Acquisition function/behavioral policy to use.
+        :param sparsification_treshold: If set, attempts to run a sparsification algorithm for the dataset.
         """
         self.device = fetch_device()
-        # For online updates for variational/deep gps we need to keep track of the dataset
-        # Worth noting that dataset sparsification and online exact updates (Fantasization).
-        self._data_x = deque(maxlen=max_dataset_size)  # Memory intensive: keep track of N latest samples.
+        self._data_x = deque(maxlen=max_dataset_size)  # Memory consideration: keep track of N latest samples.
         self._data_y = deque(maxlen=max_dataset_size)
 
         state_size = state_space.shape[0]
@@ -68,18 +60,14 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         self._action_size = action_space.n
         self._action_space = action_space
         self._state_space = state_space
-        self._random_draws = random_draws
+        self._exploring_starts = exploring_starts
         self._dummy_counter = 0
         self._visualize = False
         self._stupid_flag_that_should_be_removed = True
 
-        # self._input_transform = Normalize(d=state_size + 1)
-        # self._outcome_transform = Standardize(m=1)  # I am guessing m should be 1
-        # This Standardization is VERY important as we assume the mean function is 0.
-        # If not then we will have problems with the Q values.
         self._sparsification_treshold = sparsification_treshold
 
-        self._kernel_factory = create_kernel(kernel_type, kernel_args)
+        self._kernel_factory, self.use_scale_kernel = create_kernel(kernel_type, kernel_args)
 
         if model_str not in ['exact_gp', 'variational_gp', 'deep_gp']:
             raise ValueError(f'Unknown gp model type: {model_str}')
@@ -103,10 +91,11 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
     def _construct_gp(self, train_x, train_y) -> GPyTorchModel:
         """
-        Construct a Gaussian processes with data (train_x, train_y).
-        :param train_x: a tensor with expected shape (dataset_size, state_space_dim).
-        :param train_y: a tensor with expected shape (dataset_size, 1).
-        :return: a GP conditioned on (train_x, train_y) (Hyperparameters NOT fitted).
+        Construct a Gaussian process with data (train_x, train_y).
+
+        :param train_x: A tensor with expected shape (dataset_size, state_space_dim).
+        :param train_y: A tensor with expected shape (dataset_size, 1).
+        :return: A GP conditioned on (train_x, train_y) (Hyperparameters NOT fitted).
         """
         del self._current_gp
 
@@ -119,7 +108,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 input_transform=Normalize(  # TODO: Normalization causes issue with condition_on_observations
                     d=self._state_size + 1,
                     indices=list(range(self._state_size))),  # ONLY normalize state part.
-                outcome_transform=None
+                outcome_transform=None,
+                use_scale_kernel=self.use_scale_kernel
             ).to(self.device)
         elif self._gp_mode == 'variational_gp':
             # Do not use RFF with variational GP.
@@ -128,19 +118,23 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 train_Y=train_y,
                 cat_dims=[self._state_size],
                 cont_kernel_factory=self._kernel_factory,
-                inducing_points=1024,  # TODO, make this configurable,
+                inducing_points=256,  # TODO, make this configurable,
                 input_transform=Normalize(d=self._state_size + 1,
                                           indices=list(range(self._state_size))),
                 outcome_transform=None
             ).to(self.device)
         elif self._gp_mode == 'deep_gp':
-            # Do not use RFF with deep GP.
-            # Broken.
-            return BotorchDeepGPMixed(
+            # TODO make this more configrable
+            return DeepGPModel(
                 train_x_shape=train_x.shape,
+                hidden_layers_config=[
+                    {"output_dims": 1, "mean_type": "linear"},
+                    {"output_dims": 1, "mean_type": "linear"},
+                    {"output_dims": 1, "mean_type": "linear"},
+                    {"output_dims": None, "mean_type": "constant"}
+                ],
                 cat_dims=[self._state_size],
-                cont_kernel_factory=self._kernel_factory,
-                num_inducing_points=2048,
+                num_inducing_points=128,
                 input_transform=Normalize(d=self._state_size + 1,
                                           indices=list(range(self._state_size)))
             ).to(self.device)
@@ -149,13 +143,13 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         """
         Condition the GP on incoming data and fit its hyperparameters.
         Sets the _current_gp private field.
-        :param new_train_x: a tensor with expected shape (dataset_size, state_space_dim).
-        :param new_train_y: a tensor with expected shape (dataset_size, 1).
-        :param hyperparameter_fitting: whether to fit the kernel hyperparameters or not.
-        :return:
+
+        :param new_train_x: A tensor with expected shape (dataset_size, state_space_dim).
+        :param new_train_y: A tensor with expected shape (dataset_size, 1).
+        :param hyperparameter_fitting: Whether to fit the kernel hyperparameters or not.
         """
         with botorch.settings.debug(True):
-            if self._random_draws > 0:
+            if self._exploring_starts > 0:
                 return
 
             self._dummy_counter += 1
@@ -196,13 +190,17 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                     print("Dataset size ->", train_x.shape)
                     self.fit_gp(gp, train_x, train_y, self._gp_mode, logging=True,
                                 checkpoint_path='gp_model_checkpoint.pth')
+                elif self._gp_mode == 'deep_gp':
+                    print("Dataset size ->", train_x.shape)
+                    self.fit_gp(gp, train_x, train_y, self._gp_mode, logging=True,
+                                checkpoint_path='gp_model_checkpoint.pth')
                 logger.debug(f"Time taken -> {time.time() - start_time} seconds")
 
             self._current_gp = gp
 
     def get_current_gp(self):
         """
-        :return: the current Gaussian process model.
+        :return: The current Gaussian process model.
         """
         return self._current_gp
 
@@ -238,9 +236,9 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
     def _sparse_add(self, new_train_x: torch.tensor, new_train_y: torch.tensor) -> None:
         """
         Add data points to the dataset using a sparsification scheme.
-        :param new_train_x: a tensor with expected shape (dataset_size, state_space_dim).
-        :param new_train_y: a tensor with expected shape (dataset_size, 1).
-        :return:
+
+        :param new_train_x: A tensor with expected shape (dataset_size, state_space_dim).
+        :param new_train_y: A tensor with expected shape (dataset_size, 1).
         """
         covar_fun = self._current_gp.covar_module
         train_x = torch.cat(list(self._data_x))
@@ -254,9 +252,9 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
     def extend_dataset(self, new_train_x: torch.tensor, new_train_y: torch.tensor) -> None:
         """
         Add data points to the dataset.
-        :param new_train_x: a tensor with expected shape (dataset_size, state_space_dim).
-        :param new_train_y: a tensor with expected shape (dataset_size, 1).
-        :return:
+
+        :param new_train_x: A tensor with expected shape (dataset_size, state_space_dim).
+        :param new_train_y: A tensor with expected shape (dataset_size, 1).
         """
         # dequeue evaluates to False if empty.
         if self._sparsification_treshold is not None and self._data_x:
@@ -272,7 +270,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
     def dataset(self) -> tuple[torch.tensor, torch.tensor]:
         """
         Construct batched tensors of shape (dataset_size, state_space_dim) and (dataset_size, 1),
-        from the deques for inputs and targets.
+        from the dequeue for inputs and targets.
         :return: a batched tensors of shape (dataset_size, state_space_dim) and (dataset_size, 1),
         """
         train_x = torch.cat(list(self._data_x))
@@ -282,7 +280,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
     def choose_next_action(self, state: torch.tensor) -> int:
         """
-        Choose the next action.
+        Choose the next action based on the behavioral policy with the current GP model.
 
         Choosing the next point works a bit differently compared to traditional BayesOpt.
         We must fix the state part of the input :math: `z \in S times A`
@@ -291,15 +289,15 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         :param state: a state tensor (1, state_space_dim).
         :return: an action encoded as an int.
         """
-        if self._random_draws > 0:
-            self._random_draws -= 1
+        if self._exploring_starts > 0:
+            self._exploring_starts -= 1
             return self._action_space.sample()
 
         self._gp_action_selector.update()
 
         action_tensor = self._gp_action_selector.action(self._current_gp, state)
 
-        if self._dummy_counter == 3:
+        if self._dummy_counter == 10:
             self._visualize_data(state)
 
         return action_tensor.item()
@@ -383,5 +381,5 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                                    title=f'Point Distribution for state ({state})')
         self._dummy_counter = 0
 
-    def random_draws(self) -> int:
-        return self._random_draws
+    def exploring_starts(self) -> int:
+        return self._exploring_starts

@@ -16,6 +16,7 @@ import cloudpickle
 
 from util.usageplotter import plot_complexities
 
+
 class SimulatorRL:
     """
     Idea, have this class collect relevant information into a dataframe, which can
@@ -321,6 +322,8 @@ class SimulatorRL:
         for callback in callbacks:
             callback.on_training_start()
 
+        ep = num_episodes
+
         while True:
             old_obs = obs
             action = agent.policy(obs)
@@ -347,6 +350,8 @@ class SimulatorRL:
                 for callback in callbacks:
                     callback.on_episode_end()
                 obs, info = env.reset()
+                # if self.verbose > 0:
+                #    logger.debug(f"Episode: {ep - num_episodes}")
 
             if num_episodes == 0:
                 break
