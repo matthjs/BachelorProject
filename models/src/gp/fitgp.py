@@ -22,7 +22,7 @@ class GPFitter:
                  train_y: torch.Tensor,
                  gp_mode: str,
                  batch_size: int = 64,
-                 num_epochs: int = 15,
+                 num_epochs: int = 20,
                  learning_rate: float = 0.001,
                  logging: bool = False,
                  checkpoint_path: Optional[str] = None) -> None:
