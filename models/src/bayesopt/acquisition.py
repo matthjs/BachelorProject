@@ -76,6 +76,7 @@ class ThompsonSampling(GPActionSelector):
     def action(self, gpq_model: GPyTorchModel, state_tensor: torch.Tensor) -> torch.Tensor:
         """
         Perform Thompson Sampling to select an action.
+        Select the action with the highest sample Q-value.
         """
         state_action_pairs = append_actions(state_tensor, self.action_size)
         posterior_distribution: GPyTorchPosterior = gpq_model.posterior(state_action_pairs, observation_noise=True)
@@ -89,7 +90,7 @@ class UpperConfidenceBound(GPActionSelector):
     Upper Confidence Bound action selector.
     """
 
-    def __init__(self, action_size, beta=1):
+    def __init__(self, action_size, beta=2):
         self.action_size = action_size
         self.beta = beta
 

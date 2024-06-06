@@ -22,7 +22,7 @@ class GPFitter:
                  train_y: torch.Tensor,
                  gp_mode: str,
                  batch_size: int = 64,
-                 num_epochs: int = 20,
+                 num_epochs: int = 5,
                  learning_rate: float = 0.001,
                  logging: bool = False,
                  checkpoint_path: Optional[str] = None) -> None:
@@ -77,7 +77,7 @@ class GPFitter:
         # TODO: REFACTOR
         # Exact GP Optimization does not allow for mini-batching.
         with gpytorch.settings.debug(True):
-            if True or gp_mode == 'exact_gp':
+            if gp_mode == 'exact_gp':
                 for epoch in range(num_epochs):
                     optimizer.zero_grad()
                     output = model(train_x)
@@ -108,10 +108,9 @@ class GPFitter:
                         loss = -mll(output, y_batch)  # mean() necessary?
                         loss.backward()
 
-                        if epoch % 20 == 0 and logging:
-                            logger.debug(f"variational loss on minibatch {loss}")
-
                         optimizer.step()
+                    if epoch % 5 == 0 and logging:
+                        logger.debug(f"variational loss on minibatch {loss}")
 
         model.eval()
         if checkpoint_path:

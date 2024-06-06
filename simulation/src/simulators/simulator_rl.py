@@ -271,6 +271,7 @@ class SimulatorRL:
         while True:
             action = agent.policy(obs)  # Will run .predict() if this is actually StableBaselines algorithm.
             obs, reward, terminated, truncated, info = play_env.step(action)
+            # print(action)
 
             if terminated or truncated:
                 num_episodes -= 1

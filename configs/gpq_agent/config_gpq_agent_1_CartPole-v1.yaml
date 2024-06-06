@@ -8,7 +8,7 @@ model:
   sparsification_threshold: None
   gp_likelihood_noise_constraint: None
   kernel_type: "rbf"
-  strategy: "upper_confidence_bound"
+  strategy: "thompson_sampling"
 
   # Below is not used yet.
   # Probably not use at all, kernel parameters are
