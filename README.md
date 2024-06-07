@@ -89,7 +89,9 @@ sim.play(<agent_id>, <num_episodes>)
 * I have verified that exact GP inference is indeed $O(N^2)$. Time complexity still needs to be verified. TODO: Compare time with fit_gpytorch_mll and space usage with other algorithms.
 * Problem: Memory usage for exactGP does not scale properly, variational GPs cope decently and appear to scale more linearly but posterior is an approximation.
 * For linear Q-learning, perhaps it is easier and more meaningful to make a comparison to StableBaselines3 DQN algorithm with a linear model.
-
+* Observation noise for posterior yes or no?
+* Test dataset size possible for minibatching.
+* Balance the batch_size for minibatching and also the batch_size for updating.
 ## Information on modules
 
 ### Agents
