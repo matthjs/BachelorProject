@@ -47,8 +47,8 @@ class GPSarsaTrainer(AbstractTrainer):
 
         # Compute TD(0) target. Convert rewards from [batch_size] -> [batch_size, 1] so that it is compatible with
         # max_q_values of shape [32, 1]
-        # td_targets = rewards.unsqueeze(1) + self.discount_factor * next_q_values
-        td_targets = current_q_values + self.learning_rate * (rewards.unsqueeze(1) + self.discount_factor * next_q_values - current_q_values)
+        td_targets = rewards.unsqueeze(1) + self.discount_factor * next_q_values
+        # td_targets = current_q_values + self.learning_rate * (rewards.unsqueeze(1) + self.discount_factor * next_q_values - current_q_values)
 
         # print("TD->", td_targets)
 

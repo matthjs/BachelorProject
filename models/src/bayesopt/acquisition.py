@@ -76,9 +76,10 @@ class ThompsonSampling(GPActionSelector):
     def action(self, gpq_model: GPyTorchModel, state_tensor: torch.Tensor) -> torch.Tensor:
         """
         Perform Thompson Sampling to select an action.
+        Select the action with the highest sample Q-value.
         """
         state_action_pairs = append_actions(state_tensor, self.action_size)
-        posterior_distribution: GPyTorchPosterior = gpq_model.posterior(state_action_pairs, observation_noise=True)
+        posterior_distribution: GPyTorchPosterior = gpq_model.posterior(state_action_pairs, observation_noise=False)
         sampled_q_values = posterior_distribution.rsample()
         best_action = torch.argmax(sampled_q_values, dim=1)
         return best_action
@@ -89,7 +90,7 @@ class UpperConfidenceBound(GPActionSelector):
     Upper Confidence Bound action selector.
     """
 
-    def __init__(self, action_size, beta=1):
+    def __init__(self, action_size, beta=2):
         self.action_size = action_size
         self.beta = beta
 
@@ -98,7 +99,7 @@ class UpperConfidenceBound(GPActionSelector):
         Perform Upper Confidence Bound action selection.
         """
         state_action_pairs = append_actions(state_tensor, self.action_size)
-        posterior_distribution = gpq_model.posterior(state_action_pairs, observation_noise=True)
+        posterior_distribution = gpq_model.posterior(state_action_pairs, observation_noise=False)
         confident_q_values = posterior_distribution.mean + self.beta * torch.sqrt(posterior_distribution.variance)
         confident_q_values = confident_q_values.unsqueeze(0)
         best_action = torch.argmax(confident_q_values, dim=1)
@@ -129,7 +130,7 @@ class GPEpsilonGreedy(GPActionSelector):
         """
         if np.random.uniform(0, 100) >= self._epsilon * 100:
             state_action_pairs = append_actions(state_tensor, self._action_space.n)
-            posterior_distribution = gpq_model.posterior(state_action_pairs, observation_noise=True)
+            posterior_distribution = gpq_model.posterior(state_action_pairs, observation_noise=False)
             best_action, _ = torch.argmax(posterior_distribution.mean, dim=1)
             return best_action
 

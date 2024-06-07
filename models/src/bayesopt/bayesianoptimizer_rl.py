@@ -118,7 +118,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 train_Y=train_y,
                 cat_dims=[self._state_size],
                 cont_kernel_factory=self._kernel_factory,
-                inducing_points=256,  # TODO, make this configurable,
+                inducing_points=128,  # TODO, make this configurable,
                 input_transform=Normalize(d=self._state_size + 1,
                                           indices=list(range(self._state_size))),
                 outcome_transform=None
@@ -312,7 +312,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         """
         with torch.no_grad():
             next_state_action_pairs = torch.cat((state_batch, action_batch), dim=1).to(self.device)
-            q_val = self._current_gp.posterior(next_state_action_pairs, observation_noise=True).mean
+            q_val = self._current_gp.posterior(next_state_action_pairs, observation_noise=False).mean
 
         return q_val
 
@@ -339,7 +339,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 # print(state_action_pairs.shape)
 
                 mean_qs = self._current_gp.posterior(state_action_pairs,
-                                                     observation_noise=True).mean  # batch_size amount of q_values.
+                                                     observation_noise=False).mean  # batch_size amount of q_values.
                 q_values.append(mean_qs)
                 # print(f"S X A: \n{state_action_pairs}, q_values: {mean_qs}\n")
 

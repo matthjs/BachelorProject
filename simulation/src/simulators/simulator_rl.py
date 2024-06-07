@@ -131,7 +131,7 @@ class SimulatorRL:
         tracker = self.metrics_tracker_registry.get_tracker("train")
         tracker.plot_metric(metric_name="return",
                             plot_path=plot_dir + self.env_str + self.experiment_id,
-                            title=self.env_str + "_" + list(self.agents.keys()).__str__())
+                            title=f"{self.env_str}_{', '.join(self.agents.keys())}")
 
         for agent_id, info in self.agents_info.items():
             for info_attr, value in info.items():
@@ -271,6 +271,7 @@ class SimulatorRL:
         while True:
             action = agent.policy(obs)  # Will run .predict() if this is actually StableBaselines algorithm.
             obs, reward, terminated, truncated, info = play_env.step(action)
+            # print(action)
 
             if terminated or truncated:
                 num_episodes -= 1
