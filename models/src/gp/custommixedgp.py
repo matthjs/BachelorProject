@@ -15,6 +15,7 @@ from gpytorch.kernels.matern_kernel import MaternKernel
 from gpytorch.kernels.scale_kernel import ScaleKernel
 from gpytorch.likelihoods.gaussian_likelihood import GaussianLikelihood
 from gpytorch.likelihoods.likelihood import Likelihood
+from gpytorch.means import Mean
 from gpytorch.priors import GammaPrior
 from torch import Tensor
 
@@ -56,6 +57,7 @@ class MixedSingleTaskGP(SingleTaskGP):
             train_X: Tensor,
             train_Y: Tensor,
             cat_dims: List[int],
+            mean_module: Optional[Mean] = None,
             train_Yvar: Optional[Tensor] = None,
             cont_kernel_factory: Optional[
                 Callable[[torch.Size, int, List[int]], Kernel]
@@ -177,6 +179,7 @@ class MixedSingleTaskGP(SingleTaskGP):
             train_Y=train_Y,
             train_Yvar=train_Yvar,
             likelihood=likelihood,
+            mean_module=mean_module,
             covar_module=covar_module,
             outcome_transform=outcome_transform,
             input_transform=input_transform,

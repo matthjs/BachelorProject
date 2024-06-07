@@ -5,6 +5,7 @@ import botorch.settings
 import torch
 from botorch.models.gpytorch import GPyTorchModel
 from botorch.models.transforms.input import Normalize
+from gpytorch.means import ConstantMean
 from loguru import logger
 
 from bayesopt.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
@@ -99,10 +100,14 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         """
         del self._current_gp
 
+        mean_module = ConstantMean(batch_shape=train_x.shape[:-2])
+        mean_module.initialize(constant=1)
+
         if self._gp_mode == 'exact_gp':
             return MixedSingleTaskGP(
                 train_X=train_x,
                 train_Y=train_y,
+                mean_module=mean_module,
                 cat_dims=[self._state_size],
                 cont_kernel_factory=self._kernel_factory,
                 input_transform=Normalize(  # TODO: Normalization causes issue with condition_on_observations

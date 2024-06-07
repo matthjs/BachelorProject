@@ -90,7 +90,7 @@ class UpperConfidenceBound(GPActionSelector):
     Upper Confidence Bound action selector.
     """
 
-    def __init__(self, action_size, beta=2):
+    def __init__(self, action_size, beta=1.5):
         self.action_size = action_size
         self.beta = beta
 
@@ -111,7 +111,7 @@ class GPEpsilonGreedy(GPActionSelector):
     Epsilon-Greedy action selector for Gaussian Process models.
     """
 
-    def __init__(self, action_space: gym.Space, eps_init=1.0, eps_end=0.1, annealing_num_steps=5000):
+    def __init__(self, action_space: gym.Space, eps_init=1.0, eps_end=0.1, annealing_num_steps=3500):
         self._action_space = action_space
         self._epsilon = eps_init
         self._epsilon_target = eps_end

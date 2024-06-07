@@ -18,14 +18,14 @@ def test_load_experiment():
 
 
 if __name__ == "__main__":
-    sim = SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_91")
+    sim = SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_115")
     (sim
      # .register_agent("linear_q_agent_1", "linear_q_agent")
-     .register_agent("gpq_agent_3", "gpq_agent")
+     .register_agent("gpq_agent_1", "gpq_agent")
      # .register_agent("gpsarsa_agent_1", "gpsarsa_agent")
      # .register_agent("gpsarsa_agent_2", "gpsarsa_agent")
-     # .register_agent("sb_dqn_1", "sb_dqn")
-     # .register_agent("sb_dqn_2", "sb_dqn")
+     .register_agent("sb_dqn_1", "sb_dqn")
+     .register_agent("sb_dqn_2", "sb_dqn")
      # .register_agent("sb_ppo_1", "sb_ppo")
      .train_agents(num_episodes=200, concurrent=False,
                    callbacks=[RewardCallback(), UsageCallback()])

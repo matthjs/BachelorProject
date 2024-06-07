@@ -92,6 +92,7 @@ sim.play(<agent_id>, <num_episodes>)
 * Observation noise for posterior yes or no?
 * Test dataset size possible for minibatching.
 * Balance the batch_size for minibatching and also the batch_size for updating.
+* Initialize mean function to nonzero constant?
 ## Information on modules
 
 ### Agents
