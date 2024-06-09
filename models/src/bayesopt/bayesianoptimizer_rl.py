@@ -87,7 +87,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             self._gp_action_selector = ThompsonSampling(action_size=self._action_size)
         elif strategy == 'upper_confidence_bound':
             self._gp_action_selector = UpperConfidenceBound(action_size=self._action_size)
-        elif strategy == 'GPEpsilonGreedy':
+        elif strategy == 'epsilon_greedy':
             self._gp_action_selector = GPEpsilonGreedy(action_space=action_space)
 
     def _construct_gp(self, train_x, train_y) -> GPyTorchModel:
@@ -100,14 +100,14 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         """
         del self._current_gp
 
-        mean_module = ConstantMean(batch_shape=train_x.shape[:-2])
-        mean_module.initialize(constant=1)
+        # mean_module = ConstantMean(batch_shape=train_x.shape[:-2])
+        # mean_module.initialize(constant=1)
 
         if self._gp_mode == 'exact_gp':
             return MixedSingleTaskGP(
                 train_X=train_x,
                 train_Y=train_y,
-                mean_module=mean_module,
+                # mean_module=mean_module,
                 cat_dims=[self._state_size],
                 cont_kernel_factory=self._kernel_factory,
                 input_transform=Normalize(  # TODO: Normalization causes issue with condition_on_observations

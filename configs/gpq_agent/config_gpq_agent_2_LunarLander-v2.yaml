@@ -7,7 +7,7 @@ model:
   max_dataset_size: 2000
   sparsification_threshold: None
   gp_likelihood_noise_constraint: None
-  kernel_type: "rbf"
+  kernel_type: "matern"
   strategy: "upper_confidence_bound"
 
   kernel:

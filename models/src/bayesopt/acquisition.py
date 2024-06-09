@@ -70,8 +70,9 @@ class ThompsonSampling(GPActionSelector):
     Thompson Sampling action selector.
     """
 
-    def __init__(self, action_size: int):
+    def __init__(self, action_size: int, observation_noise=False):
         self.action_size = action_size
+        self.observation_noise = observation_noise
 
     def action(self, gpq_model: GPyTorchModel, state_tensor: torch.Tensor) -> torch.Tensor:
         """
@@ -79,7 +80,8 @@ class ThompsonSampling(GPActionSelector):
         Select the action with the highest sample Q-value.
         """
         state_action_pairs = append_actions(state_tensor, self.action_size)
-        posterior_distribution: GPyTorchPosterior = gpq_model.posterior(state_action_pairs, observation_noise=False)
+        posterior_distribution: GPyTorchPosterior = gpq_model.posterior(state_action_pairs,
+                                                                        observation_noise=self.observation_noise)
         sampled_q_values = posterior_distribution.rsample()
         best_action = torch.argmax(sampled_q_values, dim=1)
         return best_action
@@ -90,16 +92,18 @@ class UpperConfidenceBound(GPActionSelector):
     Upper Confidence Bound action selector.
     """
 
-    def __init__(self, action_size, beta=1.5):
+    def __init__(self, action_size, beta=1.5, observation_noise=False):
         self.action_size = action_size
         self.beta = beta
+        self.observation_noise = observation_noise
 
     def action(self, gpq_model: GPyTorchModel, state_tensor: torch.Tensor) -> torch.Tensor:
         """
         Perform Upper Confidence Bound action selection.
         """
         state_action_pairs = append_actions(state_tensor, self.action_size)
-        posterior_distribution = gpq_model.posterior(state_action_pairs, observation_noise=False)
+        posterior_distribution = gpq_model.posterior(state_action_pairs,
+                                                     observation_noise=self.observation_noise)
         confident_q_values = posterior_distribution.mean + self.beta * torch.sqrt(posterior_distribution.variance)
         confident_q_values = confident_q_values.unsqueeze(0)
         best_action = torch.argmax(confident_q_values, dim=1)

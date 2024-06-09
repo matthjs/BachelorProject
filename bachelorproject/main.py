@@ -8,17 +8,17 @@ from simulators.simulator_rl import SimulatorRL
 def test_load_experiment():
     logger.debug("loading experiment...")
 
-    (SimulatorRL("LunarLander-v2", experiment_id="experiment_dummy_94")        # 75
+    (SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_116")        # 75
      # .load_agent("gpq_agent_1", "gpq_agent")
-     .load_agent("gpq_agent_2", "gpq_agent")
+     .load_agent("gpq_agent_1", "gpq_agent")
      # .load_agent("sb_dqn_1", "sb_dqn")
      # .load_agent("sb_ppo_1", "sb_ppo")
      .evaluate_agents(10, callbacks=[RewardCallback(), UsageCallback()])
-     .play("gpq_agent_2", 20))
+     .play("gpq_agent_1", 20))
 
 
 if __name__ == "__main__":
-    sim = SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_115")
+    sim = SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_119")
     (sim
      # .register_agent("linear_q_agent_1", "linear_q_agent")
      .register_agent("gpq_agent_1", "gpq_agent")
