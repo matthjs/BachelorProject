@@ -9,12 +9,16 @@ from trainers.rltrainer import RLTrainer
 import torch.nn as nn
 
 
+# NOT USED!
+
+
 class QTrainer(RLTrainer):
     """
     Trainer object for a Q-learning agent. Note, that it assumes one model is used for
     the q-function. Meaning, there is no separate network with frozen parameter like with
     DQN.
     """
+
     def __init__(self,
                  value_model,
                  target_model,
@@ -31,7 +35,8 @@ class QTrainer(RLTrainer):
         :param learning_rate:
         :param discount_factor:
         """
-        super().__init__({"value_model": value_model, "target_model": target_model}, batch_size, buf, learning_rate, discount_factor, loss=nn.SmoothL1Loss())
+        super().__init__({"value_model": value_model, "target_model": target_model}, batch_size, buf, learning_rate,
+                         discount_factor, loss=nn.SmoothL1Loss())
         self.value_model = value_model
         self.target_model = target_model
         self.gradient_steps = gradient_steps
@@ -55,7 +60,7 @@ class QTrainer(RLTrainer):
                                       device=self.device, dtype=torch.bool)
         non_final_next_state_batch = torch.cat([s for s in next_state_batch if s is not None])
 
-        return state_batch, action_batch, reward_batch, next_state_batch # non_final_next_state_batch, non_final_mask
+        return state_batch, action_batch, reward_batch, next_state_batch  # non_final_next_state_batch, non_final_mask
 
     def _evaluate_q_network(self, state_batch, action_batch):
         """
@@ -83,13 +88,13 @@ class QTrainer(RLTrainer):
         :param mask:
         :return: the TD target.
         """
-            # max_q_value, _ = torch.max(self.target_model(next_state_batch), dim=0)
+        # max_q_value, _ = torch.max(self.target_model(next_state_batch), dim=0)
         # print("Target input shape ->", next_state_batch.shape)
-            # print("Target input ->", next_state_batch)
+        # print("Target input ->", next_state_batch)
 
-            # print(self.target_model(next_state_batch))
+        # print(self.target_model(next_state_batch))
         next_state_values, _ = self.target_model(next_state_batch).max(dim=1)
-            # print("Target output ->", next_state_values)
+        # print("Target output ->", next_state_values)
         # print("target output shape ->", next_state_values.shape)
 
         td_target = (next_state_values * self.discount_factor) + reward_batch
@@ -125,4 +130,3 @@ class QTrainer(RLTrainer):
             # logger.debug(f"loss {loss.item():.3f}")
 
             # MetricsTracker().record_loss(current_thread().name, loss.item())
-

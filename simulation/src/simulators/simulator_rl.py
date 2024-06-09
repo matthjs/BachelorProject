@@ -63,7 +63,7 @@ class SimulatorRL:
         # We first want to record the performance of the random policy
         # so we can compare later
         self.init_random_agent()
-        # self.callback_ref = None
+        self.callback_ref = None
 
     def init_random_agent(self):
         """
@@ -79,12 +79,15 @@ class SimulatorRL:
     def load(experiment_id: str, new_experiment_id=None, load_dir: str = "../data/simulationbackup") -> 'SimulatorRL':
         """
         Load a SimulatorRL instance from a backup file.
+        (1) load simulator.
+        (2) load agents that were used in the experiment.
 
         :param experiment_id: Identifier for the experiment to be loaded.
         :param new_experiment_id: Optional new identifier for the experiment.
         :param load_dir: Directory where the backup file is located. Default is "../data/simulationbackup".
         :return: Loaded SimulatorRL instance.
         """
+        logger.info("loading simulator with experiment id: ", experiment_id)
         with open(load_dir + "/" + experiment_id + "_backup.pkl", "rb") as f:
             simulator: SimulatorRL = cloudpickle.load(f)
 
@@ -98,8 +101,10 @@ class SimulatorRL:
         simulator.init_random_agent()
 
         if new_experiment_id is not None:
+            logger.info("replacing experiment id with: ", new_experiment_id)
             simulator.experiment_id = new_experiment_id
 
+        logger.info("done!")
         return simulator
 
     def save(self, save_dir: str = "../data/simulationbackup") -> None:
@@ -112,20 +117,38 @@ class SimulatorRL:
         """
         self.save_agents()
         del self.agents
+        if self.verbose > 1:
+            logger.info("Saving simulator...")
         with open(save_dir + "/" + self.experiment_id + "_backup.pkl", "wb") as f:
             cloudpickle.dump(self, f)
+        if self.verbose > 1:
+            logger.info("Done!")
 
     def load_agent(self, agent_id: str, agent_type: str, data_dir="../data/saved_agents/") -> 'SimulatorRL':
+        """
+        Load an agent from disk.
+
+        :param agent_id: Identifier of the agent to load.
+        :param agent_type: Type of the agent.
+        :param data_dir: Directory path where the agent files are stored, defaults to "../data/saved_agents/".
+
+        :return: Instance of SimulatorRL with the loaded agent.
+        """
         self._config_obj(agent_type, agent_id, self.env_str)  # side effect agents_config[agent_id] = cfg
 
         path = data_dir + self.experiment_id + "/" + agent_id
 
+        stupid_flag = True
+
         if os.path.exists(path + "_sb_dqn.zip"):
+            stupid_flag = False
             print("YESSIR")
             self.agents[agent_id] = StableBaselinesAdapter(DQN.load(path + "_sb_dqn.zip", env=self.env))
         elif os.path.exists(path + "_sb_ppo.zip"):
+            stupid_flag = False
             self.agents[agent_id] = StableBaselinesAdapter(PPO.load(path + "_sb_ppo.zip", env=self.env))
-        else:
+
+        if stupid_flag:
             with open(path + ".pkl", "rb") as f:
                 self.agents[agent_id] = cloudpickle.load(f)
 
@@ -137,12 +160,14 @@ class SimulatorRL:
 
     def save_agents(self, agent_id_list: list[str] = None, save_dir="../data/saved_agents/") -> 'SimulatorRL':
         """
-        Load an agent from a file.
+        Save agents to disk.
 
-        :param agent_id: Identifier of the agent to be loaded.
-        :param agent_type: Type of the agent to be loaded.
-        :param data_dir: Directory where the agent files are located. Default is "../data/saved_agents/".
-        :return: The SimulatorRL instance with the loaded agent.
+        :param agent_id_list: List of agent identifiers to save. If None, all agents are saved.
+        :type agent_id_list: List[str], optional
+        :param save_dir: Directory path to save the agents, defaults to "../data/saved_agents/".
+        :type save_dir: str, optional
+
+        :return: Instance of SimulatorRL with agents saved.
         """
         save_dir = save_dir + self.experiment_id + "/"
 
@@ -172,13 +197,6 @@ class SimulatorRL:
         return self
 
     def register_agent(self, agent_id: str, agent_type: str) -> 'SimulatorRL':
-        """
-        Save all or specified agents to files.
-
-        :param agent_id_list: List of agent identifiers to be saved. If None, all agents will be saved.
-        :param save_dir: Directory where the agent files will be saved. Default is "../data/saved_agents/".
-        :return: The SimulatorRL instance.
-        """
         cfg = self._config_obj(agent_type, agent_id, self.env_str)
 
         agent, hyperparams = self.agent_factory.create_agent_configured(agent_type, self.env_str, cfg)
@@ -232,7 +250,8 @@ class SimulatorRL:
                      num_episodes: int,
                      agent_id_list: list[str] = None,
                      callbacks: list[AbstractCallback] = None,
-                     concurrent=False) \
+                     concurrent=False,
+                     reuse_callbacks=False) \
             -> 'SimulatorRL':
         """
         Train specified or all agents for a given number of episodes.
@@ -241,9 +260,9 @@ class SimulatorRL:
         :param agent_id_list: List of agent identifiers to be trained. If None, all agents will be trained.
         :param callbacks: List of callback functions to be used during training.
         :param concurrent: Flag indicating if training should be done concurrently [NOT IMPLEMENTED]. Default is False.
+        :param reuse_callbacks:
         :return: The SimulatorRL instance after training.
         """
-        # self.callback_ref = callbacks
 
         # Number of episodes should probably be in config but ah well.
         if agent_id_list is None:
@@ -254,6 +273,10 @@ class SimulatorRL:
 
         if callbacks is None:
             callbacks = [RewardCallback()]
+        if reuse_callbacks:
+            callbacks = self.callback_ref
+
+        self.callback_ref = callbacks
 
         if not concurrent:
             for agent_id in agent_id_list:
@@ -273,8 +296,9 @@ class SimulatorRL:
         else:
             raise NotImplementedError("OOPS I did not implement this yet my bad.")
 
-        for agent_id in agent_id_list:
-            self._signtest_train_with_random_policy(agent_id)
+        if len(callbacks) != 0:
+            for agent_id in agent_id_list:
+                self._signtest_train_with_random_policy(agent_id)
 
         return self
 
@@ -317,8 +341,9 @@ class SimulatorRL:
         else:
             raise NotImplementedError("OOPS I did not implement this yet my bad.")
 
-        for agent_id in agent_id_list:
-            self._signtest_eval_with_random_policy(agent_id)
+        if len(callbacks) != 0:
+            for agent_id in agent_id_list:
+                self._signtest_eval_with_random_policy(agent_id)
 
         return self
 
@@ -416,8 +441,12 @@ class SimulatorRL:
                 for callback in callbacks:
                     callback.on_episode_end()
                 obs, info = env.reset()
-                # if self.verbose > 0:
-                #    logger.debug(f"Episode: {ep - num_episodes}")
+                if (ep - num_episodes) % 50 == 0 and self.verbose > 0:
+                    tracker = self.metrics_tracker_registry.get_tracker("train")
+                    tracker.plot_metric(metric_name="return",
+                                        plot_path="../plots/" + self.env_str + self.experiment_id,
+                                        title=f"{self.env_str}_{', '.join(self.agents.keys())}")
+                    logger.debug(f"Episode: {ep - num_episodes}")
 
             if num_episodes == 0:
                 break

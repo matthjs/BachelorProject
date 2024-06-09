@@ -179,11 +179,11 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 # CHECK THAT DEVICE IS ON CUDA
                 del self._current_gp
 
+            print("Dataset size ->", train_x.shape)
             if hyperparameter_fitting:
                 start_time = time.time()
                 if self._gp_mode == 'exact_gp':
                     # train_inputs and train_targets should be equal to train_x and train_y
-                    print("Dataset size ->", gp.train_inputs[0].shape)
                     # print("result->", gp.train_inputs[0][-33:])
                     # print(gp.train_targets.shape)
                     self.fit_gp(gp, gp.train_inputs[0], gp.train_targets, self._gp_mode, logging=True,
@@ -192,11 +192,9 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                     # fit_gpytorch_mll(mll)       # Bugger for Lunar Lander,
                     # -> `scipy.optimize.minimize`: ABNORMAL_TERMINATION_IN_LNSRCH
                 elif self._gp_mode == 'variational_gp':
-                    print("Dataset size ->", train_x.shape)
                     self.fit_gp(gp, train_x, train_y, self._gp_mode, logging=True,
                                 checkpoint_path='gp_model_checkpoint.pth')
                 elif self._gp_mode == 'deep_gp':
-                    print("Dataset size ->", train_x.shape)
                     self.fit_gp(gp, train_x, train_y, self._gp_mode, logging=True,
                                 checkpoint_path='gp_model_checkpoint.pth')
                 logger.debug(f"Time taken -> {time.time() - start_time} seconds")

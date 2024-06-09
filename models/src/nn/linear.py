@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 
 
+# NOT USED!
+
+
 class LinearModel(nn.Module):
     """
     Linear model (y_hat = xw), corresponding to a single layer multi-layer

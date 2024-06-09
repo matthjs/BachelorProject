@@ -8,6 +8,9 @@ from trainers.qtrainer import QTrainer
 from trainers.rltrainer import RLTrainer
 
 
+# NOT USED!
+
+
 class DQNTrainer(QTrainer):
     def __init__(self, value_model, target_model, batch_size: int, buf: ReplayBuffer, learning_rate, discount_factor):
         super().__init__(value_model, target_model, batch_size, buf, learning_rate, discount_factor)

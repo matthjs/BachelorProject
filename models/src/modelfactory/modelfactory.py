@@ -5,6 +5,9 @@ from nn.linear import LinearModel
 from nn.mlp import MLP
 
 
+# NOT USED!
+
+
 class ModelFactory:
     @staticmethod
     def create_model(model_type: str, input_size: int, output_size: int) -> nn.Module:

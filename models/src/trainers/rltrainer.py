@@ -7,6 +7,9 @@ from torchrl.data import ReplayBuffer
 from trainers.trainer import AbstractTrainer
 
 
+# NOT USED!
+
+
 class RLTrainer(AbstractTrainer, ABC):
     """
     Base class for RL optimizers.

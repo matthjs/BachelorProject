@@ -22,7 +22,7 @@ class UsageCallback(AbstractCallback):
         self.update_memory = []
         self.update_energy = []
 
-        self.energy_monitor = ZeusMonitor()
+        self.energy_monitor = None
 
     def init_callback(self,
                       experiment_id: str,
@@ -95,3 +95,14 @@ class UsageCallback(AbstractCallback):
             self.extra["update_times"] = self.update_times
             self.extra["update_energy"] = self.update_energy
             self.extra["update_memory"] = self.update_memory
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        # Remove the energy_monitor from the state to prevent serialization
+        state['energy_monitor'] = None
+        return state
+
+    def __setstate__(self, state):
+        # Restore the state and reinitialize energy_monitor
+        self.__dict__.update(state)
+        self.energy_monitor = ZeusMonitor()
