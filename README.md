@@ -95,6 +95,7 @@ sim.play(<agent_id>, <num_episodes>)
 * Initialize mean function to nonzero constant?
 * Why is it that deep GPs seem to take up more memory than variational GPs?
 * Make the simulator fully reloadable.
+* UPDATE HYPERPARAMETERS ON ONLY PART OF THE DATASET, THIS MAY ALLOW DEEP GPS (OR VARIATIONAL GPS) TO HAVE SIGNIFICANTLY BIGGER BASE DATASETS TO OPTIMIZE OVER!!!! OPTIMIZING OVER ENTIRE DATASET BECOMES TOO SLOW.
 ## Information on modules
 
 ### Agents

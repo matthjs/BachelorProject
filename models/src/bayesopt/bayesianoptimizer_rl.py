@@ -133,7 +133,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             return DeepGPModel(
                 train_x_shape=train_x.shape,
                 hidden_layers_config=[
-                    {"output_dims": 1, "mean_type": "linear"},
+                    {"output_dims": 2, "mean_type": "linear"},
                     {"output_dims": 1, "mean_type": "linear"},
                     {"output_dims": 1, "mean_type": "linear"},
                     {"output_dims": None, "mean_type": "constant"}

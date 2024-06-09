@@ -22,7 +22,8 @@ class GPFitter:
                  train_y: torch.Tensor,
                  gp_mode: str,
                  batch_size: int = 128,
-                 num_epochs: int = 5,
+                 num_epochs: int = 3,
+                 num_random_batches: int = 5,
                  learning_rate: float = 0.001,
                  logging: bool = False,
                  checkpoint_path: Optional[str] = None) -> None:
@@ -98,6 +99,7 @@ class GPFitter:
                                           batch_size=batch_size,
                                           shuffle=True)
 
+                num_random_batches2 = num_random_batches
                 for epoch in range(num_epochs):
                     # Within each iteration, we will go over each minibatch of data
                     # Batching causes "RuntimeError: You must train on the training inputs!" error with exactGPs.
@@ -109,6 +111,10 @@ class GPFitter:
                         loss.backward()
 
                         optimizer.step()
+                        num_random_batches -= 1
+                        if num_random_batches == 0:
+                            break
+                    num_random_batches = num_random_batches2
                     if epoch % 5 == 0 and logging:
                         logger.debug(f"variational loss on minibatch {loss}")
 
