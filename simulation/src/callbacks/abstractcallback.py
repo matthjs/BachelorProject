@@ -20,7 +20,7 @@ class AbstractCallback(ABC):
         self.df = None
         self.experiment_id = None
 
-        self._lock = threading.Lock()
+        # self._lock = threading.Lock()
 
     def init_callback(self,
                       experiment_id: str,

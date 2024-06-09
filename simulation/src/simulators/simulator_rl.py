@@ -4,8 +4,10 @@ import pandas as pd
 import gymnasium as gym
 from loguru import logger
 from scipy.stats import ranksums
+from stable_baselines3 import DQN, PPO
 from stable_baselines3.common.callbacks import StopTrainingOnMaxEpisodes
 
+from agent.sbadapter import StableBaselinesAdapter
 from agentfactory.agentfactory import AgentFactory
 from callbacks.abstractcallback import AbstractCallback
 from callbacks.rewardcallback import RewardCallback
@@ -17,6 +19,10 @@ import cloudpickle
 from util.usageplotter import plot_complexities
 
 
+def is_zip_file(filename: str) -> bool:
+    return filename.lower().endswith('.zip')
+
+
 class SimulatorRL:
     """
     Idea, have this class collect relevant information into a dataframe, which can
@@ -24,13 +30,20 @@ class SimulatorRL:
     Allow for agent hyperparams to be configured using YAML file.
     In dataframe, at least put a comparison of mean reward test there with random
     policy (statistic value and P-value).
-    Use Multithreading? May not scale as expected.
-
+    I am aware that a class this big is bad design, but it is what it is.
     """
 
     def __init__(self, env_str: str, experiment_id="simulation", verbose: int = 2):
+        """
+        Initialize the SimulatorRL instance.
+
+        :param env_str: The environment string identifier for the Gym environment.
+        :param experiment_id: Identifier for the experiment. Default is "simulation".
+        :param verbose: Verbosity level. Default is 2.
+        """
         self.df = pd.DataFrame()
-        self.metrics_tracker_registry = MetricsTrackerRegistry()  # Singleton!
+
+        self.metrics_tracker_registry = MetricsTrackerRegistry()
         self.metrics_tracker_registry.register_tracker("train")
         self.metrics_tracker_registry.get_tracker("train").register_metric("return")
         self.metrics_tracker_registry.register_tracker("eval")
@@ -49,51 +62,123 @@ class SimulatorRL:
 
         # We first want to record the performance of the random policy
         # so we can compare later
-        self.agents["random"] = self.agent_factory.create_agent("random", env_str)
+        self.init_random_agent()
+        # self.callback_ref = None
+
+    def init_random_agent(self):
+        """
+        Initialize the random agent and add it to the dataframe and agents_info dictionary.
+        """
+        self.agents["random"] = self.agent_factory.create_agent("random", self.env_str)
         self.agents_configs["random"] = None
         self._add_agent_to_df("random", "random")
         self.agents_info["random"] = {}
         self.agents_info["random"]["agent_type"] = "random"
 
-    def _config_obj(self, agent_type: str, agent_id: str, env_str: str, config_path: str = "../../../configs"):
-        with initialize(config_path=config_path + "/" + agent_type, version_base="1.2"):
-            cfg = compose(config_name="config_" + agent_id + "_" + env_str)
+    @staticmethod
+    def load(experiment_id: str, new_experiment_id=None, load_dir: str = "../data/simulationbackup") -> 'SimulatorRL':
+        """
+        Load a SimulatorRL instance from a backup file.
 
-        self.agents_configs[agent_id] = cfg
-        return cfg
+        :param experiment_id: Identifier for the experiment to be loaded.
+        :param new_experiment_id: Optional new identifier for the experiment.
+        :param load_dir: Directory where the backup file is located. Default is "../data/simulationbackup".
+        :return: Loaded SimulatorRL instance.
+        """
+        with open(load_dir + "/" + experiment_id + "_backup.pkl", "rb") as f:
+            simulator: SimulatorRL = cloudpickle.load(f)
 
-    def _add_agent_to_df(self, agent_id: str, agent_type: str, hyperparams=None) -> None:
-        if hyperparams is None:
-            hyperparams = {}
-        new_row_values = {"agent_id": agent_id, "agent_type": agent_type, "hyperparams": hyperparams}
-        new_row_df = pd.DataFrame([new_row_values])
-        self.df = pd.concat([self.df, new_row_df], ignore_index=True)
+        simulator.agents = {}
 
-    def _signtest_train_with_random_policy(self, agent_id: str):
-        tracker = self.metrics_tracker_registry.get_tracker("train")
-        means_random, _ = tracker.metric_history("return").get("random")
-        means, _ = tracker.metric_history("return").get(agent_id)
-        statistic, p_value = ranksums(means, means_random, alternative='greater')
+        agent_id_list = simulator.agent_id_list()
+        for agent_id in agent_id_list:
+            if agent_id != "random":
+                simulator.load_agent(agent_id, simulator.agents_info[agent_id]["agent_type"])
 
-        if self.verbose > 0:
-            logger.info(f"{agent_id} p-value (cuml): {p_value}")
+        simulator.init_random_agent()
 
-        self.df.loc[self.df['agent_id'] == agent_id, "p_val_cuml_return_train_>"] = round(p_value, 3)
-        self.df.loc[self.df['agent_id'] == agent_id, "W-statistic_cuml"] = round(statistic, 3)
+        if new_experiment_id is not None:
+            simulator.experiment_id = new_experiment_id
 
-    def _signtest_eval_with_random_policy(self, agent_id: str):
-        tracker = self.metrics_tracker_registry.get_tracker("eval")
-        return_history_random = tracker.value_history("return").get("random")
-        return_history = tracker.value_history("return").get(agent_id)
-        statistic, p_value = ranksums(return_history, return_history_random, alternative='greater')
+        return simulator
 
-        if self.verbose > 0:
-            logger.info(f"{agent_id} p-value (returns eval): {p_value}")
+    def save(self, save_dir: str = "../data/simulationbackup") -> None:
+        """
+        Save the SimulatorRL instance to a backup file.
+        NOTE: the self.agents field is deleted, those agents are pickled themselves. The load static method
+        takes this into account.
 
-        self.df.loc[self.df['agent_id'] == agent_id, "p_val_return_eval_>"] = round(p_value, 3)
-        self.df.loc[self.df['agent_id'] == agent_id, "W-statistic_return_eval"] = round(statistic, 3)
+        :param save_dir: Directory where the backup file will be saved. Default is "../data/simulationbackup".
+        """
+        self.save_agents()
+        del self.agents
+        with open(save_dir + "/" + self.experiment_id + "_backup.pkl", "wb") as f:
+            cloudpickle.dump(self, f)
+
+    def load_agent(self, agent_id: str, agent_type: str, data_dir="../data/saved_agents/") -> 'SimulatorRL':
+        self._config_obj(agent_type, agent_id, self.env_str)  # side effect agents_config[agent_id] = cfg
+
+        path = data_dir + self.experiment_id + "/" + agent_id
+
+        if os.path.exists(path + "_sb_dqn.zip"):
+            print("YESSIR")
+            self.agents[agent_id] = StableBaselinesAdapter(DQN.load(path + "_sb_dqn.zip", env=self.env))
+        elif os.path.exists(path + "_sb_ppo.zip"):
+            self.agents[agent_id] = StableBaselinesAdapter(PPO.load(path + "_sb_ppo.zip", env=self.env))
+        else:
+            with open(path + ".pkl", "rb") as f:
+                self.agents[agent_id] = cloudpickle.load(f)
+
+        self._add_agent_to_df(agent_id, agent_type)
+        self.agents_info[agent_id] = {}
+        self.agents_info[agent_id]["agent_type"] = agent_type
+
+        return self
+
+    def save_agents(self, agent_id_list: list[str] = None, save_dir="../data/saved_agents/") -> 'SimulatorRL':
+        """
+        Load an agent from a file.
+
+        :param agent_id: Identifier of the agent to be loaded.
+        :param agent_type: Type of the agent to be loaded.
+        :param data_dir: Directory where the agent files are located. Default is "../data/saved_agents/".
+        :return: The SimulatorRL instance with the loaded agent.
+        """
+        save_dir = save_dir + self.experiment_id + "/"
+
+        # Ensure the save directory exists
+        os.makedirs(save_dir, exist_ok=True)
+
+        if self.verbose > 1:
+            logger.info(f"Saving agents to {save_dir}...")
+
+        if agent_id_list is None:
+            agent_id_list = list(self.agents.keys())  # do all agents if agent_id_list not specified.
+
+        # I am being really lazy here. Try and see if cloudpickle suffices.
+        # Even though for StableBaselines agents there is the .save() .load methods.
+        for agent_id in agent_id_list:
+            print(agent_id)
+            if self.agents[agent_id].is_stable_baselines_wrapper():
+                self.agents[agent_id].stable_baselines_unwrapped().save(save_dir + agent_id + "_" + \
+                                                                        self.agents_info[agent_id]["agent_type"])
+            else:
+                with open(save_dir + agent_id + ".pkl", "wb") as f:
+                    cloudpickle.dump(self.agents[agent_id], f)
+
+        if self.verbose > 1:
+            logger.info("Done!")
+
+        return self
 
     def register_agent(self, agent_id: str, agent_type: str) -> 'SimulatorRL':
+        """
+        Save all or specified agents to files.
+
+        :param agent_id_list: List of agent identifiers to be saved. If None, all agents will be saved.
+        :param save_dir: Directory where the agent files will be saved. Default is "../data/saved_agents/".
+        :return: The SimulatorRL instance.
+        """
         cfg = self._config_obj(agent_type, agent_id, self.env_str)
 
         agent, hyperparams = self.agent_factory.create_agent_configured(agent_type, self.env_str, cfg)
@@ -105,28 +190,13 @@ class SimulatorRL:
 
         return self
 
-    def load_agent(self, agent_id: str, agent_type: str, data_dir="../data/saved_agents/") -> 'SimulatorRL':
-        self._config_obj(agent_type, agent_id, self.env_str)  # side effect agents_config[agent_id] = cfg
-
-        with open(data_dir + self.experiment_id + "/" + agent_id + ".pkl", "rb") as f:
-            self.agents[agent_id] = cloudpickle.load(f)
-
-        self._add_agent_to_df(agent_id, agent_type)
-        self.agents_info[agent_id] = {}
-
-        return self
-
-    def load_data_from_csv(self, data_name: str = "simulation", data_path: str = "../data/experiments") \
-            -> 'SimulatorRL':
-        self.df = pd.read_csv(data_path + data_name + ".csv")
-        return self
-
-    def data_to_csv(self, data_path: str = "../data/experiments") -> 'SimulatorRL':
-        # print(os.getcwd())
-        self.df.to_csv(data_path + "/" + self.experiment_id + ".csv", index=False)
-        return self
-
     def plot_any_plottable_data(self, plot_dir: str = "../plots/") -> 'SimulatorRL':
+        """
+         Plot any plottable data and save the plots to files.
+
+         :param plot_dir: Directory where the plots will be saved. Default is "../plots/".
+         :return: The SimulatorRL instance.
+         """
         if self.verbose > 1:
             logger.info("Plotting plottable data")
 
@@ -158,45 +228,23 @@ class SimulatorRL:
 
         return self
 
-    def register_load_agent(self, file: str) -> 'SimulatorRL':
-        raise NotImplementedError()
-
-    def register_env_str(self, env_str) -> 'SimulatorRL':
-        self.env_str = env_str
-        return self
-
-    def hyperopt_experiment(self):
-        return self
-
-    def save_agents(self, agent_id_list: list[str] = None, save_dir="../data/saved_agents/") -> 'SimulatorRL':
-        save_dir = save_dir + self.experiment_id + "/"
-
-        # Ensure the save directory exists
-        os.makedirs(save_dir, exist_ok=True)
-
-        if self.verbose > 1:
-            logger.info(f"Saving agents to {save_dir}...")
-
-        if agent_id_list is None:
-            agent_id_list = list(self.agents.keys())  # do all agents if agent_id_list not specified.
-
-        # I am being really lazy here. Try and see if cloudpickle suffices.
-        # Even though for StableBaselines agents there is the .save() .load methods.
-        for agent_id in agent_id_list:
-            with open(save_dir + agent_id + ".pkl", "wb") as f:
-                cloudpickle.dump(self.agents[agent_id], f)
-
-        if self.verbose > 1:
-            logger.info("Done!")
-
-        return self
-
     def train_agents(self,
                      num_episodes: int,
                      agent_id_list: list[str] = None,
                      callbacks: list[AbstractCallback] = None,
                      concurrent=False) \
             -> 'SimulatorRL':
+        """
+        Train specified or all agents for a given number of episodes.
+
+        :param num_episodes: Number of episodes for training.
+        :param agent_id_list: List of agent identifiers to be trained. If None, all agents will be trained.
+        :param callbacks: List of callback functions to be used during training.
+        :param concurrent: Flag indicating if training should be done concurrently [NOT IMPLEMENTED]. Default is False.
+        :return: The SimulatorRL instance after training.
+        """
+        # self.callback_ref = callbacks
+
         # Number of episodes should probably be in config but ah well.
         if agent_id_list is None:
             agent_id_list = list(self.agents.keys())  # do all agents if agent_id_list not specified.
@@ -235,6 +283,15 @@ class SimulatorRL:
                         agent_id_list: list[str] = None,
                         callbacks: list[AbstractCallback] = None,
                         concurrent=False) -> 'SimulatorRL':
+        """
+        Evaluate specified or all agents for a given number of episodes.
+
+        :param num_episodes: Number of episodes for evaluation.
+        :param agent_id_list: List of agent identifiers to be evaluated. If None, all agents will be evaluated.
+        :param callbacks: List of callback functions to be used during evaluation.
+        :param concurrent: Flag indicating if evaluation should be done concurrently. Default is False.
+        :return: The SimulatorRL instance after evaluation.
+        """
         if callbacks is None:
             callbacks = [RewardCallback()]
 
@@ -266,6 +323,12 @@ class SimulatorRL:
         return self
 
     def play(self, agent_id: str, num_episodes: int) -> None:
+        """
+        Play the specified number of episodes using the given agent.
+
+        :param agent_id: Identifier of the agent to be used for playing.
+        :param num_episodes: Number of episodes to play.
+        """
         agent = self.agents[agent_id]
         play_env = gym.make(self.env_str, render_mode='human')
         obs, info = play_env.reset()
@@ -290,13 +353,13 @@ class SimulatorRL:
                                    num_episodes: int,
                                    callbacks: list[AbstractCallback]) -> None:
         """
-        So basically, this is a train loop for the agent. Note that even though the update method is
-        run at every time step, this does *not* mean the agent performs the update rule at every time step (batching).
-        :param env:
-        :param agent_id:
-        :param num_episodes:
-        :param logging:
-        :return:
+        Train or evaluate an agent in the environment.
+        NOTE: this method is way too long.
+
+        :param mode: The mode of operation, either 'train' or 'eval'.
+        :param agent_id: Identifier of the agent.
+        :param num_episodes: Number of episodes for training or evaluation.
+        :param callbacks: List of callback functions to be used during training or evaluation.
         """
         if mode not in ["train", "eval"]:
             raise ValueError(f"Invalid mode {mode}.")
@@ -367,6 +430,13 @@ class SimulatorRL:
                                 agent_id: str,
                                 num_episodes: int,
                                 callbacks: list[AbstractCallback]) -> None:
+        """
+        Train the agent using the Stable Baselines library.
+
+        :param agent_id: Identifier of the agent.
+        :param num_episodes: Number of episodes for training.
+        :param callbacks: List of callback functions to be used during training.
+        """
         agent = self.agents[agent_id]
         if not agent.is_stable_baselines_wrapper():
             raise AttributeError("This function should only be run on wrapped StableBaselines agents")
@@ -397,3 +467,61 @@ class SimulatorRL:
         # DQN will only execute random actions.
         model.learn(total_timesteps=int(5e4), callback=sb_callbacks)
         # model.learn(total_timesteps=int(216942042), callback=sb_callbacks)
+
+    def _config_obj(self, agent_type: str, agent_id: str, env_str: str, config_path: str = "../../../configs"):
+        with initialize(config_path=config_path + "/" + agent_type, version_base="1.2"):
+            cfg = compose(config_name="config_" + agent_id + "_" + env_str)
+
+        self.agents_configs[agent_id] = cfg
+        return cfg
+
+    def _add_agent_to_df(self, agent_id: str, agent_type: str, hyperparams=None) -> None:
+        if hyperparams is None:
+            hyperparams = {}
+        new_row_values = {"agent_id": agent_id, "agent_type": agent_type, "hyperparams": hyperparams}
+        new_row_df = pd.DataFrame([new_row_values])
+        self.df = pd.concat([self.df, new_row_df], ignore_index=True)
+
+    def _signtest_train_with_random_policy(self, agent_id: str):
+        tracker = self.metrics_tracker_registry.get_tracker("train")
+        means_random, _ = tracker.metric_history("return").get("random")
+        means, _ = tracker.metric_history("return").get(agent_id)
+        statistic, p_value = ranksums(means, means_random, alternative='greater')
+
+        if self.verbose > 0:
+            logger.info(f"{agent_id} p-value (cuml): {p_value}")
+
+        self.df.loc[self.df['agent_id'] == agent_id, "p_val_cuml_return_train_>"] = round(p_value, 3)
+        self.df.loc[self.df['agent_id'] == agent_id, "W-statistic_cuml"] = round(statistic, 3)
+
+    def _signtest_eval_with_random_policy(self, agent_id: str):
+        tracker = self.metrics_tracker_registry.get_tracker("eval")
+        return_history_random = tracker.value_history("return").get("random")
+        return_history = tracker.value_history("return").get(agent_id)
+        statistic, p_value = ranksums(return_history, return_history_random, alternative='greater')
+
+        if self.verbose > 0:
+            logger.info(f"{agent_id} p-value (returns eval): {p_value}")
+
+        self.df.loc[self.df['agent_id'] == agent_id, "p_val_return_eval_>"] = round(p_value, 3)
+        self.df.loc[self.df['agent_id'] == agent_id, "W-statistic_return_eval"] = round(statistic, 3)
+
+    def load_data_from_csv(self, data_name: str = "simulation", data_path: str = "../data/experiments") \
+            -> 'SimulatorRL':
+        self.df = pd.read_csv(data_path + data_name + ".csv")
+        return self
+
+    def data_to_csv(self, data_path: str = "../data/experiments") -> 'SimulatorRL':
+        # print(os.getcwd())
+        self.df.to_csv(data_path + "/" + self.experiment_id + ".csv", index=False)
+        return self
+
+    def register_env_str(self, env_str) -> 'SimulatorRL':
+        self.env_str = env_str
+        return self
+
+    def agent_id_list(self) -> list[str]:
+        return list(self.agents_info.keys())
+
+    def hyperopt_experiment(self):
+        raise NotImplementedError("Uhh.. so this is not implemented and might never be.")

@@ -1,0 +1,9 @@
+agent_id,agent_type,hyperparams,num_episodes (train),avg return train,stdev return train,execution time (sec) train,VRAM usage (GB) train,Energy usage (J) train,p_val_cuml_return_train_>,W-statistic_cuml,num_episodes (eval),avg return eval,stdev return eval,execution time (sec) eval,VRAM usage (GB) eval,Energy usage (J) eval,p_val_return_eval_>,W-statistic_return_eval
+random,random,{},30.0,23.492,11.428,1.281,0.0,938.063,0.5,0.0,10.0,22.15,11.725,0.003,0.0,0.0,0.5,0.0
+sb_ppo_1,sb_ppo,"{'policy': 'MlpPolicy', 'n_steps': 32, 'batch_size': 256, 'gae_lambda': 0.8, 'gamma': 0.98, 'n_epochs': 20, 'ent_coef': 0.0, 'learning_rate': 0.001, 'clip_range': 0.2}",30.0,306.35,222.112,72.215,0.552,7949.278,0.0,12.888,10.0,380.7,209.31,5.613,0.014,144.845,0.0,5.985
+sb_ppo_1,sb_ppo,{},30.0,306.35,222.112,72.215,0.552,7949.278,0.0,12.888,10.0,380.7,209.31,5.613,0.014,144.845,0.0,5.985
+random,random,{},30.0,23.492,11.428,1.281,0.0,938.063,0.5,0.0,10.0,22.15,11.725,0.003,0.0,0.0,0.5,0.0
+sb_ppo_1,sb_ppo,{},30.0,306.35,222.112,72.215,0.552,7949.278,0.0,12.888,10.0,380.7,209.31,5.613,0.014,144.845,0.0,5.985
+random,random,{},30.0,23.492,11.428,1.281,0.0,938.063,0.5,0.0,10.0,22.15,11.725,0.003,0.0,0.0,0.5,0.0
+sb_ppo_1,sb_ppo,{},30.0,306.35,222.112,72.215,0.552,7949.278,0.0,12.888,10.0,380.7,209.31,5.613,0.014,144.845,0.0,5.985
+random,random,{},30.0,23.492,11.428,1.281,0.0,938.063,0.5,0.0,10.0,22.15,11.725,0.003,0.0,0.0,0.5,0.0
