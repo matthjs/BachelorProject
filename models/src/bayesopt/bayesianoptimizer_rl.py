@@ -79,7 +79,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         self._gp_mode = model_str
         self._current_gp = None
         self._current_gp = self._construct_gp(torch.zeros(10, state_size + 1, dtype=torch.double),
-                                              torch.zeros(10, 1, dtype=torch.double))
+                                              torch.zeros(10, 1, dtype=torch.double), first_time=True)
 
         # Initialize actions selector.
         self._gp_action_selector = None
@@ -90,7 +90,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         elif strategy == 'epsilon_greedy':
             self._gp_action_selector = GPEpsilonGreedy(action_space=action_space)
 
-    def _construct_gp(self, train_x, train_y) -> GPyTorchModel:
+    def _construct_gp(self, train_x, train_y, first_time=False) -> GPyTorchModel:
         """
         Construct a Gaussian process with data (train_x, train_y).
 
@@ -98,7 +98,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         :param train_y: A tensor with expected shape (dataset_size, 1).
         :return: A GP conditioned on (train_x, train_y) (Hyperparameters NOT fitted).
         """
-        del self._current_gp
+        if self._gp_mode != "deep_gp":
+            del self._current_gp
 
         # mean_module = ConstantMean(batch_shape=train_x.shape[:-2])
         # mean_module.initialize(constant=1)
@@ -130,19 +131,22 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             ).to(self.device)
         elif self._gp_mode == 'deep_gp':
             # TODO make this more configrable
-            return DeepGPModel(
-                train_x_shape=train_x.shape,
-                hidden_layers_config=[
-                    {"output_dims": 2, "mean_type": "linear"},
-                    {"output_dims": 1, "mean_type": "linear"},
-                    {"output_dims": 1, "mean_type": "linear"},
-                    {"output_dims": None, "mean_type": "constant"}
-                ],
-                cat_dims=[self._state_size],
-                num_inducing_points=128,
-                input_transform=Normalize(d=self._state_size + 1,
-                                          indices=list(range(self._state_size)))
-            ).to(self.device)
+            if first_time:
+                return DeepGPModel(
+                    train_x_shape=train_x.shape,
+                    hidden_layers_config=[
+                        {"output_dims": 2, "mean_type": "linear"},
+                        {"output_dims": 1, "mean_type": "linear"},
+                        {"output_dims": 1, "mean_type": "linear"},
+                        {"output_dims": None, "mean_type": "constant"}
+                    ],
+                    cat_dims=[self._state_size],
+                    num_inducing_points=1024,
+                    input_transform=Normalize(d=self._state_size + 1,
+                                              indices=list(range(self._state_size)))
+                ).to(self.device)
+            else:
+                return self._current_gp
 
     def fit(self, new_train_x: torch.tensor, new_train_y: torch.tensor, hyperparameter_fitting: bool = True) -> None:
         """
@@ -195,8 +199,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                     self.fit_gp(gp, train_x, train_y, self._gp_mode, logging=True,
                                 checkpoint_path='gp_model_checkpoint.pth')
                 elif self._gp_mode == 'deep_gp':
-                    self.fit_gp(gp, train_x, train_y, self._gp_mode, logging=True,
-                                checkpoint_path='gp_model_checkpoint.pth')
+                    self.fit_gp(gp, train_x, train_y, self._gp_mode, logging=True)
+                                #checkpoint_path='gp_model_checkpoint.pth')
                 logger.debug(f"Time taken -> {time.time() - start_time} seconds")
 
             self._current_gp = gp
