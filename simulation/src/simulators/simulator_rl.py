@@ -53,6 +53,7 @@ class SimulatorRL:
         self.agents_configs["random"] = None
         self._add_agent_to_df("random", "random")
         self.agents_info["random"] = {}
+        self.agents_info["random"]["agent_type"] = "random"
 
     def _config_obj(self, agent_type: str, agent_id: str, env_str: str, config_path: str = "../../../configs"):
         with initialize(config_path=config_path + "/" + agent_type, version_base="1.2"):
@@ -100,6 +101,7 @@ class SimulatorRL:
 
         self._add_agent_to_df(agent_id, agent_type, hyperparams)
         self.agents_info[agent_id] = {}
+        self.agents_info[agent_id]["agent_type"] = agent_type
 
         return self
 

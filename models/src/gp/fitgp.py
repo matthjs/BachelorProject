@@ -21,7 +21,7 @@ class GPFitter:
                  train_x: torch.Tensor,
                  train_y: torch.Tensor,
                  gp_mode: str,
-                 batch_size: int = 64,
+                 batch_size: int = 128,
                  num_epochs: int = 5,
                  learning_rate: float = 0.001,
                  logging: bool = False,

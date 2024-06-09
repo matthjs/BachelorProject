@@ -93,6 +93,8 @@ sim.play(<agent_id>, <num_episodes>)
 * Test dataset size possible for minibatching.
 * Balance the batch_size for minibatching and also the batch_size for updating.
 * Initialize mean function to nonzero constant?
+* Why is it that deep GPs seem to take up more memory than variational GPs?
+* Make the simulator fully reloadable.
 ## Information on modules
 
 ### Agents
