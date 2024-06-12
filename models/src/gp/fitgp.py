@@ -18,9 +18,11 @@ class ReverseSampler(Sampler):
         self.data_source = data_source
 
     def __iter__(self):
+        # Return an iterator that yields indices in reverse order
         return iter(range(len(self.data_source) - 1, -1, -1))
 
     def __len__(self):
+        # Return the number of samples in the dataset
         return len(self.data_source)
 
 
@@ -113,6 +115,7 @@ class GPFitter:
                                               batch_size=batch_size,
                                               shuffle=True)
                 else:
+                    print(train_x)
                     data = TensorDataset(train_x, train_y)
                     train_loader = DataLoader(data,
                                               batch_size=batch_size,
