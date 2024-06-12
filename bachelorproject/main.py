@@ -19,9 +19,9 @@ def test_load_experiment():
 
 if __name__ == "__main__":
     # experiment_dummy_136, 143 maxes out reward signal for CartPole.
-    # sim = SimulatorRL.load(experiment_id="experiment_dummy_144")
+    # sim = SimulatorRL.load(experiment_id="experiment_dummy_146")
 
-    sim = SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_145")
+    sim = SimulatorRL("LunarLander-v2", experiment_id="experiment_dummy_147")
     b = Backupper(sim)      # backups experiment on SIGINT interrupt or normal exit.
 
     (sim

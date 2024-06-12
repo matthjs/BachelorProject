@@ -7,9 +7,21 @@ from botorch.models.gpytorch import GPyTorchModel
 from gpytorch import ExactMarginalLogLikelihood
 from gpytorch.mlls import VariationalELBO, DeepApproximateMLL
 from loguru import logger
-from torch.utils.data import TensorDataset, DataLoader
+from torch.utils.data import TensorDataset, DataLoader, Sampler
 
 from util.save import load_model, save_model
+
+
+class ReverseSampler(Sampler):
+    def __init__(self, data_source):
+        super().__init__(data_source)
+        self.data_source = data_source
+
+    def __iter__(self):
+        return iter(range(len(self.data_source) - 1, -1, -1))
+
+    def __len__(self):
+        return len(self.data_source)
 
 
 class GPFitter:
@@ -96,9 +108,15 @@ class GPFitter:
 
 
             else:
-                train_loader = DataLoader(TensorDataset(train_x, train_y),
-                                          batch_size=batch_size,
-                                          shuffle=True)
+                if random_batching:
+                    train_loader = DataLoader(TensorDataset(train_x, train_y),
+                                              batch_size=batch_size,
+                                              shuffle=True)
+                else:
+                    data = TensorDataset(train_x, train_y)
+                    train_loader = DataLoader(data,
+                                              batch_size=batch_size,
+                                              sampler=ReverseSampler(data))
 
                 num_batches2 = num_batches
                 for epoch in range(num_epochs):
