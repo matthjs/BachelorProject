@@ -8,6 +8,7 @@ from botorch.models.transforms.input import Normalize
 from gpytorch.means import ConstantMean
 from loguru import logger
 
+from bachelorproject.configobject import Config
 from bayesopt.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
 from bayesopt.acquisition import ThompsonSampling, \
     UpperConfidenceBound, GPEpsilonGreedy
@@ -92,9 +93,11 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                                                         observation_noise=self._posterior_obs_noise)
         elif strategy == 'upper_confidence_bound':
             self._gp_action_selector = UpperConfidenceBound(action_size=self._action_size,
+                                                            beta=Config.UCB_BETA,
                                                             observation_noise=self._posterior_obs_noise)
         elif strategy == 'epsilon_greedy':
             self._gp_action_selector = GPEpsilonGreedy(action_space=action_space,
+                                                       annealing_num_steps=Config.GP_E_GREEDY_STEPS,
                                                        observation_noise=self._posterior_obs_noise)
 
     def _construct_gp(self, train_x, train_y, first_time=False) -> GPyTorchModel:
@@ -140,16 +143,16 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             else:
                 return self._current_gp
         elif self._gp_mode == 'deep_gp':
-            # TODO make this more configrable
             if first_time:
                 return DeepGPModel(
                     train_x_shape=train_x.shape,
-                    hidden_layers_config=[
-                        # {"output_dims": 1, "mean_type": "linear"},
-                        # {"output_dims": 1, "mean_type": "linear"},
-                        # {"output_dims": 1, "mean_type": "linear"},
-                        {"output_dims": None, "mean_type": "constant"}
-                    ],
+                    hidden_layers_config=Config.DGP_HIDDEN_LAYERS_CONFIG,
+                    # hidden_layers_config=[
+                    #    {"output_dims": 1, "mean_type": "linear"},
+                    #    {"output_dims": 2, "mean_type": "linear"},
+                    #    # {"output_dims": 1, "mean_type": "linear"},
+                    #    {"output_dims": None, "mean_type": "constant"}
+                    #],
                     cat_dims=[self._state_size],
                     num_inducing_points=self._num_inducing_points,
                     input_transform=Normalize(d=self._state_size + 1,
@@ -181,7 +184,13 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             if hyperparameter_fitting:
                 start_time = time.time()
                 checkpoint_path = None if self._gp_mode == 'deep_gp' else 'gp_model_checkpoint_' + self._gp_mode + '.pth'
-                self.fit_gp(gp, train_x, train_y, self._gp_mode, logging=True,
+                self.fit_gp(gp, train_x, train_y, self._gp_mode,
+                            batch_size=Config.GP_FIT_BATCH_SIZE,
+                            num_epochs=Config.GP_FIT_NUM_EPOCHS,
+                            num_batches=Config.GP_NUM_BATCHES,
+                            learning_rate=Config.GP_FIT_LEARNING_RATE,
+                            random_batching=Config.GP_FIT_RANDOM_BATCHING,
+                            logging=True,
                             checkpoint_path=checkpoint_path)
                 logger.debug(f"Time taken -> {time.time() - start_time} seconds")
 

@@ -9,7 +9,7 @@ fitting:
   gp_fit_learning_rate: 0.001
   gp_fit_random_batching: True
 
-exploration:
+exploration:    # Not used if thompson sampling is used.
   ucb_beta: 1.5
   gp_e_greedy_steps: 3500
 

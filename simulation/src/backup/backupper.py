@@ -14,6 +14,7 @@ class Backupper:
         self.simulator = simulator
         atexit.register(self.backup_experiment)
         signal.signal(signal.SIGINT, self._exit_gracefully)
+        signal.signal(signal.SIGTERM, self._exit_gracefully)
 
     def _exit_gracefully(self, signum, frame):
         logger.info("Exiting program... ")

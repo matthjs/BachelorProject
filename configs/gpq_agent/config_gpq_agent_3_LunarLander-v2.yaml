@@ -1,3 +1,25 @@
+dgp_hidden_layers_config:
+  - output_dims: 1
+    mean_type: linear
+  - output_dims: 2
+    mean_type: linear
+  # Uncomment if needed
+  # - output_dims: 1
+  #   mean_type: linear
+  - output_dims: None
+    mean_type: constant
+
+fitting:
+  gp_fit_num_epochs: 1
+  gp_fit_batch_size: 128
+  gp_fit_num_batches: 50
+  gp_fit_learning_rate: 0.001
+  gp_fit_random_batching: False
+
+exploration:
+  ucb_beta: 1.5
+  gp_e_greedy_steps: 3500
+
 model:
   gp_model_str: "deep_gp"
   discount_factor: 0.99

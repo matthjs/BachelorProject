@@ -9,6 +9,7 @@ from agent.gpqagent import GPQAgent
 from agent.gpsarsaagent import GPSarsaAgent
 from agent.randomagent import RandomAgent
 from agent.sbadapter import StableBaselinesAdapter
+from bachelorproject.configobject import Config
 from builders.dqnagentbuilder import DQNAgentBuilder
 from builders.qagentbuilder import QAgentBuilder
 from torchrl.data import LazyTensorStorage
@@ -32,6 +33,7 @@ class AgentFactory:
     def create_agent_configured(agent_type: str, env_str: str, cfg) -> tuple[AbstractAgent, dict]:
         """
         Create an RL agent based on the provided configuration.
+        WARNING: THIS FUNCTION IS A BIT OF A MESS.
         :param agent_type: The type of agent to create.
         :param env_str: The name of the Gym environment.
         :param cfg: The configuration for the agent.
@@ -39,7 +41,32 @@ class AgentFactory:
         """
         env = gym.make(env_str)
 
+        Config.initialize_config_object(cfg)
+
         if agent_type == "gpq_agent":
+            result = {
+                'gp_model_str': cfg.model.gp_model_str,
+                'discount_factor': cfg.model.discount_factor,
+                'batch_size': cfg.model.batch_size,
+                'replay_buffer_size': cfg.model.replay_buffer_size,
+                'exploring_starts': cfg.model.exploring_starts,
+                'max_dataset_size': cfg.model.max_dataset_size,
+                'kernel_type': cfg.model.kernel_type,
+                'sparsification_threshold': eval(cfg.model.sparsification_threshold),
+                'strategy': cfg.model.strategy,
+                'posterior_observation_noise': cfg.model.posterior_observation_noise,
+                'num_inducing_points': cfg.model.num_inducing_points
+            }
+
+            if cfg.model.gp_model_str == "deep_gp":
+                result.update(cfg.fitting)
+                result.update({"dgp_hidden_layers_config": cfg.dgp_hidden_layers_config})
+
+            if cfg.model.strategy == "upper_confidence_bound":
+                result.update({'ucb_beta': cfg.exploration.ucb_beta})
+
+            if cfg.model.strategy == "epsilon_greedy":
+                result.update({'gp_e_greedy_steps': cfg.exploration.gp_e_greedy_steps})
             return GPQAgent(
                 gp_model_str=cfg.model.gp_model_str,
                 env=env,
@@ -54,7 +81,9 @@ class AgentFactory:
                 strategy=cfg.model.strategy,
                 posterior_observation_noise=cfg.model.posterior_observation_noise,
                 num_inducing_points=cfg.model.num_inducing_points
-            ), {
+            ), result
+        elif agent_type == "gpsarsa_agent":
+            result = {
                 'gp_model_str': cfg.model.gp_model_str,
                 'discount_factor': cfg.model.discount_factor,
                 'batch_size': cfg.model.batch_size,
@@ -67,7 +96,16 @@ class AgentFactory:
                 'posterior_observation_noise': cfg.model.posterior_observation_noise,
                 'num_inducing_points': cfg.model.num_inducing_points
             }
-        elif agent_type == "gpsarsa_agent":
+
+            if cfg.model.gp_model_str == "deep_gp":
+                result.update(cfg.fitting)
+                result.update({"dgp_hidden_layers_config": cfg.dgp_hidden_layers_config})
+
+            if cfg.model.strategy == "upper_confidence_bound":
+                result.update({'ucb_beta': cfg.exploration.ucb_beta})
+
+            if cfg.model.strategy == "epsilon_greedy":
+                result.update({'gp_e_greedy_steps': cfg.exploration.gp_e_greedy_steps})
             return GPSarsaAgent(
                 gp_model_str=cfg.model.gp_model_str,
                 env=env,
@@ -82,19 +120,7 @@ class AgentFactory:
                 strategy=cfg.model.strategy,
                 posterior_observation_noise=cfg.model.posterior_observation_noise,
                 num_inducing_points=cfg.model.num_inducing_points
-            ), {
-                'gp_model_str': cfg.model.gp_model_str,
-                'discount_factor': cfg.model.discount_factor,
-                'batch_size': cfg.model.batch_size,
-                'replay_buffer_size': cfg.model.replay_buffer_size,
-                'exploring_starts': cfg.model.exploring_starts,
-                'max_dataset_size': cfg.model.max_dataset_size,
-                'kernel_type': cfg.model.kernel_type,
-                'sparsification_threshold': eval(cfg.model.sparsification_threshold),
-                'strategy': cfg.model.strategy,
-                'posterior_observation_noise': cfg.model.posterior_observation_noise,
-                'num_inducing_points': cfg.model.num_inducing_points
-            }
+            ), result
         elif agent_type == "sb_dqn":
             return StableBaselinesAdapter(
                 DQN(

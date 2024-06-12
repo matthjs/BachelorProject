@@ -23,8 +23,9 @@ class GPFitter:
                  gp_mode: str,
                  batch_size: int = 128,
                  num_epochs: int = 1,
-                 num_random_batches: int = 30,
+                 num_batches: int = 50,
                  learning_rate: float = 0.001,
+                 random_batching: bool = True,
                  logging: bool = False,
                  checkpoint_path: Optional[str] = None) -> None:
         """
@@ -99,7 +100,7 @@ class GPFitter:
                                           batch_size=batch_size,
                                           shuffle=True)
 
-                num_random_batches2 = num_random_batches
+                num_batches2 = num_batches
                 for epoch in range(num_epochs):
                     # Within each iteration, we will go over each minibatch of data
                     # Batching causes "RuntimeError: You must train on the training inputs!" error with exactGPs.
@@ -111,10 +112,10 @@ class GPFitter:
                         loss.backward()
 
                         optimizer.step()
-                        num_random_batches -= 1
-                        if num_random_batches == 0:
+                        num_batches -= 1
+                        if num_batches == 0:
                             break
-                    num_random_batches = num_random_batches2
+                    num_batches = num_batches2
                     if epoch % 5 == 0 and logging:
                         logger.debug(f"variational loss on minibatch {loss}")
 

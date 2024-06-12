@@ -200,6 +200,7 @@ class SimulatorRL:
         cfg = self._config_obj(agent_type, agent_id, self.env_str)
 
         agent, hyperparams = self.agent_factory.create_agent_configured(agent_type, self.env_str, cfg)
+        print(hyperparams)
         self.agents[agent_id] = agent
 
         self._add_agent_to_df(agent_id, agent_type, hyperparams)
