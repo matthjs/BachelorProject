@@ -10,7 +10,7 @@ dgp_hidden_layers_config:
 fitting:
   gp_fit_num_epochs: 3
   gp_fit_batch_size: 128
-  gp_fit_num_batches: 40
+  gp_fit_num_batches: 20
   gp_fit_learning_rate: 0.001
   gp_fit_random_batching: False
 
@@ -21,7 +21,7 @@ exploration:
 model:
   gp_model_str: "deep_gp"
   discount_factor: 0.99
-  batch_size: 32
+  batch_size: 64
   replay_buffer_size: 64
   exploring_starts: 100
   max_dataset_size: 100000

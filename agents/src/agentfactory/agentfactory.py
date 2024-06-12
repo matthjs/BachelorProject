@@ -41,7 +41,8 @@ class AgentFactory:
         """
         env = gym.make(env_str)
 
-        Config.initialize_config_object(cfg)
+        if agent_type in ["gpq_agent", "gpsarsa_agent"]:
+            Config.initialize_config_object(cfg)
 
         if agent_type == "gpq_agent":
             result = {
