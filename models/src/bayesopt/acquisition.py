@@ -115,11 +115,13 @@ class GPEpsilonGreedy(GPActionSelector):
     Epsilon-Greedy action selector for Gaussian Process models.
     """
 
-    def __init__(self, action_space: gym.Space, eps_init=1.0, eps_end=0.1, annealing_num_steps=3500):
+    def __init__(self, action_space: gym.Space, eps_init=1.0, eps_end=0.1, annealing_num_steps=3500,
+                 observation_noise=False):
         self._action_space = action_space
         self._epsilon = eps_init
         self._epsilon_target = eps_end
         self._epsilon_delta = (1 - self._epsilon_target) / annealing_num_steps
+        self._observation_noise = observation_noise
 
     def update(self) -> None:
         """
@@ -134,7 +136,8 @@ class GPEpsilonGreedy(GPActionSelector):
         """
         if np.random.uniform(0, 100) >= self._epsilon * 100:
             state_action_pairs = append_actions(state_tensor, self._action_space.n)
-            posterior_distribution = gpq_model.posterior(state_action_pairs, observation_noise=False)
+            posterior_distribution = gpq_model.posterior(state_action_pairs,
+                                                         observation_noise=self._observation_noise)
             best_action, _ = torch.argmax(posterior_distribution.mean, dim=1)
             return best_action
 

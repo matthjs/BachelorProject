@@ -9,6 +9,8 @@ model:
   gp_likelihood_noise_constraint: None
   kernel_type: "rbf"
   strategy: "thompson_sampling"
+  posterior_observation_noise: False
+  num_inducing_points: 512   # Only has effect if variational GP or deep GP is selected.
 
   # Below is not used yet.
   kernel:

@@ -29,7 +29,9 @@ class GPSarsaAgent(AbstractAgent):
                  kernel_type: str,
                  kernel_args=None,  # Kernel args are not really used.
                  sparsification_threshold: Optional[float] = None,
-                 strategy: str = "thompson_sampling") -> None:
+                 strategy: str = "thompson_sampling",
+                 posterior_observation_noise: bool = False,
+                 num_inducing_points: int = 128) -> None:
         """
         GPSarsaAgent constructor.
         :param gp_model_str: The type of GP model to use.
@@ -55,7 +57,9 @@ class GPSarsaAgent(AbstractAgent):
             kernel_args=kernel_args,
             sparsification_treshold=sparsification_threshold,
             state_space=env.observation_space,
-            strategy=strategy
+            strategy=strategy,
+            posterior_observation_noise=posterior_observation_noise,
+            num_inducing_points=num_inducing_points
         )
 
         self._replay_buffer = ReplayBuffer(storage=LazyTensorStorage(

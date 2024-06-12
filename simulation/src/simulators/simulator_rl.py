@@ -87,7 +87,7 @@ class SimulatorRL:
         :param load_dir: Directory where the backup file is located. Default is "../data/simulationbackup".
         :return: Loaded SimulatorRL instance.
         """
-        logger.info("loading simulator with experiment id: ", experiment_id)
+        logger.info(f"loading simulator with experiment id: {experiment_id}")
         with open(load_dir + "/" + experiment_id + "_backup.pkl", "rb") as f:
             simulator: SimulatorRL = cloudpickle.load(f)
 
@@ -358,12 +358,17 @@ class SimulatorRL:
         play_env = gym.make(self.env_str, render_mode='human')
         obs, info = play_env.reset()
 
+        episode_reward = 0
+
         while True:
             action = agent.policy(obs)  # Will run .predict() if this is actually StableBaselines algorithm.
             obs, reward, terminated, truncated, info = play_env.step(action)
+            episode_reward += reward
             # print(action)
 
             if terminated or truncated:
+                logger.info(f"Episode reward {episode_reward}")
+                episode_reward = 0
                 num_episodes -= 1
                 obs, info = play_env.reset()
 

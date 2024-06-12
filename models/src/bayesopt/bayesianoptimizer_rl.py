@@ -38,6 +38,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                  kernel_args,
                  strategy='GPEpsilonGreedy',
                  sparsification_treshold: float = None,
+                 posterior_observation_noise: bool = False,
+                 num_inducing_points: int = 64
                  ):
         """
         Constructor.
@@ -55,6 +57,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         self.device = fetch_device()
         self._data_x = deque(maxlen=max_dataset_size)  # Memory consideration: keep track of N latest samples.
         self._data_y = deque(maxlen=max_dataset_size)
+        self._posterior_obs_noise = posterior_observation_noise
+        self._num_inducing_points = num_inducing_points
 
         state_size = state_space.shape[0]
         self._state_size = state_size
@@ -84,11 +88,14 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         # Initialize actions selector.
         self._gp_action_selector = None
         if strategy == 'thompson_sampling':
-            self._gp_action_selector = ThompsonSampling(action_size=self._action_size)
+            self._gp_action_selector = ThompsonSampling(action_size=self._action_size,
+                                                        observation_noise=self._posterior_obs_noise)
         elif strategy == 'upper_confidence_bound':
-            self._gp_action_selector = UpperConfidenceBound(action_size=self._action_size)
+            self._gp_action_selector = UpperConfidenceBound(action_size=self._action_size,
+                                                            observation_noise=self._posterior_obs_noise)
         elif strategy == 'epsilon_greedy':
-            self._gp_action_selector = GPEpsilonGreedy(action_space=action_space)
+            self._gp_action_selector = GPEpsilonGreedy(action_space=action_space,
+                                                       observation_noise=self._posterior_obs_noise)
 
     def _construct_gp(self, train_x, train_y, first_time=False) -> GPyTorchModel:
         """
@@ -98,7 +105,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         :param train_y: A tensor with expected shape (dataset_size, 1).
         :return: A GP conditioned on (train_x, train_y) (Hyperparameters NOT fitted).
         """
-        if self._gp_mode != "deep_gp":
+        if self._gp_mode not in ["variational_gp", "deep_gp"]:
             del self._current_gp
 
         # mean_module = ConstantMean(batch_shape=train_x.shape[:-2])
@@ -119,29 +126,32 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             ).to(self.device)
         elif self._gp_mode == 'variational_gp':
             # Do not use RFF with variational GP.
-            return MixedSingleTaskVariationalGP(
-                train_X=train_x,
-                train_Y=train_y,
-                cat_dims=[self._state_size],
-                cont_kernel_factory=self._kernel_factory,
-                inducing_points=128,  # TODO, make this configurable,
-                input_transform=Normalize(d=self._state_size + 1,
-                                          indices=list(range(self._state_size))),
-                outcome_transform=None
-            ).to(self.device)
+            if train_x.shape[0] < self._num_inducing_points:
+                return MixedSingleTaskVariationalGP(
+                    train_X=train_x,
+                    train_Y=train_y,
+                    cat_dims=[self._state_size],
+                    cont_kernel_factory=self._kernel_factory,
+                    inducing_points=self._num_inducing_points,
+                    input_transform=Normalize(d=self._state_size + 1,
+                                              indices=list(range(self._state_size))),
+                    outcome_transform=None
+                ).to(self.device)
+            else:
+                return self._current_gp
         elif self._gp_mode == 'deep_gp':
             # TODO make this more configrable
             if first_time:
                 return DeepGPModel(
                     train_x_shape=train_x.shape,
                     hidden_layers_config=[
-                        {"output_dims": 2, "mean_type": "linear"},
-                        {"output_dims": 1, "mean_type": "linear"},
-                        {"output_dims": 1, "mean_type": "linear"},
+                        # {"output_dims": 1, "mean_type": "linear"},
+                        # {"output_dims": 1, "mean_type": "linear"},
+                        # {"output_dims": 1, "mean_type": "linear"},
                         {"output_dims": None, "mean_type": "constant"}
                     ],
                     cat_dims=[self._state_size],
-                    num_inducing_points=1024,
+                    num_inducing_points=self._num_inducing_points,
                     input_transform=Normalize(d=self._state_size + 1,
                                               indices=list(range(self._state_size)))
                 ).to(self.device)
@@ -163,44 +173,16 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
             self._dummy_counter += 1
 
-            # See: https://docs.gpytorch.ai/en/stable/examples/08_Advanced_Usage/SVGP_Model_Updating.html
-            if True or self._stupid_flag_that_should_be_removed or self._gp_mode == 'variational_gp' or self._gp_mode == 'deep_gp':
-                # Variational GPs can be conditioned in an online way, but this returns an exact GP,
-                # which means we want to reinitialize a GP here.
-                # There is a paper that proposes an online/mini-batch updatable variational GP.
-                # But that one is not implemented in Botorch and does not allow you to learn
-                # the inducing points.
-                self.extend_dataset(new_train_x, new_train_y)
-                train_x, train_y = self.dataset()
-                gp = self._construct_gp(train_x, train_y)
-                self._stupid_flag_that_should_be_removed = False
-            else:  # For exact GP it is more efficient to do online updates this way.
-                self._data_x.clear()
-                self._data_y.clear()
-                # print("curr->", self._current_gp.train_inputs[0])
-                # print("to add->", new_train_x)
-                gp = self._current_gp.condition_on_observations(new_train_x, new_train_y).double()
-                # CHECK THAT DEVICE IS ON CUDA
-                del self._current_gp
+            self.extend_dataset(new_train_x, new_train_y)
+            train_x, train_y = self.dataset()
+            gp = self._construct_gp(train_x, train_y)
 
-            print("Dataset size ->", train_x.shape)
+            print("Dataset size ->", train_x.shape[0])
             if hyperparameter_fitting:
                 start_time = time.time()
-                if self._gp_mode == 'exact_gp':
-                    # train_inputs and train_targets should be equal to train_x and train_y
-                    # print("result->", gp.train_inputs[0][-33:])
-                    # print(gp.train_targets.shape)
-                    self.fit_gp(gp, gp.train_inputs[0], gp.train_targets, self._gp_mode, logging=True,
-                                checkpoint_path='gp_model_checkpoint.pth')
-                    # mll = ExactMarginalLogLikelihood(gp.likelihood, gp)
-                    # fit_gpytorch_mll(mll)       # Bugger for Lunar Lander,
-                    # -> `scipy.optimize.minimize`: ABNORMAL_TERMINATION_IN_LNSRCH
-                elif self._gp_mode == 'variational_gp':
-                    self.fit_gp(gp, train_x, train_y, self._gp_mode, logging=True,
-                                checkpoint_path='gp_model_checkpoint.pth')
-                elif self._gp_mode == 'deep_gp':
-                    self.fit_gp(gp, train_x, train_y, self._gp_mode, logging=True)
-                                #checkpoint_path='gp_model_checkpoint.pth')
+                checkpoint_path = None if self._gp_mode == 'deep_gp' else 'gp_model_checkpoint_' + self._gp_mode + '.pth'
+                self.fit_gp(gp, train_x, train_y, self._gp_mode, logging=True,
+                            checkpoint_path=checkpoint_path)
                 logger.debug(f"Time taken -> {time.time() - start_time} seconds")
 
             self._current_gp = gp
@@ -319,7 +301,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         """
         with torch.no_grad():
             next_state_action_pairs = torch.cat((state_batch, action_batch), dim=1).to(self.device)
-            q_val = self._current_gp.posterior(next_state_action_pairs, observation_noise=False).mean
+            q_val = self._current_gp.posterior(next_state_action_pairs,
+                                               observation_noise=self._posterior_obs_noise).mean
 
         return q_val
 
@@ -346,7 +329,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 # print(state_action_pairs.shape)
 
                 mean_qs = self._current_gp.posterior(state_action_pairs,
-                                                     observation_noise=False).mean  # batch_size amount of q_values.
+                                                     observation_noise=self._posterior_obs_noise).mean
+                # batch_size amount of q_values.
                 q_values.append(mean_qs)
                 # print(f"S X A: \n{state_action_pairs}, q_values: {mean_qs}\n")
 

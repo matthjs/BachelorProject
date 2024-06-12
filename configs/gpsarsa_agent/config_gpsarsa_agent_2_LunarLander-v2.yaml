@@ -9,6 +9,8 @@ model:
   gp_likelihood_noise_constraint: None
   kernel_type: "rbf"
   strategy: "upper_confidence_bound"
+  posterior_observation_noise: False
+  num_inducing_points: 1024    # Only has effect if variational GP or deep GP is selected.
 
   kernel:
     matern_kernel:

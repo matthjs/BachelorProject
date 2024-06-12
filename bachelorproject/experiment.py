@@ -3,7 +3,7 @@ from callbacks.usagecallback import UsageCallback
 from simulators.simulator_rl import SimulatorRL
 
 if __name__ == "__main__":
-    sim = SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_82")
+    sim = SimulatorRL("CartPole-v1", experiment_id="experiment_x")
     (sim
      .register_agent("gpsarsa_agent_1", "gpsarsa_agent")
      .register_agent("sb_dqn_1", "sb_dqn")

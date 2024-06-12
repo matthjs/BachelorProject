@@ -23,7 +23,7 @@ class GPFitter:
                  gp_mode: str,
                  batch_size: int = 128,
                  num_epochs: int = 1,
-                 num_random_batches: int = 5,
+                 num_random_batches: int = 30,
                  learning_rate: float = 0.001,
                  logging: bool = False,
                  checkpoint_path: Optional[str] = None) -> None:

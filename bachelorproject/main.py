@@ -18,24 +18,25 @@ def test_load_experiment():
 
 
 if __name__ == "__main__":
-    # sim = SimulatorRL.load(experiment_id="experiment_dummy_133")
+    # experiment_dummy_136, 143 maxes out reward signal for CartPole.
+    sim = SimulatorRL.load(experiment_id="experiment_dummy_143")
 
-    sim = SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_134")
+    # sim = SimulatorRL("CartPole-v1", experiment_id="experiment_dummy_143")
     b = Backupper(sim)      # backups experiment on SIGINT interrupt or normal exit.
 
     (sim
-     .register_agent("gpq_agent_3", "gpq_agent")
+     # .register_agent("gpq_agent_3", "gpq_agent")
      # .register_agent("gpsarsa_agent_1", "gpsarsa_agent")
      # .register_agent("gpsarsa_agent_2", "gpsarsa_agent")
      # .register_agent("sb_dqn_1", "sb_dqn")
      # .register_agent("sb_dqn_2", "sb_dqn")
      # .register_agent("sb_ppo_1", "sb_ppo")
-     .train_agents(num_episodes=100, concurrent=False,
+     .train_agents(num_episodes=1, concurrent=False,
                    callbacks=[RewardCallback(), UsageCallback()])
-     .evaluate_agents(10, callbacks=[RewardCallback(), UsageCallback()])
-     .data_to_csv()
-     .plot_any_plottable_data()
+     #.evaluate_agents(1, callbacks=[RewardCallback(), UsageCallback()])
+     #.data_to_csv()
+     #.plot_any_plottable_data()
      # .save_agents())
      )
 
-    sim.play("gpq_agent_3", 10)
+    sim.play("gpq_agent_3", 2)
