@@ -78,14 +78,14 @@ sim.play(<agent_id>, <num_episodes>)
 * Fix sparsification scheme if possible.
 * ~~Make the kernels and acquistion function more easily configurable.~~
 * Implement Hyperparameter to JSON saving.
-* Add hyperparameter info into CSV file.
+* ~~Add hyperparameter info into CSV file~~.
 * Finish auto hyperparameter tuning code (probably too computationally expensive though).
-* General code clean up.
-* Add proper documentation.
+* ~~General code clean up~~.
+* Add more documentation.
 * ~~Add variational GPs and Deep GPs.~~
 
 ## NOTES
-* * Online updates (Fantasization) for exact GPs works, but the problem is that you cannot cap the dataset size. From testing the time and space complexity does not appear to be too different. However one key difference is that the hyperparameters from the previous fit are retained, which results in a different GP fit. The compromise can be to copy the fitted hyperparameters (kernel parameters + noise variance).
+Online updates (Fantasization) for exact GPs works, but the problem is that you cannot cap the dataset size. From testing the time and space complexity does not appear to be too different. However one key difference is that the hyperparameters from the previous fit are retained, which results in a different GP fit. The compromise can be to copy the fitted hyperparameters (kernel parameters + noise variance).
 * I have verified that exact GP inference is indeed $O(N^2)$. Time complexity still needs to be verified. TODO: Compare time with fit_gpytorch_mll and space usage with other algorithms.
 * Problem: Memory usage for exactGP does not scale properly, variational GPs cope decently and appear to scale more linearly but posterior is an approximation.
 * For linear Q-learning, perhaps it is easier and more meaningful to make a comparison to StableBaselines3 DQN algorithm with a linear model.
@@ -93,10 +93,10 @@ sim.play(<agent_id>, <num_episodes>)
 * Test dataset size possible for minibatching.
 * Balance the batch_size for minibatching and also the batch_size for updating.
 * Initialize mean function to nonzero constant?
-* Why is it that deep GPs seem to take up more memory than variational GPs?
-* Make the simulator fully reloadable.
 * UPDATE HYPERPARAMETERS ON ONLY PART OF THE DATASET, THIS MAY ALLOW DEEP GPS (OR VARIATIONAL GPS) TO HAVE SIGNIFICANTLY BIGGER BASE DATASETS TO OPTIMIZE OVER!!!! OPTIMIZING OVER ENTIRE DATASET BECOMES TOO SLOW.
 * Reduced speed after reloading deep GP agent in Lunar Lander.
+* SVGP consistent low loss on Lunar Lander but limited performance -> need for deep GP?
+* For Lunar Lander I guess the number of inducing points needs to be large enough?
 ## Information on modules
 
 ### Agents

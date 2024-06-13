@@ -1,8 +1,8 @@
 dgp_hidden_layers_config:
-  - output_dims: 1
-    mean_type: linear
-  - output_dims: 1
-    mean_type: linear
+  #- output_dims: 2
+  #  mean_type: linear
+  #- output_dims: 2
+  #  mean_type: linear
   # Uncomment if needed
   #- output_dims: 2
   #  mean_type: linear
@@ -12,8 +12,8 @@ dgp_hidden_layers_config:
 fitting:
   gp_fit_num_epochs: 1
   gp_fit_batch_size: 1024
-  gp_fit_num_batches: 3
-  gp_fit_learning_rate: 0.003
+  gp_fit_num_batches: 10
+  gp_fit_learning_rate: 0.01
   gp_fit_random_batching: True
 
 exploration:
@@ -25,14 +25,14 @@ model:
   discount_factor: 0.99
   batch_size: 128
   replay_buffer_size: 128
-  exploring_starts: 2000
+  exploring_starts: 5000
   max_dataset_size: 100000
   sparsification_threshold: None
   gp_likelihood_noise_constraint: None
   kernel_type: "matern"
   strategy: "thompson_sampling"
   posterior_observation_noise: False
-  num_inducing_points: 1024    # Only has effect if variational GP or deep GP is selected.
+  num_inducing_points: 1536    # Only has effect if variational GP or deep GP is selected.
 
   kernel:
     matern_kernel:

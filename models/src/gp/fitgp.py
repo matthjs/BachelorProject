@@ -5,7 +5,7 @@ import gpytorch
 import torch
 from botorch.models.gpytorch import GPyTorchModel
 from gpytorch import ExactMarginalLogLikelihood
-from gpytorch.mlls import VariationalELBO, DeepApproximateMLL
+from gpytorch.mlls import VariationalELBO, DeepApproximateMLL, PredictiveLogLikelihood
 from loguru import logger
 from torch.utils.data import TensorDataset, DataLoader, Sampler
 

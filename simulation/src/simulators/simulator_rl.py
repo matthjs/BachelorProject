@@ -447,7 +447,7 @@ class SimulatorRL:
                 for callback in callbacks:
                     callback.on_episode_end()
                 obs, info = env.reset()
-                if (ep - num_episodes) % 50 == 0 and self.verbose > 0:
+                if (ep - num_episodes) % 20 == 0 and self.verbose > 0:
                     tracker = self.metrics_tracker_registry.get_tracker("train")
                     tracker.plot_metric(metric_name="return",
                                         plot_path="../plots/" + self.env_str + self.experiment_id,
