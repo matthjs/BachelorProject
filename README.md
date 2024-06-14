@@ -97,6 +97,12 @@ Online updates (Fantasization) for exact GPs works, but the problem is that you 
 * Reduced speed after reloading deep GP agent in Lunar Lander.
 * SVGP consistent low loss on Lunar Lander but limited performance -> need for deep GP?
 * For Lunar Lander I guess the number of inducing points needs to be large enough?
+### Lunar Lander
+* How many layers and inducing points do I need?? 
+* Is it better to optimize over random batches or the latest batches??
+* SVGP with high fit batch size (1024) and inducing point size (1024) with random batching with low learning rate (0.001) seems to have trouble learning.
+* Adding one layer has an effect.
+* What is the effect of using a discrete kernel for ther actions?
 ## Information on modules
 
 ### Agents
