@@ -144,6 +144,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 return self._current_gp
         elif self._gp_mode == 'deep_gp':
             if first_time:
+                print(list(range(self._state_size - 2)))
                 return DeepGPModel(
                     train_x_shape=train_x.shape,
                     hidden_layers_config=Config.DGP_HIDDEN_LAYERS_CONFIG,
@@ -156,10 +157,10 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                     cat_dims=[self._state_size],
                     num_inducing_points=self._num_inducing_points,
                     input_transform=Normalize(d=self._state_size + 1,
-                                              indices=list(range(self._state_size)))
+                                              indices=list(range(self._state_size - 2)))
                 ).to(self.device)
             else:
-                return self._current_gp
+                return self._current_gp.to(self.device)
 
     def fit(self, new_train_x: torch.tensor, new_train_y: torch.tensor, hyperparameter_fitting: bool = True) -> None:
         """
@@ -176,9 +177,14 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
             self._dummy_counter += 1
 
+            # print(new_train_x)
+
             self.extend_dataset(new_train_x, new_train_y)
             train_x, train_y = self.dataset()
             gp = self._construct_gp(train_x, train_y)
+
+            # print("DEVICE DATA:", train_x.device.type)
+            # print("DEVICE GP", gp.device.type)
 
             print("Dataset size ->", train_x.shape[0])
             if hyperparameter_fitting:
@@ -254,6 +260,10 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         :param new_train_x: A tensor with expected shape (dataset_size, state_space_dim).
         :param new_train_y: A tensor with expected shape (dataset_size, 1).
         """
+        new_train_x = self._current_gp.transform_inputs(new_train_x)
+
+        # print("->", new_train_x)
+
         # dequeue evaluates to False if empty.
         if self._sparsification_treshold is not None and self._data_x:
             self._sparse_add(new_train_x, new_train_y)
@@ -295,7 +305,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         action_tensor = self._gp_action_selector.action(self._current_gp, state)
 
-        if self._dummy_counter == 10:
+        if self._dummy_counter == 50:
             self._visualize_data(state)
 
         return action_tensor.item()

@@ -19,9 +19,9 @@ def test_load_experiment():
 
 if __name__ == "__main__":
     # experiment_dummy_136, 143 maxes out reward signal for CartPole.
-    # sim = SimulatorRL.load(experiment_id="experiment_dummy_166")
+    # sim = SimulatorRL.load(experiment_id="experiment_dummy_191")
 
-    sim = SimulatorRL("LunarLander-v2", experiment_id="experiment_dummy_172")
+    sim = SimulatorRL("LunarLander-v2", experiment_id="experiment_dummy_191")
     b = Backupper(sim)      # backups experiment on SIGINT interrupt or normal exit.
 
     (sim
@@ -31,7 +31,7 @@ if __name__ == "__main__":
      # .register_agent("sb_dqn_1", "sb_dqn")
      # .register_agent("sb_dqn_2", "sb_dqn")
      # .register_agent("sb_ppo_1", "sb_ppo")
-     .train_agents(num_episodes=300, concurrent=False,
+     .train_agents(num_episodes=1000, concurrent=False,
                    callbacks=[RewardCallback(), UsageCallback()])
      .evaluate_agents(2, callbacks=[RewardCallback(), UsageCallback()])
      .data_to_csv()

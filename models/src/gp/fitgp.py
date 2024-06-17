@@ -121,24 +121,27 @@ class GPFitter:
                                               batch_size=batch_size,
                                               sampler=ReverseSampler(data))
 
-                num_batches2 = num_batches
-                for epoch in range(num_epochs):
-                    # Within each iteration, we will go over each minibatch of data
-                    # Batching causes "RuntimeError: You must train on the training inputs!" error with exactGPs.
-                    for x_batch, y_batch in train_loader:
+                # num_batches2 = num_batches
+
+                # Within each iteration, we will go over each minibatch of data
+                # Batching causes "RuntimeError: You must train on the training inputs!" error with exactGPs.
+                for x_batch, y_batch in train_loader:
+                    for epoch in range(num_epochs):
                         optimizer.zero_grad()
                         output = model(x_batch)
 
-                        loss = -mll(output, y_batch)  # mean() necessary?
+                        loss = -mll(output, y_batch)
                         loss.backward()
 
                         optimizer.step()
-                        num_batches -= 1
-                        if num_batches == 0:
-                            break
-                    num_batches = num_batches2
-                    if epoch % 5 == 0 and logging:
-                        logger.debug(f"variational loss on minibatch {loss}")
+                    num_batches -= 1
+
+                    if num_batches == 0 and logging:
+                        logger.debug(f"variational loss on minibatch (epochs: {num_epochs}) {loss}")
+
+                    if num_batches == 0:
+                        break
+                    # num_batches = num_batches2
 
         model.eval()
         if checkpoint_path:

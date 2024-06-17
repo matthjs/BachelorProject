@@ -53,7 +53,7 @@ class DeepGPModel(DeepGP, GPyTorchModel):
 
         # Create hidden layers based on the provided configuration
         for layer_config in hidden_layers_config:
-            if first_layer and cat_dims is not None:        # Maybe a bit clunky.
+            if False and first_layer and cat_dims is not None:        # Maybe a bit clunky.
                 hidden_layer = DeepGPMixedHiddenLayer(
                     input_dims=input_dims,
                     output_dims=layer_config['output_dims'],

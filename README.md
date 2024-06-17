@@ -101,8 +101,13 @@ Online updates (Fantasization) for exact GPs works, but the problem is that you 
 * How many layers and inducing points do I need?? 
 * Is it better to optimize over random batches or the latest batches??
 * SVGP with high fit batch size (1024) and inducing point size (1024) with random batching with low learning rate (0.001) seems to have trouble learning.
-* Adding one layer has an effect.
+* Adding at least one layer has an effect.
 * What is the effect of using a discrete kernel for ther actions?
+* Maybe do > 1 epoch on each minibatch?
+* How many fit batches is actually necessary??
+* Decreasing batch fit size does not seem to speed things up that much.
+* Random minibatching or N latest minibatches??
+* Is it meaningful to increase dataset butches > 100,000?
 ## Information on modules
 
 ### Agents
