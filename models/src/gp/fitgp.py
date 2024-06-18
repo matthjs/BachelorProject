@@ -143,6 +143,8 @@ class GPFitter:
                         break
                     # num_batches = num_batches2
 
+        if logging:
+            logger.debug(f"latest loss on minibatch (epochs: {num_epochs}) {loss}")
         model.eval()
         if checkpoint_path:
             save_model(model, checkpoint_path)

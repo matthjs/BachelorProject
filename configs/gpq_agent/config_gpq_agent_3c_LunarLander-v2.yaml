@@ -12,9 +12,9 @@ dgp_hidden_layers_config:
 fitting:
   gp_fit_num_epochs: 1
   gp_fit_batch_size: 1024  # probably 256 enough, keep in mind the update batch size. 2048 is too much.
-  gp_fit_num_batches: 9
+  gp_fit_num_batches: 8
   gp_fit_learning_rate: 0.001
-  gp_fit_random_batching: True
+  gp_fit_random_batching: False  # True better?
 
 exploration:
   ucb_beta: 1.5
@@ -26,13 +26,13 @@ model:
   batch_size: 128
   replay_buffer_size: 128
   exploring_starts: 0
-  max_dataset_size: 6144  # 512 * 12
+  max_dataset_size: 1000000
   sparsification_threshold: None
   gp_likelihood_noise_constraint: None
   kernel_type: "matern"
   strategy: "thompson_sampling"
   posterior_observation_noise: False
-  num_inducing_points: 512    # Only has effect if variational GP or deep GP is selected.
+  num_inducing_points: 448    # Only has effect if variational GP or deep GP is selected.
 
   kernel:
     matern_kernel:

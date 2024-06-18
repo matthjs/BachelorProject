@@ -19,19 +19,19 @@ def test_load_experiment():
 
 if __name__ == "__main__":
     # experiment_dummy_136, 143 maxes out reward signal for CartPole.
-    # sim = SimulatorRL.load(experiment_id="experiment_dummy_191")
+    sim = SimulatorRL.load(experiment_id="experiment_dummy_201", new_experiment_id="experiment_dummy_ex2")
 
-    sim = SimulatorRL("LunarLander-v2", experiment_id="experiment_dummy_191")
+    # sim = SimulatorRL("LunarLander-v2", experiment_id="experiment_dummy_207")
     b = Backupper(sim)      # backups experiment on SIGINT interrupt or normal exit.
 
     (sim
-     .register_agent("gpq_agent_3", "gpq_agent")
+     # .register_agent("gpq_agent_3", "gpq_agent")
      # .register_agent("gpsarsa_agent_1", "gpsarsa_agent")
      # .register_agent("gpsarsa_agent_2", "gpsarsa_agent")
-     # .register_agent("sb_dqn_1", "sb_dqn")
-     # .register_agent("sb_dqn_2", "sb_dqn")
+     .register_agent("sb_dqn_1", "sb_dqn")
+     .register_agent("sb_dqn_2", "sb_dqn")
      # .register_agent("sb_ppo_1", "sb_ppo")
-     .train_agents(num_episodes=1000, concurrent=False,
+     .train_agents(agent_id_list=["sb_dqn_1", "sb_dqn_2"], num_episodes=1000, concurrent=False,
                    callbacks=[RewardCallback(), UsageCallback()])
      .evaluate_agents(2, callbacks=[RewardCallback(), UsageCallback()])
      .data_to_csv()

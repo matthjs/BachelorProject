@@ -108,6 +108,11 @@ Online updates (Fantasization) for exact GPs works, but the problem is that you 
 * Decreasing batch fit size does not seem to speed things up that much.
 * Random minibatching or N latest minibatches??
 * Is it meaningful to increase dataset butches > 100,000?
+* Composite kernel seems to cause the agent to not learn? Random_batching=Yes, latest_batching=Yes
+* 0.001 to low learning rate?
+* Immediate decline in performance in beginning.
+* Experiment 200 was able to get > 200 reward! But then performance does not improve that much. Random fitting after all?
+* For latest N batches it is actually better to just limit the dataset size instead.
 ## Information on modules
 
 ### Agents
