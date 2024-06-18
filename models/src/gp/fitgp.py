@@ -12,6 +12,7 @@ from torch.utils.data import TensorDataset, DataLoader, Sampler
 from util.save import load_model, save_model
 
 
+# Deprecated.
 class ReverseSampler(Sampler):
     def __init__(self, data_source):
         super().__init__(data_source)
@@ -70,6 +71,7 @@ class GPFitter:
         if train_y.dim() > 1 and train_y.shape[1] == 1:
             train_y = train_y.squeeze(1)
 
+        # The model loading is only needed for exact GPs.
         if checkpoint_path and not self.first_time and os.path.exists(checkpoint_path):
             try:
                 load_model(model, checkpoint_path)
@@ -90,6 +92,7 @@ class GPFitter:
         else:
             mll = ExactMarginalLogLikelihood(model.likelihood, model)
 
+        loss_sum = 0
         # TODO: REFACTOR
         # Exact GP Optimization does not allow for mini-batching.
         with gpytorch.settings.debug(True):
@@ -122,7 +125,6 @@ class GPFitter:
                                               sampler=ReverseSampler(data))
 
                 # num_batches2 = num_batches
-
                 # Within each iteration, we will go over each minibatch of data
                 # Batching causes "RuntimeError: You must train on the training inputs!" error with exactGPs.
                 for x_batch, y_batch in train_loader:
@@ -131,6 +133,7 @@ class GPFitter:
                         output = model(x_batch)
 
                         loss = -mll(output, y_batch)
+                        loss_sum += loss.item()
                         loss.backward()
 
                         optimizer.step()
@@ -144,7 +147,7 @@ class GPFitter:
                     # num_batches = num_batches2
 
         if logging:
-            logger.debug(f"latest loss on minibatch (epochs: {num_epochs}) {loss}")
+            logger.debug(f"Loss sum (epochs: {num_epochs}) {loss_sum}")
         model.eval()
         if checkpoint_path:
             save_model(model, checkpoint_path)
