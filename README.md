@@ -108,6 +108,9 @@ Online updates (Fantasization) for exact GPs works, but the problem is that you 
 * Decreasing batch fit size does not seem to speed things up that much.
 * Random minibatching or N latest minibatches??
 * Is it meaningful to increase dataset butches > 100,000?
+* Look into SVGP performance with relatively high number of inducing points.
+* What is the ideal learnign rate? Too low -> slow divergence/drop in performance? High -> Fast spike early.
+* Down up trajectory common for SVGP (with ~1000 inducing points) and "high" LR? (0.1, 0.01, 0.001). Lower than this little learning though.
 ## Information on modules
 
 ### Agents

@@ -90,6 +90,7 @@ class GPFitter:
         else:
             mll = ExactMarginalLogLikelihood(model.likelihood, model)
 
+        loss_sum = 0
         # TODO: REFACTOR
         # Exact GP Optimization does not allow for mini-batching.
         with gpytorch.settings.debug(True):
@@ -122,7 +123,6 @@ class GPFitter:
                                               sampler=ReverseSampler(data))
 
                 # num_batches2 = num_batches
-
                 # Within each iteration, we will go over each minibatch of data
                 # Batching causes "RuntimeError: You must train on the training inputs!" error with exactGPs.
                 for x_batch, y_batch in train_loader:
@@ -131,6 +131,7 @@ class GPFitter:
                         output = model(x_batch)
 
                         loss = -mll(output, y_batch)
+                        loss_sum += loss.item()
                         loss.backward()
 
                         optimizer.step()
@@ -143,6 +144,8 @@ class GPFitter:
                         break
                     # num_batches = num_batches2
 
+        if logging:
+            logger.debug(f"Loss sum (epochs: {num_epochs}) {loss_sum}")
         model.eval()
         if checkpoint_path:
             save_model(model, checkpoint_path)
