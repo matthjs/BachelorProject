@@ -42,7 +42,8 @@ class GPFitter:
                  learning_rate: float = 0.001,
                  random_batching: bool = True,
                  logging: bool = False,
-                 checkpoint_path: Optional[str] = None) -> None:
+                 checkpoint_path: Optional[str] = None,
+                 optimizer = None) -> None:
         """
         Fit a variational Gaussian process model. This function fits the variational parameters of the
         approximate posterior and inducing points. It uses the Adam optimizer for stochastic gradient descent.
@@ -82,7 +83,8 @@ class GPFitter:
                             f"parameters. (TODO: IS THIS FIXABLE?)")
             optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
         else:
-            optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+            if optimizer is None:
+                optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
         # The loss of variational GP is an ELBO one like Gaussian NN.
         if gp_mode == 'deep_gp':

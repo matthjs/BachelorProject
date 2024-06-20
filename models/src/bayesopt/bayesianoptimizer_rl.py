@@ -1,5 +1,6 @@
 from collections import deque
 
+import torch
 import time
 import botorch.settings
 import torch
@@ -85,6 +86,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         self._current_gp = None
         self._current_gp = self._construct_gp(torch.zeros(10, state_size + 1, dtype=torch.double),
                                               torch.zeros(10, 1, dtype=torch.double), first_time=True)
+        self._optimizer = None
 
         # Initialize actions selector.
         self._gp_action_selector = None
@@ -145,7 +147,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         elif self._gp_mode == 'deep_gp':
             if first_time:
                 print(list(range(self._state_size - 2)))
-                return DeepGPModel(
+
+                dpg = DeepGPModel(
                     train_x_shape=train_x.shape,
                     hidden_layers_config=Config.DGP_HIDDEN_LAYERS_CONFIG,
                     # hidden_layers_config=[
@@ -159,6 +162,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                     input_transform=Normalize(d=self._state_size + 1,
                                               indices=list(range(self._state_size - 2)))
                 ).to(self.device)
+                self._optimizer = torch.optim.Adam(dpg.parameters(), lr=Config.GP_FIT_LEARNING_RATE)
+                return dpg
             else:
                 return self._current_gp.to(self.device)
 
@@ -197,7 +202,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                             learning_rate=Config.GP_FIT_LEARNING_RATE,
                             random_batching=Config.GP_FIT_RANDOM_BATCHING,
                             logging=True,
-                            checkpoint_path=checkpoint_path)
+                            checkpoint_path=checkpoint_path,
+                            optimizer=self._optimizer)
                 logger.debug(f"Time taken -> {time.time() - start_time} seconds")
 
             self._current_gp = gp
