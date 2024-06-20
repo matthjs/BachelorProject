@@ -1,0 +1,7 @@
+environment:
+  norm_obs: True
+  norm_reward: False
+  clip_obs: 10.0
+  clip_reward: 100000
+  epsilon: 1e-08
+  gamma: 0.99

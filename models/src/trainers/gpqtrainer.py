@@ -30,7 +30,7 @@ class GPQTrainer(AbstractTrainer):
         self.bayesian_opt_module = bayesian_opt_module
         self.batch_size = batch_size
         self.discount_factor = discount_factor
-        self.learning_rate = 0.01 # .0023
+        self.learning_rate = 0.1 # .0023
 
     def _trajectory(self) -> tuple:
         """

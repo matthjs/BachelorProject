@@ -90,6 +90,9 @@ class AbstractAgent(ABC):
         """
         return None
 
+    def latest_loss(self) -> float:
+        raise NotImplementedError("Not implemented.")
+
     def record_env_info(self, info: Any, done: bool = False) -> None:
         """
         Record environment information.
