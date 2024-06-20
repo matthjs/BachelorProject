@@ -9,6 +9,7 @@ from stable_baselines3.common.callbacks import StopTrainingOnMaxEpisodes
 
 from agent.sbadapter import StableBaselinesAdapter
 from agentfactory.agentfactory import AgentFactory
+from bachelorproject.configobject import Config
 from callbacks.abstractcallback import AbstractCallback
 from callbacks.rewardcallback import RewardCallback
 from callbacks.sbcallbackadapter import StableBaselinesCallbackAdapter
@@ -16,6 +17,7 @@ from metricstracker.metricstrackerregistry import MetricsTrackerRegistry
 from hydra import compose, initialize
 import cloudpickle
 
+from util.make_vec_normalized_env import make_vec_normalized_env
 from util.usageplotter import plot_complexities
 
 
@@ -58,7 +60,9 @@ class SimulatorRL:
 
         self.agent_factory = AgentFactory()
         self.env_str = env_str
-        self.env = gym.make(env_str)
+        self.env = None
+        self.eval_env = None
+        self._initialize_env(env_str)
 
         # We first want to record the performance of the random policy
         # so we can compare later
@@ -199,7 +203,7 @@ class SimulatorRL:
     def register_agent(self, agent_id: str, agent_type: str) -> 'SimulatorRL':
         cfg = self._config_obj(agent_type, agent_id, self.env_str)
 
-        agent, hyperparams = self.agent_factory.create_agent_configured(agent_type, self.env_str, cfg)
+        agent, hyperparams = self.agent_factory.create_agent_configured(agent_type, self.env, cfg)
         print(hyperparams)
         self.agents[agent_id] = agent
 
@@ -395,7 +399,10 @@ class SimulatorRL:
         if mode not in ["train", "eval"]:
             raise ValueError(f"Invalid mode {mode}.")
 
-        env = self.env
+        if mode == "train":
+            env = self.env
+        else:
+            env = self.eval_env
         agent = self.agents[agent_id]
 
         for callback in callbacks:
@@ -411,7 +418,7 @@ class SimulatorRL:
                 self.agents_info[agent_id]
             )
 
-        obs, info = env.reset()
+        obs = env.reset()[0]
 
         if mode == "train" and agent.is_stable_baselines_wrapper():
             raise AttributeError("This function in train mode should only be run on True custom agents")
@@ -424,9 +431,14 @@ class SimulatorRL:
         while True:
             old_obs = obs
             action = agent.policy(obs)
-            obs, reward, terminated, truncated, info = env.step(action)
+            obs, reward, done, info = env.step([action])
+            obs = obs[0]  # (1, state_dim) -> (state_dim)
+            reward = reward[0]  # (1,) -> float
+            # print(reward)
+            # raise ValueError(f"{obs[0]}->{obs[0].shape}, {reward[0]}->{reward.shape}")
+            # obs, reward, terminated, truncated, info = env.step(action)
 
-            agent.record_env_info(info, terminated or truncated)
+            # agent.record_env_info(info, terminated or truncated)
             agent.add_trajectory((old_obs, action, reward, obs))
 
             if mode == "train":
@@ -440,14 +452,15 @@ class SimulatorRL:
                     agent.update()
 
             for callback in callbacks:
-                callback.on_step(action, reward, obs, terminated or truncated)
+                callback.on_step(action, reward, obs, done)
 
-            if terminated or truncated:
+            if done:
                 num_episodes -= 1
                 for callback in callbacks:
                     callback.on_episode_end()
-                obs, info = env.reset()
-                if (ep - num_episodes) % 20 == 0 and self.verbose > 0:
+                # obs, info = env.reset()
+                obs = env.reset()[0]
+                if (ep - num_episodes) % 30 == 0 and self.verbose > 0:
                     tracker = self.metrics_tracker_registry.get_tracker("train")
                     tracker.plot_metric(metric_name="return",
                                         plot_path="../plots/" + self.env_str + self.experiment_id,
@@ -500,8 +513,29 @@ class SimulatorRL:
         # parameter, which complicates the use of StopTrainingOnMaxEpisodes.
         # For instance, if total_timesteps is set arbitrarily large then
         # DQN will only execute random actions.
-        model.learn(total_timesteps=int(5e4), callback=sb_callbacks)
+        model.learn(total_timesteps=int(1e5), callback=sb_callbacks)
         # model.learn(total_timesteps=int(216942042), callback=sb_callbacks)
+
+    def _initialize_env(self, env_str: str, config_path: str = "../../../configs"):
+        with initialize(config_path=config_path, version_base="1.2"):
+            cfg = compose(config_name="config_" + env_str)
+
+        self.env = make_vec_normalized_env(env_str,
+                                           training=True,
+                                           norm_obs=cfg.environment.norm_obs,
+                                           norm_reward=cfg.environment.norm_reward,
+                                           clip_obs=cfg.environment.clip_obs,
+                                           clip_reward=cfg.environment.clip_reward,
+                                           gamma=cfg.environment.gamma,
+                                           epsilon=cfg.environment.epsilon)
+        self.eval_env = make_vec_normalized_env(env_str,
+                                                training=False,
+                                                norm_obs=cfg.environment.norm_obs,
+                                                norm_reward=cfg.environment.norm_reward,
+                                                clip_obs=cfg.environment.clip_obs,
+                                                clip_reward=cfg.environment.clip_reward,
+                                                gamma=cfg.environment.gamma,
+                                                epsilon=cfg.environment.epsilon)
 
     def _config_obj(self, agent_type: str, agent_id: str, env_str: str, config_path: str = "../../../configs"):
         with initialize(config_path=config_path + "/" + agent_type, version_base="1.2"):

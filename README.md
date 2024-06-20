@@ -117,6 +117,7 @@ Online updates (Fantasization) for exact GPs works, but the problem is that you 
 * What is the ideal learnign rate? Too low -> slow divergence/drop in performance? High -> Fast spike early.
 * Down up trajectory common for SVGP (with ~1000 inducing points) and "high" LR? (0.1, 0.01, 0.001). Lower than this little learning though.
 * Lower variational loss with deeper GPs with lower (~128) number of inducing points. Better than "shallow" deep GP with higher number of inducing points?
+* Much easier fit and lower values when using gradual update. for Q values.
 ## Information on modules
 
 ### Agents

@@ -80,6 +80,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             raise ValueError(f'Unknown gp model type: {model_str}')
 
         self.fit_gp = GPFitter()
+        self.latest_loss = 0
 
         # Initialize GP settings. The GP is filled with a few dummy values.
         self._gp_mode = model_str
@@ -146,7 +147,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 return self._current_gp
         elif self._gp_mode == 'deep_gp':
             if first_time:
-                print(list(range(self._state_size - 2)))
+                # print(list(range(self._state_size - 2)))
 
                 dpg = DeepGPModel(
                     train_x_shape=train_x.shape,
@@ -156,11 +157,11 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                     #    {"output_dims": 2, "mean_type": "linear"},
                     #    # {"output_dims": 1, "mean_type": "linear"},
                     #    {"output_dims": None, "mean_type": "constant"}
-                    #],
+                    # ],
                     cat_dims=[self._state_size],
                     num_inducing_points=self._num_inducing_points,
-                    input_transform=Normalize(d=self._state_size + 1,
-                                              indices=list(range(self._state_size - 2)))
+                    #input_transform=Normalize(d=self._state_size + 1,
+                    #                          indices=list(range(self._state_size - 2)))
                 ).to(self.device)
                 self._optimizer = torch.optim.Adam(dpg.parameters(), lr=Config.GP_FIT_LEARNING_RATE)
                 return dpg
@@ -195,15 +196,15 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             if hyperparameter_fitting:
                 start_time = time.time()
                 checkpoint_path = None if self._gp_mode == 'deep_gp' else 'gp_model_checkpoint_' + self._gp_mode + '.pth'
-                self.fit_gp(gp, train_x, train_y, self._gp_mode,
-                            batch_size=Config.GP_FIT_BATCH_SIZE,
-                            num_epochs=Config.GP_FIT_NUM_EPOCHS,
-                            num_batches=Config.GP_NUM_BATCHES,
-                            learning_rate=Config.GP_FIT_LEARNING_RATE,
-                            random_batching=Config.GP_FIT_RANDOM_BATCHING,
-                            logging=True,
-                            checkpoint_path=checkpoint_path,
-                            optimizer=self._optimizer)
+                self.latest_loss = self.fit_gp(gp, train_x, train_y, self._gp_mode,
+                                               batch_size=Config.GP_FIT_BATCH_SIZE,
+                                               num_epochs=Config.GP_FIT_NUM_EPOCHS,
+                                               num_batches=Config.GP_NUM_BATCHES,
+                                               learning_rate=Config.GP_FIT_LEARNING_RATE,
+                                               random_batching=Config.GP_FIT_RANDOM_BATCHING,
+                                               logging=True,
+                                               checkpoint_path=checkpoint_path,
+                                               optimizer=self._optimizer)
                 logger.debug(f"Time taken -> {time.time() - start_time} seconds")
 
             self._current_gp = gp
@@ -266,7 +267,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         :param new_train_x: A tensor with expected shape (dataset_size, state_space_dim).
         :param new_train_y: A tensor with expected shape (dataset_size, 1).
         """
-        new_train_x = self._current_gp.transform_inputs(new_train_x)
+        # new_train_x = self._current_gp.transform_inputs(new_train_x)
 
         # print("->", new_train_x)
 

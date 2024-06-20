@@ -14,6 +14,8 @@ from builders.dqnagentbuilder import DQNAgentBuilder
 from builders.qagentbuilder import QAgentBuilder
 from torchrl.data import LazyTensorStorage
 
+from util.make_vec_normalized_env import make_vec_normalized_env
+
 
 class AgentFactory:
     """
@@ -30,7 +32,7 @@ class AgentFactory:
         thr.name = agent_type + "_thread_" + str(thr.ident)
 
     @staticmethod
-    def create_agent_configured(agent_type: str, env_str: str, cfg) -> tuple[AbstractAgent, dict]:
+    def create_agent_configured(agent_type: str, env, cfg) -> tuple[AbstractAgent, dict]:
         """
         Create an RL agent based on the provided configuration.
         WARNING: THIS FUNCTION IS A BIT OF A MESS.
@@ -39,7 +41,14 @@ class AgentFactory:
         :param cfg: The configuration for the agent.
         :return: A tuple containing the created agent and its configuration.
         """
-        env = gym.make(env_str)
+        # env = make_vec_normalized_env(env_str,
+        #                              training=True,
+        #                              norm_obs=Config.ENV_NORM_OBS,
+        #                              norm_reward=Config.ENV_NORM_REWARD,
+        #                              clip_obs=Config.ENV_CLIP_OBS,
+        #                              clip_reward=Config.ENV_CLIP_REWARD,
+        #                              gamma=cfg.model.discount_factor,
+        #                              epsilon=Config.ENV_EPSILON)
 
         if agent_type in ["gpq_agent", "gpsarsa_agent"]:
             Config.initialize_config_object(cfg)

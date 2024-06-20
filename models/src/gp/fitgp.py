@@ -43,7 +43,7 @@ class GPFitter:
                  random_batching: bool = True,
                  logging: bool = False,
                  checkpoint_path: Optional[str] = None,
-                 optimizer = None) -> None:
+                 optimizer = None) -> float:
         """
         Fit a variational Gaussian process model. This function fits the variational parameters of the
         approximate posterior and inducing points. It uses the Adam optimizer for stochastic gradient descent.
@@ -156,3 +156,4 @@ class GPFitter:
             logger.info(f"Saved model to {checkpoint_path}")
 
         self.first_time = False
+        return loss_sum

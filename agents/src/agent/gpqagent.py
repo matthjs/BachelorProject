@@ -117,7 +117,8 @@ class GPQAgent(AbstractAgent):
         :param state: The state.
         :return: The action.
         """
-        return self._exploration_policy.choose_next_action(process_state(state))
+        state = process_state(state)
+        return self._exploration_policy.choose_next_action(state)
 
     def hyperparameters(self) -> dict:
         """
