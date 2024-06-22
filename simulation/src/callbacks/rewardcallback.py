@@ -57,9 +57,10 @@ class RewardCallback(AbstractCallback):
         super().on_episode_end()
         self.metrics_tracker.record_scalar("return", self.agent_id, self.episode_reward)
 
-        current_avg_return, _ = self.metrics_tracker.latest_mean_variance("return", self.agent_id)
-        if current_avg_return > self.highest_avg_return:
-            self.highest_avg_return = current_avg_return
+        # current_avg_return, _ = self.metrics_tracker.latest_mean_variance("return", self.agent_id)
+        current_return = self.metrics_tracker.value_history("return")[self.agent_id][-1]
+        if current_return > self.highest_avg_return:
+            self.highest_avg_return = current_return
             if self._save:
                 self._save_agent_on_best()
 

@@ -132,3 +132,16 @@ Contains classes that have to do with running RL algorithms on gymnasium environ
 
 ### Statistics
 Contains the `metricstracker` class which allows one to keep track of means and variances of values in an online manner.
+
+# TODO testing
+* Fix recording function.
+* Test memory/time as dataset size increases/number of inducing points increases.
+* For fixed GP model compare thompson sampling to UCB (and maybe epsilon greedy) (just do it in CartPole and dont bother with Lunar Lander)
+* For fixed GP model Maybe compare to GP-SARSA (just do it in CartPole) behavior probably not too different.
+## CartPole
+* Determine optimal hyperparameter settings
+* Run with 4 GP configs.
+* Do the stabilization testing.
+## Lunar Lander
+* Run it also with other GP model configs (2).
+* Do the stabilization testing (if time otherwise just leave it at CartPole).

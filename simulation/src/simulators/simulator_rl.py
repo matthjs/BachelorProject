@@ -6,6 +6,7 @@ from loguru import logger
 from scipy.stats import ranksums
 from stable_baselines3 import DQN, PPO
 from stable_baselines3.common.callbacks import StopTrainingOnMaxEpisodes
+from stable_baselines3.common.vec_env import VecNormalize, VecVideoRecorder
 
 from agent.sbadapter import StableBaselinesAdapter
 from agentfactory.agentfactory import AgentFactory
@@ -17,7 +18,7 @@ from metricstracker.metricstrackerregistry import MetricsTrackerRegistry
 from hydra import compose, initialize
 import cloudpickle
 
-from util.make_vec_normalized_env import make_vec_normalized_env
+from util.make_vec_normalized_env import make_vec_normalized_env, make_vec_env
 from util.usageplotter import plot_complexities
 
 
@@ -48,6 +49,7 @@ class SimulatorRL:
         self.metrics_tracker_registry = MetricsTrackerRegistry()
         self.metrics_tracker_registry.register_tracker("train")
         self.metrics_tracker_registry.get_tracker("train").register_metric("return")
+        self.metrics_tracker_registry.get_tracker("train").register_metric("loss")
         self.metrics_tracker_registry.register_tracker("eval")
         self.metrics_tracker_registry.get_tracker("eval").register_metric("return")
 
@@ -104,11 +106,15 @@ class SimulatorRL:
 
         simulator.init_random_agent()
 
+        logger.info("done!")
+
+        simulator.env = VecNormalize.load(load_dir + "/env" + simulator.experiment_id + ".pkl", make_vec_env(simulator.env_str))
+        simulator.eval_env = VecNormalize.load(load_dir + "/eval_env" + simulator.experiment_id + ".pkl", make_vec_env(simulator.env_str))
+
         if new_experiment_id is not None:
             logger.info("replacing experiment id with: ", new_experiment_id)
             simulator.experiment_id = new_experiment_id
 
-        logger.info("done!")
         return simulator
 
     def save(self, save_dir: str = "../data/simulationbackup") -> None:
@@ -127,6 +133,8 @@ class SimulatorRL:
             cloudpickle.dump(self, f)
         if self.verbose > 1:
             logger.info("Done!")
+        self.env.save(save_dir + "/env" + self.experiment_id + ".pkl")
+        self.eval_env.save(save_dir + "/eval_env" + self.experiment_id + ".pkl")
 
     def load_agent(self, agent_id: str, agent_type: str, data_dir="../data/saved_agents/") -> 'SimulatorRL':
         """
@@ -227,6 +235,10 @@ class SimulatorRL:
         tracker.plot_metric(metric_name="return",
                             plot_path=plot_dir + self.env_str + self.experiment_id,
                             title=f"{self.env_str}_{', '.join(self.agents.keys())}")
+        tracker.plot_metric(metric_name="loss",
+                            x_axis_label="updates",
+                            plot_path=plot_dir + self.env_str + self.experiment_id + "_loss",
+                            title=f"{self.env_str}_{', '.join(self.agents.keys())}")
 
         for agent_id, info in self.agents_info.items():
             for info_attr, value in info.items():
@@ -321,6 +333,7 @@ class SimulatorRL:
         :param concurrent: Flag indicating if evaluation should be done concurrently. Default is False.
         :return: The SimulatorRL instance after evaluation.
         """
+        self._eval_start()
         if callbacks is None:
             callbacks = [RewardCallback()]
 
@@ -350,7 +363,43 @@ class SimulatorRL:
             for agent_id in agent_id_list:
                 self._signtest_eval_with_random_policy(agent_id)
 
+        self._eval_end()
         return self
+
+    def record(self, agent_id: str, num_timeseps: int, record_dir: str = "../videos/") -> None:
+        """
+        Play the specified number of episodes using the given agent.
+
+        :param agent_id: Identifier of the agent to be used for playing.
+        :param num_episodes: Number of episodes to play.
+        """
+        self._eval_start()
+        agent = self.agents[agent_id]
+        play_env = VecVideoRecorder(venv=self.env,
+                                    video_folder=record_dir,
+                                    record_video_trigger=lambda x: x == 0,
+                                    video_length=num_timeseps,
+                                    name_prefix=self.experiment_id + "_" + agent_id)
+        obs = play_env.reset()
+
+        episode_reward = 0
+
+        for _ in range(num_timeseps - 1):
+            old_obs = obs
+            action = agent.policy(obs)
+            obs, reward, done, info = play_env.step(action)
+            obs = obs[0]  # (1, state_dim) -> (state_dim)
+            reward = reward[0]  # (1,) -> float
+            episode_reward += reward
+            # print(action)
+
+            if done:
+                logger.info(f"Episode reward {episode_reward}")
+                episode_reward = 0
+                obs, info = play_env.reset()
+
+        play_env.close()
+        self._eval_end()
 
     def play(self, agent_id: str, num_episodes: int) -> None:
         """
@@ -399,10 +448,11 @@ class SimulatorRL:
         if mode not in ["train", "eval"]:
             raise ValueError(f"Invalid mode {mode}.")
 
-        if mode == "train":
-            env = self.env
-        else:
-            env = self.eval_env
+        env = self.env
+        # if mode == "train":
+        #     env = self.env
+        # else:
+        #    env = self.eval_env
         agent = self.agents[agent_id]
 
         for callback in callbacks:
@@ -513,8 +563,16 @@ class SimulatorRL:
         # parameter, which complicates the use of StopTrainingOnMaxEpisodes.
         # For instance, if total_timesteps is set arbitrarily large then
         # DQN will only execute random actions.
-        model.learn(total_timesteps=int(1e5), callback=sb_callbacks)
+
+        # 5e5 for DQN (MLP) on Lunar Lander
+        model.learn(total_timesteps=int(4e5), callback=sb_callbacks)
         # model.learn(total_timesteps=int(216942042), callback=sb_callbacks)
+
+    def _eval_start(self):
+        self.env.training = False
+
+    def _eval_end(self):
+        self.env.training = True
 
     def _initialize_env(self, env_str: str, config_path: str = "../../../configs"):
         with initialize(config_path=config_path, version_base="1.2"):
@@ -528,14 +586,15 @@ class SimulatorRL:
                                            clip_reward=cfg.environment.clip_reward,
                                            gamma=cfg.environment.gamma,
                                            epsilon=cfg.environment.epsilon)
-        self.eval_env = make_vec_normalized_env(env_str,
-                                                training=False,
-                                                norm_obs=cfg.environment.norm_obs,
-                                                norm_reward=cfg.environment.norm_reward,
-                                                clip_obs=cfg.environment.clip_obs,
-                                                clip_reward=cfg.environment.clip_reward,
-                                                gamma=cfg.environment.gamma,
-                                                epsilon=cfg.environment.epsilon)
+        self.eval_env = self.env
+        # self.eval_env = make_vec_normalized_env(env_str,
+        #                                        training=False,
+        #                                        norm_obs=cfg.environment.norm_obs,
+        #                                        norm_reward=cfg.environment.norm_reward,
+        #                                        clip_obs=cfg.environment.clip_obs,
+        #                                        clip_reward=cfg.environment.clip_reward,
+        #                                        gamma=cfg.environment.gamma,
+        #                                        epsilon=cfg.environment.epsilon)
 
     def _config_obj(self, agent_type: str, agent_id: str, env_str: str, config_path: str = "../../../configs"):
         with initialize(config_path=config_path + "/" + agent_type, version_base="1.2"):
