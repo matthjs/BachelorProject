@@ -1,13 +1,13 @@
 dgp_hidden_layers_config:
   - output_dims: 1
     mean_type: linear
-  - output_dims: 2
+  - output_dims: 1
     mean_type: linear
   # Uncomment if needed
   - output_dims: 1
     mean_type: linear
-  #- output_dims: 1
-  #  mean_type: linear
+  - output_dims: 1
+    mean_type: linear
   # - output_dims: 1
   #  mean_type: linear
   - output_dims: null
@@ -36,7 +36,7 @@ model:
   kernel_type: "matern"
   strategy: "thompson_sampling"
   posterior_observation_noise: False
-  num_inducing_points: 224    # 256  # Only has effect if variational GP or deep GP is selected.
+  num_inducing_points: 128    # 256  # Only has effect if variational GP or deep GP is selected.
 
   kernel:
     matern_kernel:
