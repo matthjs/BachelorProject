@@ -36,28 +36,32 @@ class MetricsTracker4:
         self._aggregates_history[metric_name] = defaultdict(lambda: ([], []))
 
     def plot_metric(self, metric_name, plot_path="./", x_axis_label="Episodes", y_axis_label='Average',
-                    title="History") -> None:
+                    title="History", figsize=(10, 7), fontsize=14, linewidth=1.5) -> None:
         """
         Plot the metrics to a matplotlib figure.
         """
         if metric_name not in self._aggregates:
-            raise AttributeError(f"Metric name {metric_name} not registered")
+            print(f"Metric name {metric_name} not registered")
+            return
 
-        fig, ax = plt.subplots(figsize=(10, 8))
+        fig, ax = plt.subplots(figsize=figsize)
 
         for agent_id, (mean_returns, var_returns) in self._aggregates_history[metric_name].items():
             x_return = np.linspace(0, len(mean_returns), len(mean_returns), endpoint=False)
-            ax.plot(x_return, mean_returns, label=f'{agent_id} agent')
+            ax.plot(x_return, mean_returns, linewidth=linewidth, label=f'{agent_id} agent')
             ax.fill_between(x_return,
                                 mean_returns - np.sqrt(var_returns) * 0.1,
                                 mean_returns + np.sqrt(var_returns) * 0.1,
                                 alpha=0.2)
 
-        ax.set_title(metric_name + " " + title)
-        ax.set_xlabel(x_axis_label)
-        ax.set_ylabel(y_axis_label + " " + metric_name)
-        ax.legend()
+        ax.set_title(metric_name + " " + title, fontsize=fontsize)
+        ax.set_xlabel(x_axis_label, fontsize=fontsize)
+        ax.set_ylabel(y_axis_label + " " + metric_name, fontsize=fontsize)
+        ax.legend(fontsize=fontsize)
         ax.grid(True)
+
+        plt.xticks(fontsize=fontsize)
+        plt.yticks(fontsize=fontsize)
 
         plt.tight_layout()
 

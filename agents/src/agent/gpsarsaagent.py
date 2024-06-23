@@ -130,6 +130,9 @@ class GPSarsaAgent(AbstractAgent):
         """
         return self._exploration_policy.choose_next_action(process_state(state))
 
+    def latest_loss(self) -> float:
+        return self._exploration_policy.latest_loss
+
     def hyperparameters(self) -> dict:
         """
         Get the hyperparameters of the agent.

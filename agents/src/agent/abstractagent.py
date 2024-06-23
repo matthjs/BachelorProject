@@ -136,3 +136,4 @@ class AbstractAgent(ABC):
         :return: True if the agent is updatable, False otherwise.
         """
         return True
+

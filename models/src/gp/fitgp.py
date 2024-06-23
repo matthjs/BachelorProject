@@ -94,7 +94,8 @@ class GPFitter:
         else:
             mll = ExactMarginalLogLikelihood(model.likelihood, model)
 
-        loss_sum = 0
+        total_loss = 0
+        total_batches = 0
         # TODO: REFACTOR
         # Exact GP Optimization does not allow for mini-batching.
         with gpytorch.settings.debug(True):
@@ -115,6 +116,7 @@ class GPFitter:
 
 
             else:
+                total_batches = num_batches
                 if random_batching:
                     train_loader = DataLoader(TensorDataset(train_x, train_y),
                                               batch_size=batch_size,
@@ -135,10 +137,11 @@ class GPFitter:
                         output = model(x_batch)
 
                         loss = -mll(output, y_batch)
-                        loss_sum += loss.item()
+                        # loss_sum += loss.item()
                         loss.backward()
 
                         optimizer.step()
+                    total_loss += loss.item()
                     num_batches -= 1
 
                     if num_batches == 0 and logging:
@@ -148,12 +151,14 @@ class GPFitter:
                         break
                     # num_batches = num_batches2
 
+        avg_loss = total_loss / total_batches if total_batches > 0 else loss
+
         if logging:
-            logger.debug(f"Loss sum (epochs: {num_epochs}) {loss_sum}")
+            logger.debug(f"Average loss (epochs: {num_epochs}) {avg_loss}")
         model.eval()
         if checkpoint_path:
             save_model(model, checkpoint_path)
             logger.info(f"Saved model to {checkpoint_path}")
 
         self.first_time = False
-        return loss_sum
+        return avg_loss

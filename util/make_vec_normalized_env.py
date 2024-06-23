@@ -140,6 +140,9 @@ class CustomVecNormalize(VecNormalize):
         return self.normalize_obs(obs)
 
 
+def make_vec_env(env_id: str):
+    return DummyVecEnv([lambda: gym.make(env_id)])
+
 def make_vec_normalized_env(env_str: str,
                             training=True,
                             norm_obs=True,
