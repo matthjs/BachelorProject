@@ -31,7 +31,7 @@ class Config:
         Config.GP_FIT_BATCH_SIZE = cfg.fitting.gp_fit_batch_size
         Config.GP_NUM_BATCHES = cfg.fitting.gp_fit_num_batches
         Config.GP_FIT_LEARNING_RATE = cfg.fitting.gp_fit_learning_rate
-        Config.PG_FIT_RANDOM_BATCHING = cfg.fitting.gp_fit_random_batching
+        Config.GP_FIT_RANDOM_BATCHING = cfg.fitting.gp_fit_random_batching
 
         Config.UCB_BETA = cfg.exploration.ucb_beta
         Config.GP_E_GREEDY_STEPS = cfg.exploration.gp_e_greedy_steps
