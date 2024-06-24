@@ -4,8 +4,8 @@ dgp_hidden_layers_config:
 
 fitting:
   gp_fit_num_epochs: 1
-  gp_fit_batch_size: 128
-  gp_fit_num_batches: 30
+  gp_fit_batch_size: 256
+  gp_fit_num_batches: 10
   gp_fit_learning_rate: 0.001
   gp_fit_random_batching: True
 
@@ -19,7 +19,7 @@ model:
   batch_size: 32
   replay_buffer_size: 64
   exploring_starts: 100
-  max_dataset_size: 100000
+  max_dataset_size: 5120
   sparsification_threshold: None
   gp_likelihood_noise_constraint: None
   kernel_type: "matern"

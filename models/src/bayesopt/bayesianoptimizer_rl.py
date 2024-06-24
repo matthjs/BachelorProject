@@ -8,6 +8,7 @@ from botorch.models.gpytorch import GPyTorchModel
 from botorch.models.transforms.input import Normalize
 from gpytorch.means import ConstantMean
 from loguru import logger
+from torch.optim.lr_scheduler import ExponentialLR
 
 from bachelorproject.configobject import Config
 from bayesopt.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
@@ -85,9 +86,9 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         # Initialize GP settings. The GP is filled with a few dummy values.
         self._gp_mode = model_str
         self._current_gp = None
+        self._optimizer = None
         self._current_gp = self._construct_gp(torch.zeros(10, state_size + 1, dtype=torch.double),
                                               torch.zeros(10, 1, dtype=torch.double), first_time=True)
-        self._optimizer = None
 
         # Initialize actions selector.
         self._gp_action_selector = None
@@ -148,7 +149,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         elif self._gp_mode == 'deep_gp':
             if first_time:
                 # print(list(range(self._state_size - 2)))
-
                 dpg = DeepGPModel(
                     train_x_shape=train_x.shape,
                     hidden_layers_config=Config.DGP_HIDDEN_LAYERS_CONFIG,
@@ -163,7 +163,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                     #input_transform=Normalize(d=self._state_size + 1,
                     #                          indices=list(range(self._state_size - 2)))
                 ).to(self.device)
-                self._optimizer = torch.optim.Adam(dpg.parameters(), lr=Config.GP_FIT_LEARNING_RATE)
+                # self._optimizer = torch.optim.Adam(dpg.parameters(), lr=Config.GP_FIT_LEARNING_RATE)
+                self._optimizer = ExponentialLR(torch.optim.Adam(dpg.parameters(), lr=Config.GP_FIT_LEARNING_RATE), gamma=0.9999)
                 return dpg
             else:
                 return self._current_gp.to(self.device)
@@ -178,14 +179,12 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         :param hyperparameter_fitting: Whether to fit the kernel hyperparameters or not.
         """
         with botorch.settings.debug(True):
-            if self._exploring_starts > 0:
-                return
-
-            self._dummy_counter += 1
-
             # print(new_train_x)
 
             self.extend_dataset(new_train_x, new_train_y)
+            if self._exploring_starts > 0:
+                return
+            self._dummy_counter += 1
             train_x, train_y = self.dataset()
             gp = self._construct_gp(train_x, train_y)
 
@@ -195,6 +194,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             print("Dataset size ->", train_x.shape[0])
             if hyperparameter_fitting:
                 start_time = time.time()
+                if self._optimizer is None:
+                    raise ValueError("No optimizer")
                 checkpoint_path = None if self._gp_mode == 'deep_gp' else 'gp_model_checkpoint_' + self._gp_mode + '.pth'
                 self.latest_loss = self.fit_gp(gp, train_x, train_y, self._gp_mode,
                                                batch_size=Config.GP_FIT_BATCH_SIZE,
@@ -204,8 +205,10 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                                                random_batching=Config.GP_FIT_RANDOM_BATCHING,
                                                logging=True,
                                                checkpoint_path=checkpoint_path,
-                                               optimizer=self._optimizer)
+                                               optimizer=self._optimizer.optimizer)
                 logger.debug(f"Time taken -> {time.time() - start_time} seconds")
+                self._optimizer.step()
+                print(self._optimizer.get_lr())
 
             self._current_gp = gp
 
