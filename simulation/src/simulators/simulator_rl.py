@@ -477,6 +477,7 @@ class SimulatorRL:
             callback.on_training_start()
 
         ep = num_episodes
+        training = True
 
         while True:
             old_obs = obs
@@ -484,6 +485,8 @@ class SimulatorRL:
             obs, reward, done, info = env.step([action])
             obs = obs[0]  # (1, state_dim) -> (state_dim)
             reward = reward[0]  # (1,) -> float
+            # if reward >= 500:
+            #    training = False
             # print(reward)
             # raise ValueError(f"{obs[0]}->{obs[0].shape}, {reward[0]}->{reward.shape}")
             # obs, reward, terminated, truncated, info = env.step(action)
@@ -495,10 +498,12 @@ class SimulatorRL:
                 if agent.updatable():
                     for callback in callbacks:
                         callback.on_update_start()
+                    #if training:
                     agent.update()
                     for callback in callbacks:
                         callback.on_update_end()
                 else:
+                    #if training:
                     agent.update()
 
             for callback in callbacks:

@@ -122,11 +122,9 @@ class GPFitter:
                                               batch_size=batch_size,
                                               shuffle=True)
                 else:
-                    print(train_x)
                     data = TensorDataset(train_x, train_y)
                     train_loader = DataLoader(data,
-                                              batch_size=batch_size,
-                                              sampler=ReverseSampler(data))
+                                              batch_size=batch_size)
 
                 # num_batches2 = num_batches
                 # Within each iteration, we will go over each minibatch of data

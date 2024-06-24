@@ -137,3 +137,9 @@ class AbstractAgent(ABC):
         """
         return True
 
+    def disable_training(self):
+        pass
+
+    def enable_training(self):
+        pass
+

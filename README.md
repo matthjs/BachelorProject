@@ -133,7 +133,13 @@ Contains classes that have to do with running RL algorithms on gymnasium environ
 ### Statistics
 Contains the `metricstracker` class which allows one to keep track of means and variances of values in an online manner.
 
+# More notes
+* Too high learning rate causes GP to converge too quickly.
+* Performance degregation when continuing training.
+* For optimization what seems to be best is a moderately sized dataset and random subset optimization (?)
+
 # TODO testing
+* Show that random batching over larger dataset is less effective.
 * Fix recording function.
 * Test memory/time as dataset size increases/number of inducing points increases.
 * For fixed GP model compare thompson sampling to UCB (and maybe epsilon greedy) (just do it in CartPole and dont bother with Lunar Lander)

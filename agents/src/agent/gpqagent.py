@@ -41,6 +41,7 @@ class GPQAgent(AbstractAgent):
         :param strategy: Strategy to use (exploration policy).
         """
         super(GPQAgent, self).__init__({}, env.observation_space, env.action_space)
+        self._training = True
 
         self._exploration_policy = BayesianOptimizerRL(
             model_str=gp_model_str,
@@ -57,9 +58,9 @@ class GPQAgent(AbstractAgent):
         )
 
         self._replay_buffer = ReplayBuffer(storage=LazyTensorStorage(
-                                           max_size=replay_buffer_size,
-                                           device=fetch_device()),
-                                           sampler=SamplerWithoutReplacement())
+            max_size=replay_buffer_size,
+            device=fetch_device()),
+            sampler=SamplerWithoutReplacement())
 
         self._batch_counter = 0
         self._batch_size = batch_size
@@ -87,10 +88,11 @@ class GPQAgent(AbstractAgent):
         """
         Update method.
         """
-        if self._batch_counter >= self._batch_size:
-            self._trainer.train()
-            self._batch_counter = 0
-        self._batch_counter += 1
+        if self._training:
+            if self._batch_counter >= self._batch_size:
+                self._trainer.train()
+                self._batch_counter = 0
+            self._batch_counter += 1
 
     def updatable(self) -> bool:
         """
@@ -129,3 +131,9 @@ class GPQAgent(AbstractAgent):
         :return: Dictionary containing hyperparameters.
         """
         return self._hyperparameters
+
+    def disable_training(self):
+        self._training = False
+
+    def enable_training(self):
+        self._training = True

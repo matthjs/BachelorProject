@@ -47,6 +47,7 @@ class GPSarsaAgent(AbstractAgent):
         :param strategy: Strategy to use.
         """
         super(GPSarsaAgent, self).__init__({}, env.observation_space, env.action_space)
+        self._training = True
 
         self._exploration_policy = BayesianOptimizerRL(
             model_str=gp_model_str,
@@ -92,10 +93,11 @@ class GPSarsaAgent(AbstractAgent):
         """
         Update the agent.
         """
-        if self._batch_counter >= self._batch_size:
-            self._trainer.train()
-            self._batch_counter = 0
-        self._batch_counter += 1
+        if self._training:
+            if self._batch_counter >= self._batch_size:
+                self._trainer.train()
+                self._batch_counter = 0
+            self._batch_counter += 1
 
     def updatable(self) -> bool:
         """
@@ -139,3 +141,9 @@ class GPSarsaAgent(AbstractAgent):
         :return: A dictionary containing hyperparameters.
         """
         return self._hyperparameters
+
+    def disable_training(self):
+        self._training = False
+
+    def enable_training(self):
+        self._training = True
