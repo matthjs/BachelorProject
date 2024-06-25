@@ -1,10 +1,10 @@
 dgp_hidden_layers_config:
-  - output_dims: 9
+  - output_dims: 1
     mean_type: linear
-  - output_dims: 9
+  - output_dims: 1
     mean_type: linear
   # Uncomment if needed
-  - output_dims: 9
+  - output_dims: 1
     mean_type: linear
   # - output_dims: 1
   #  mean_type: linear

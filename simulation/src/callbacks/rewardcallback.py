@@ -36,6 +36,7 @@ class RewardCallback(AbstractCallback):
         avg_return, avg_variance = self.metrics_tracker.latest_mean_variance("return", self.agent_id)
         self.df.loc[self.df['agent_id'] == self.agent_id, "avg return " + self.mode] = round(avg_return, 3)
         self.df.loc[self.df['agent_id'] == self.agent_id, "stdev return " + self.mode] = round(np.sqrt(avg_variance), 3)
+        self.df.loc[self.df['agent_id'] == self.agent_id, "max return " + self.mode] = round(self.highest_avg_return, 3)
 
     def _save_agent_on_best(self, save_dir="../data/saved_agents/"):
         save_dir = save_dir + self.experiment_id + "/"

@@ -130,7 +130,7 @@ class GPFitter:
                 # Within each iteration, we will go over each minibatch of data
                 # Batching causes "RuntimeError: You must train on the training inputs!" error with exactGPs.
                 for x_batch, y_batch in train_loader:
-                    for epoch in range(num_epochs):
+                    for _ in range(num_epochs):
                         optimizer.zero_grad()
                         output = model(x_batch)
 
@@ -142,8 +142,8 @@ class GPFitter:
                     total_loss += loss.item()
                     num_batches -= 1
 
-                    if num_batches == 0 and logging:
-                        logger.debug(f"variational loss on minibatch (epochs: {num_epochs}) {loss}")
+                    # if num_batches == 0 and logging:
+                        # logger.debug(f"variational loss on minibatch (epochs: {num_epochs}) {loss}")
 
                     if num_batches == 0:
                         break
