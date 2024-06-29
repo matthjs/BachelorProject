@@ -1,0 +1,15 @@
+agent_id,agent_type,hyperparams,num_episodes (train),avg return train,stdev return train,max return train,execution time (sec) train,VRAM usage (GB) train,Energy usage (J) train,p_val_cuml_return_train_>,W-statistic_cuml,num_episodes (eval),avg return eval,stdev return eval,max return eval,execution time (sec) eval,VRAM usage (GB) eval,Energy usage (J) eval,p_val_return_eval_>,W-statistic_return_eval
+random,random,{},1000.0,22.161,11.831,96.0,47.834,0.044,268.89,0.5,0.0,30.0,21.367,9.583,43.0,0.216,0.0,12.723,0.5,0.0
+gpq_agent_3,gpq_agent,"{'gp_model_str': 'deep_gp', 'discount_factor': 0.99, 'batch_size': 32, 'replay_buffer_size': 64, 'exploring_starts': 100, 'max_dataset_size': 20000, 'kernel_type': 'matern', 'sparsification_threshold': None, 'strategy': 'thompson_sampling', 'posterior_observation_noise': False, 'num_inducing_points': 512, 'gp_fit_num_epochs': 1, 'gp_fit_batch_size': 128, 'gp_fit_num_batches': 30, 'gp_fit_learning_rate': 0.001, 'gp_fit_random_batching': True, 'dgp_hidden_layers_config': [{'output_dims': None, 'mean_type': 'constant'}]}",1000.0,270.479,208.33,500.0,2116.315,0.566,16116.198,0.0,38.643,30.0,362.25,190.884,500.0,63.279,0.089,2151.379,0.0,8.755
+gpq_agent_3,gpq_agent,{},,,,,,,,,,30.0,362.25,190.884,500.0,63.279,0.089,2151.379,0.0,8.755
+random,random,{},,,,,,,,,,30.0,21.367,9.583,43.0,0.216,0.0,12.723,0.5,0.0
+sb_dqn_1,sb_dqn,"{'policy': 'MlpPolicy', 'learning_rate': 0.0023, 'batch_size': 64, 'buffer_size': 100000, 'learning_starts': 1000, 'gamma': 0.99, 'target_update_interval': 10, 'train_freq': 256, 'gradient_steps': 128, 'exploration_fraction': 0.16, 'exploration_final_eps': 0.04, 'policy_kwargs': {'net_arch': [256, 256]}}",1000.0,78.338,77.839,500.0,64.007,0.414,2146.979,0.0,25.312,30.0,500.0,0.0,500.0,5.481,0.053,166.963,0.0,7.703
+gpq_agent_3,gpq_agent,{},,,,,,,,,,,,,,,,,,
+sb_dqn_1,sb_dqn,{},,,,,,,,,,,,,,,,,,
+random,random,{},,,,,,,,,,30.0,21.367,9.583,43.0,0.216,0.0,12.723,0.5,0.0
+sb_dqn_2,sb_dqn,"{'policy': 'MlpPolicy', 'learning_rate': 0.0023, 'batch_size': 64, 'buffer_size': 100000, 'learning_starts': 1000, 'gamma': 0.99, 'target_update_interval': 10, 'train_freq': 256, 'gradient_steps': 128, 'exploration_fraction': 0.16, 'exploration_final_eps': 0.04, 'policy_kwargs': {'net_arch': []}}",1000.0,12.007,5.188,55.0,12.012,0.414,489.724,1.0,-37.193,30.0,9.333,0.994,12.0,0.295,0.0,8.719,1.0,-7.994
+gpq_agent_3,gpq_agent,{},,,,,,,,,,,,,,,,,,
+sb_dqn_1,sb_dqn,{},,,,,,,,,,,,,,,,,,
+sb_dqn_2,sb_dqn,{},,,,,,,,,,,,,,,,,,
+random,random,{},,,,,,,,,,30.0,21.367,9.583,43.0,0.216,0.0,12.723,0.5,0.0
+DQN (MLP),sb_dqn,"{'policy': 'MlpPolicy', 'learning_rate': 0.0023, 'batch_size': 64, 'buffer_size': 100000, 'learning_starts': 1000, 'gamma': 0.99, 'target_update_interval': 10, 'train_freq': 256, 'gradient_steps': 128, 'exploration_fraction': 0.16, 'exploration_final_eps': 0.04, 'policy_kwargs': {'net_arch': [256, 256]}}",1000.0,59.45,65.173,96.0,6.855,0.0,234.391,0.0,36.716,30.0,18.8,3.112,25.0,0.413,0.0,33.471,0.514,-0.035
