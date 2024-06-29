@@ -5,8 +5,8 @@ dgp_hidden_layers_config:
 fitting:
   gp_fit_num_epochs: 4
   gp_fit_batch_size: 64
-  gp_fit_num_batches: 15
-  gp_fit_learning_rate: 0.005
+  gp_fit_num_batches: 2
+  gp_fit_learning_rate: 0.001
   gp_fit_random_batching: True
 
 exploration:    # Not used if thompson sampling is used.

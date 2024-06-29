@@ -1,0 +1,912 @@
+sc/BachelorProject/.venv/bin/python3.10 /home/matthijs/bsc/BachelorProject/bachelorproject/main.py
+2024-06-29 15:09:21.022 | INFO     | simulators.simulator_rl:load:96 - loading simulator with experiment id: experiment_CARTPOLE_THESIS
+[2024-06-29 15:09:26,398] [zeus.device.gpu](gpu.py:917) PyNVML is available and initialized.
+[2024-06-29 15:09:26,398] [zeus.monitor.energy](energy.py:150) Monitoring GPU indices [0].
+YESSIR
+YESSIR
+YESSIR
+2024-06-29 15:09:29.024 | INFO     | simulators.simulator_rl:load:109 - done!
+2024-06-29 15:09:29.025 | INFO     | simulators.simulator_rl:load:115 - replacing experiment id with:
+2024-06-29 15:09:29.075 | INFO     | simulators.simulator_rl:train_agents:292 - Training agents -> ['GPQ2 (DGP)']
+2024-06-29 15:09:29.075 | INFO     | simulators.simulator_rl:train_agents:304 - Training agent -> GPQ2 (DGP)
+{'gp_model_str': 'deep_gp', 'discount_factor': 0.99, 'batch_size': 32, 'replay_buffer_size': 64, 'exploring_starts': 100, 'max_dataset_size': 100000, 'kernel_type': 'matern', 'sparsification_threshold': None, 'strategy': 'thompson_sampling', 'posterior_observation_noise': False, 'num_inducing_points': 128, 'gp_fit_num_epochs': 1, 'gp_fit_batch_size': 128, 'gp_fit_num_batches': 30, 'gp_fit_learning_rate': 0.001, 'gp_fit_random_batching': True, 'dgp_hidden_layers_config': [{'output_dims': 4, 'mean_type': 'linear'}, {'output_dims': 4, 'mean_type': 'linear'}, {'output_dims': 4, 'mean_type': 'linear'}, {'output_dims': 4, 'mean_type': 'linear'}, {'output_dims': None, 'mean_type': 'constant'}]}
+[2024-06-29 15:09:29,076] [zeus.monitor.energy](energy.py:150) Monitoring GPU indices [0].
+[2024-06-29 15:09:29,080] [zeus.utils.framework](framework.py:38) PyTorch with CUDA support is available.
+Dataset size -> 128
+2024-06-29 15:09:33.192 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.06523268092553011
+2024-06-29 15:09:33.193 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.10500574111938477 seconds
+[0.001]
+Dataset size -> 160
+[0.001]
+2024-06-29 15:09:34.063 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.13021021333849375
+2024-06-29 15:09:34.064 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.1652214527130127 seconds
+Dataset size -> 192
+2024-06-29 15:09:34.863 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.12991584080840768
+2024-06-29 15:09:34.864 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.11305642127990723 seconds
+[0.001]
+Dataset size -> 224
+[0.001]
+2024-06-29 15:09:35.556 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.12965742413342182
+2024-06-29 15:09:35.557 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.1099555492401123 seconds
+Dataset size -> 256
+[0.001]
+2024-06-29 15:09:36.214 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.12938024769101028
+2024-06-29 15:09:36.214 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.11531352996826172 seconds
+Dataset size -> 288
+[0.001]
+2024-06-29 15:09:37.013 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.1934311399108313
+2024-06-29 15:09:37.013 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.14188909530639648 seconds
+Dataset size -> 320
+2024-06-29 15:09:37.719 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.19285846412814944
+2024-06-29 15:09:37.719 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.1231851577758789 seconds
+[0.001]
+Dataset size -> 352
+[0.001]
+2024-06-29 15:09:38.498 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.19230257712577695
+2024-06-29 15:09:38.499 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.12819647789001465 seconds
+2024-06-29 15:09:38.624 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 13.0 / 40.0
+Dataset size -> 384
+[0.001]
+2024-06-29 15:09:39.172 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.19168954290739088
+2024-06-29 15:09:39.173 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.15250396728515625 seconds
+Dataset size -> 416
+[0.001]
+2024-06-29 15:09:39.881 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.25447571912299743
+2024-06-29 15:09:39.881 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.17217731475830078 seconds
+Dataset size -> 448
+2024-06-29 15:09:40.639 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.2535930385886337
+2024-06-29 15:09:40.639 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.16740870475769043 seconds
+[0.001]
+Dataset size -> 480
+2024-06-29 15:09:41.416 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.25239888615855743
+2024-06-29 15:09:41.416 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.16015386581420898 seconds
+[0.001]
+Dataset size -> 512
+2024-06-29 15:09:42.125 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.25124860282858863
+2024-06-29 15:09:42.126 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.1848461627960205 seconds
+[0.001]
+/home/matthijs/.pycharm_helpers/pycharm_matplotlib_backend/backend_interagg.py:85: MatplotlibDeprecationWarning: The tostring_rgb function was deprecated in Matplotlib 3.8 and will be removed in 3.10. Use buffer_rgba instead.
+  buffer = self.tostring_rgb()
+2024-06-29 15:09:42.645 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 30
+Dataset size -> 544
+2024-06-29 15:09:43.163 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.3123642879492401
+2024-06-29 15:09:43.164 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.21631717681884766 seconds
+[0.001]
+Dataset size -> 576
+[0.001]
+2024-06-29 15:09:43.922 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.3101794386685008
+2024-06-29 15:09:43.922 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.2063584327697754 seconds
+Dataset size -> 608
+2024-06-29 15:09:44.687 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.3080554983040718
+2024-06-29 15:09:44.687 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.22085094451904297 seconds
+[0.001]
+Dataset size -> 640
+[0.001]
+2024-06-29 15:09:45.527 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.30572282480101104
+2024-06-29 15:09:45.527 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.24591827392578125 seconds
+Dataset size -> 672
+[0.001]
+2024-06-29 15:09:46.390 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.3635856652060199
+2024-06-29 15:09:46.391 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.3057112693786621 seconds
+Dataset size -> 704
+[0.001]
+2024-06-29 15:09:47.191 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.3587083818122033
+2024-06-29 15:09:47.191 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.26080846786499023 seconds
+2024-06-29 15:09:47.248 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 12.0 / 40.0
+Dataset size -> 736
+[0.001]
+2024-06-29 15:09:48.014 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.3536218544339809
+2024-06-29 15:09:48.015 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.24685215950012207 seconds
+Dataset size -> 768
+2024-06-29 15:09:48.833 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.34771692823161554
+2024-06-29 15:09:48.833 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.24982547760009766 seconds
+[0.001]
+Dataset size -> 800
+[0.001]
+2024-06-29 15:09:49.712 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.3972779834196286
+2024-06-29 15:09:49.713 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.30329275131225586 seconds
+Dataset size -> 832
+[0.001]
+2024-06-29 15:09:50.656 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.38940501410248024
+2024-06-29 15:09:50.656 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.3292109966278076 seconds
+Dataset size -> 864
+[0.001]
+2024-06-29 15:09:51.796 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.3820507809412283
+2024-06-29 15:09:51.797 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.3269038200378418 seconds
+Dataset size -> 896
+[0.001]
+2024-06-29 15:09:52.639 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.37366941476512533
+2024-06-29 15:09:52.639 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.28765344619750977 seconds
+Dataset size -> 928
+2024-06-29 15:09:53.529 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.4177753623089472
+2024-06-29 15:09:53.529 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.330397367477417 seconds
+[0.001]
+Dataset size -> 960
+[0.001]
+2024-06-29 15:09:54.585 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.40767199061569154
+2024-06-29 15:09:54.586 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.3495028018951416 seconds
+Dataset size -> 992
+2024-06-29 15:09:55.522 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.3979734634677626
+2024-06-29 15:09:55.522 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.3636479377746582 seconds
+[0.001]
+Dataset size -> 1024
+2024-06-29 15:09:56.427 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.3856377293651484
+2024-06-29 15:09:56.427 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.3541431427001953 seconds
+[0.001]
+Dataset size -> 1056
+2024-06-29 15:09:57.421 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.41851652575344195
+2024-06-29 15:09:57.421 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.412919282913208 seconds
+[0.001]
+Dataset size -> 1088
+2024-06-29 15:09:58.437 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.4068537047395816
+2024-06-29 15:09:58.437 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.4307847023010254 seconds
+[0.001]
+Dataset size -> 1120
+[0.001]
+2024-06-29 15:09:59.430 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.3915475657221053
+2024-06-29 15:09:59.430 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.40523195266723633 seconds
+Dataset size -> 1152
+[0.001]
+2024-06-29 15:10:00.443 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.37941744968666774
+2024-06-29 15:10:00.443 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.41541218757629395 seconds
+Dataset size -> 1184
+[0.001]
+2024-06-29 15:10:01.513 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.40750283626398454
+2024-06-29 15:10:01.514 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.4834754467010498 seconds
+2024-06-29 15:10:01.672 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 14.0 / 57.0
+2024-06-29 15:10:01.913 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 60
+Dataset size -> 1216
+[0.001]
+2024-06-29 15:10:02.759 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.39307986371118364
+2024-06-29 15:10:02.760 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.41406679153442383 seconds
+Dataset size -> 1248
+[0.001]
+2024-06-29 15:10:03.769 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.3840150030417495
+2024-06-29 15:10:03.770 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.4028346538543701 seconds
+Dataset size -> 1280
+2024-06-29 15:10:04.809 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.3741767811779125
+2024-06-29 15:10:04.809 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.4636809825897217 seconds
+[0.001]
+Dataset size -> 1312
+[0.001]
+2024-06-29 15:10:05.877 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.40264827274163456
+2024-06-29 15:10:05.877 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.4897587299346924 seconds
+Dataset size -> 1344
+[0.001]
+2024-06-29 15:10:06.950 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.39777761669596057
+2024-06-29 15:10:06.951 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.4710414409637451 seconds
+Dataset size -> 1376
+[0.001]
+2024-06-29 15:10:07.913 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.3905655952573176
+2024-06-29 15:10:07.914 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.4493746757507324 seconds
+Dataset size -> 1408
+2024-06-29 15:10:08.951 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.38711470961659555
+2024-06-29 15:10:08.951 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.4749186038970947 seconds
+[0.001]
+Dataset size -> 1440
+[0.001]
+2024-06-29 15:10:10.052 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.4223443667701561
+2024-06-29 15:10:10.052 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.5063512325286865 seconds
+Dataset size -> 1472
+[0.001]
+2024-06-29 15:10:11.123 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.41618888416833877
+2024-06-29 15:10:11.124 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.5236835479736328 seconds
+Dataset size -> 1504
+[0.001]
+2024-06-29 15:10:12.236 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.41471467801045964
+2024-06-29 15:10:12.236 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.4987640380859375 seconds
+Dataset size -> 1536
+[0.001]
+2024-06-29 15:10:13.323 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.4124335500663502
+2024-06-29 15:10:13.323 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.49128198623657227 seconds
+Dataset size -> 1568
+[0.001]
+2024-06-29 15:10:14.792 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.4452350461072073
+2024-06-29 15:10:14.792 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.584942102432251 seconds
+Dataset size -> 1600
+2024-06-29 15:10:15.904 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.44638688924672365
+2024-06-29 15:10:15.904 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.5634918212890625 seconds
+[0.001]
+Dataset size -> 1632
+2024-06-29 15:10:17.004 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.44551570245188993
+2024-06-29 15:10:17.004 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.5642433166503906 seconds
+[0.001]
+Dataset size -> 1664
+2024-06-29 15:10:18.146 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.4467902670443713
+2024-06-29 15:10:18.147 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.5557029247283936 seconds
+[0.001]
+2024-06-29 15:10:18.594 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 30.0 / 66.0
+Dataset size -> 1696
+[0.001]
+2024-06-29 15:10:19.241 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.48134058566214605
+2024-06-29 15:10:19.241 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.5701994895935059 seconds
+Dataset size -> 1728
+[0.001]
+2024-06-29 15:10:20.721 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.4829242814095505
+2024-06-29 15:10:20.721 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.7263634204864502 seconds
+Dataset size -> 1760
+[0.001]
+2024-06-29 15:10:21.826 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.4850874184214866
+2024-06-29 15:10:21.826 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.5658886432647705 seconds
+Dataset size -> 1792
+2024-06-29 15:10:23.017 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.4859806312993486
+2024-06-29 15:10:23.017 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.6123321056365967 seconds
+[0.001]
+Dataset size -> 1824
+[0.001]
+2024-06-29 15:10:24.253 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.5200584208392276
+2024-06-29 15:10:24.253 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.6567947864532471 seconds
+Dataset size -> 1856
+[0.001]
+2024-06-29 15:10:25.541 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.5226991399235159
+2024-06-29 15:10:25.541 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.6878433227539062 seconds
+Dataset size -> 1888
+[0.001]
+2024-06-29 15:10:26.811 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.5241852997150022
+2024-06-29 15:10:26.811 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.6934170722961426 seconds
+Dataset size -> 1920
+2024-06-29 15:10:27.967 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.5248031828764023
+2024-06-29 15:10:27.968 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.6045830249786377 seconds
+[0.001]
+Dataset size -> 1952
+[0.001]
+2024-06-29 15:10:29.229 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.5624614615475672
+2024-06-29 15:10:29.229 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.6816012859344482 seconds
+2024-06-29 15:10:29.471 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 90
+Dataset size -> 1984
+[0.001]
+2024-06-29 15:10:30.738 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.565123184319973
+2024-06-29 15:10:30.738 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.680872917175293 seconds
+Dataset size -> 2016
+2024-06-29 15:10:31.991 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.5667202485541245
+2024-06-29 15:10:31.991 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.6748325824737549 seconds
+[0.001]
+Dataset size -> 2048
+[0.001]
+2024-06-29 15:10:33.232 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.5675573727291321
+2024-06-29 15:10:33.233 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.69881272315979 seconds
+Dataset size -> 2080
+[0.001]
+2024-06-29 15:10:34.547 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.6040863554081233
+2024-06-29 15:10:34.547 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.7391388416290283 seconds
+Dataset size -> 2112
+[0.001]
+2024-06-29 15:10:35.833 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.6077428330491685
+2024-06-29 15:10:35.833 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.7162530422210693 seconds
+Dataset size -> 2144
+2024-06-29 15:10:37.230 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.6088183983403674
+2024-06-29 15:10:37.230 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.7788012027740479 seconds
+[0.001]
+Dataset size -> 2176
+[0.001]
+2024-06-29 15:10:38.563 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.6123350913860058
+2024-06-29 15:10:38.564 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.7495863437652588 seconds
+Dataset size -> 2208
+[0.001]
+2024-06-29 15:10:39.882 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.6486703777880971
+2024-06-29 15:10:39.882 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.7496824264526367 seconds
+Dataset size -> 2240
+[0.001]
+2024-06-29 15:10:41.205 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.6522565900258867
+2024-06-29 15:10:41.205 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.787294864654541 seconds
+Dataset size -> 2272
+[0.001]
+2024-06-29 15:10:42.605 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.6533727015066958
+2024-06-29 15:10:42.605 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.8338017463684082 seconds
+2024-06-29 15:10:42.669 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 64.0 / 66.0
+Dataset size -> 2304
+[0.001]
+2024-06-29 15:10:43.931 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.6550126750422981
+2024-06-29 15:10:43.932 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.7625484466552734 seconds
+Dataset size -> 2336
+[0.001]
+2024-06-29 15:10:45.281 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.6954517332513824
+2024-06-29 15:10:45.281 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.7927525043487549 seconds
+Dataset size -> 2368
+[0.001]
+2024-06-29 15:10:46.671 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.6968973726263946
+2024-06-29 15:10:46.672 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.8439712524414062 seconds
+Dataset size -> 2400
+[0.001]
+2024-06-29 15:10:48.034 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.6991905407539704
+2024-06-29 15:10:48.034 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.8340969085693359 seconds
+Dataset size -> 2432
+[0.001]
+2024-06-29 15:10:49.476 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.7019886362940783
+2024-06-29 15:10:49.477 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.8635692596435547 seconds
+Dataset size -> 2464
+[0.001]
+2024-06-29 15:10:50.874 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.7423359754511997
+2024-06-29 15:10:50.874 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.8279063701629639 seconds
+Dataset size -> 2496
+[0.001]
+2024-06-29 15:10:52.276 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.7428460768027415
+2024-06-29 15:10:52.277 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.8384859561920166 seconds
+Dataset size -> 2528
+[0.001]
+2024-06-29 15:10:53.712 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.7466055760254101
+2024-06-29 15:10:53.712 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.9084556102752686 seconds
+Dataset size -> 2560
+2024-06-29 15:10:55.630 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.7488122525685051
+2024-06-29 15:10:55.631 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.8634192943572998 seconds
+[0.001]
+Dataset size -> 2592
+[0.001]
+2024-06-29 15:10:57.140 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.7903694399553929
+2024-06-29 15:10:57.140 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.9528875350952148 seconds
+Dataset size -> 2624
+[0.001]
+2024-06-29 15:10:58.613 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.7905111105843834
+2024-06-29 15:10:58.614 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.8704080581665039 seconds
+Dataset size -> 2656
+[0.001]
+2024-06-29 15:11:00.123 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.7943184421751935
+2024-06-29 15:11:00.124 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.9305903911590576 seconds
+Dataset size -> 2688
+[0.001]
+2024-06-29 15:11:01.578 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.7962420670045489
+2024-06-29 15:11:01.579 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.890418529510498 seconds
+Dataset size -> 2720
+[0.001]
+2024-06-29 15:11:03.138 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.8389995268517675
+2024-06-29 15:11:03.138 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.9823992252349854 seconds
+Dataset size -> 2752
+[0.001]
+2024-06-29 15:11:04.707 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.8401811926057178
+2024-06-29 15:11:04.707 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.0122146606445312 seconds
+Dataset size -> 2784
+[0.001]
+2024-06-29 15:11:06.233 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.8424440773835038
+2024-06-29 15:11:06.233 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.936833381652832 seconds
+Dataset size -> 2816
+2024-06-29 15:11:07.775 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.844458392074976
+2024-06-29 15:11:07.775 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.9699432849884033 seconds
+[0.001]
+Dataset size -> 2848
+[0.001]
+2024-06-29 15:11:09.395 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.8875919921856398
+2024-06-29 15:11:09.396 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.0088424682617188 seconds
+Dataset size -> 2880
+[0.001]
+2024-06-29 15:11:11.023 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.8887900496678838
+2024-06-29 15:11:11.023 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.0367674827575684 seconds
+Dataset size -> 2912
+[0.001]
+2024-06-29 15:11:12.553 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.890542095511159
+2024-06-29 15:11:12.553 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 0.9722235202789307 seconds
+Dataset size -> 2944
+[0.001]
+2024-06-29 15:11:14.174 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.8923926570927818
+2024-06-29 15:11:14.175 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.0834424495697021 seconds
+Dataset size -> 2976
+2024-06-29 15:11:15.783 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.934656708453978
+2024-06-29 15:11:15.783 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.0429503917694092 seconds
+[0.001]
+Dataset size -> 3008
+2024-06-29 15:11:17.449 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.9376494754730575
+2024-06-29 15:11:17.449 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.096679449081421 seconds
+[0.001]
+Dataset size -> 3040
+[0.001]
+2024-06-29 15:11:19.049 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.9391787551081552
+2024-06-29 15:11:19.050 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.0540130138397217 seconds
+2024-06-29 15:11:19.344 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 25.0 / 101.0
+2024-06-29 15:11:19.595 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 120
+Dataset size -> 3072
+[0.001]
+2024-06-29 15:11:20.972 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.9427248182453017
+2024-06-29 15:11:20.972 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.0814990997314453 seconds
+Dataset size -> 3104
+[0.001]
+2024-06-29 15:11:22.546 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.9859266425065477
+2024-06-29 15:11:22.547 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.0446598529815674 seconds
+Dataset size -> 3136
+[0.001]
+2024-06-29 15:11:24.169 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.9854758980140963
+2024-06-29 15:11:24.169 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.0749011039733887 seconds
+Dataset size -> 3168
+[0.001]
+2024-06-29 15:11:25.835 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.9884250505629955
+2024-06-29 15:11:25.836 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.1017041206359863 seconds
+Dataset size -> 3200
+[0.001]
+2024-06-29 15:11:27.438 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 0.9906019788782378
+2024-06-29 15:11:27.438 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.0534794330596924 seconds
+Dataset size -> 3232
+[0.001]
+2024-06-29 15:11:29.184 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.0348827251460355
+2024-06-29 15:11:29.184 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.1633458137512207 seconds
+Dataset size -> 3264
+[0.001]
+2024-06-29 15:11:30.994 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.0336015134002434
+2024-06-29 15:11:30.994 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2035880088806152 seconds
+Dataset size -> 3296
+[0.001]
+2024-06-29 15:11:32.749 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.0360961155569204
+2024-06-29 15:11:32.750 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.1943869590759277 seconds
+Dataset size -> 3328
+[0.001]
+2024-06-29 15:11:34.617 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.0378415292568388
+2024-06-29 15:11:34.617 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.166961431503296 seconds
+Dataset size -> 3360
+[0.001]
+2024-06-29 15:11:36.489 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.0855387128762208
+2024-06-29 15:11:36.489 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2884604930877686 seconds
+Dataset size -> 3392
+[0.001]
+2024-06-29 15:11:38.708 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.0819765571821058
+2024-06-29 15:11:38.708 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2393722534179688 seconds
+Dataset size -> 3424
+[0.001]
+2024-06-29 15:11:40.467 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.0837803368840195
+2024-06-29 15:11:40.467 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.193899393081665 seconds
+Dataset size -> 3456
+2024-06-29 15:11:42.194 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.0871043362557071
+2024-06-29 15:11:42.194 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.1441724300384521 seconds
+[0.001]
+Dataset size -> 3488
+2024-06-29 15:11:43.969 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.124853721957669
+2024-06-29 15:11:43.969 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2178955078125 seconds
+[0.001]
+Dataset size -> 3520
+[0.001]
+2024-06-29 15:11:45.805 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1305144964305984
+2024-06-29 15:11:45.806 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2526466846466064 seconds
+Dataset size -> 3552
+[0.001]
+2024-06-29 15:11:47.627 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1314068361778802
+2024-06-29 15:11:47.627 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2295262813568115 seconds
+Dataset size -> 3584
+[0.001]
+2024-06-29 15:11:49.918 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.132630622729057
+2024-06-29 15:11:49.919 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2087230682373047 seconds
+Dataset size -> 3616
+2024-06-29 15:11:51.683 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.17602625575149
+2024-06-29 15:11:51.684 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2118110656738281 seconds
+[0.001]
+Dataset size -> 3648
+[0.001]
+2024-06-29 15:11:53.504 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1772770899679152
+2024-06-29 15:11:53.505 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.183826208114624 seconds
+Dataset size -> 3680
+2024-06-29 15:11:55.445 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1788746136422301
+2024-06-29 15:11:55.446 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2686617374420166 seconds
+[0.001]
+Dataset size -> 3712
+[0.001]
+2024-06-29 15:11:57.233 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.178680958367887
+2024-06-29 15:11:57.234 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2425813674926758 seconds
+Dataset size -> 3744
+[0.001]
+2024-06-29 15:11:59.102 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.2202119404100151
+2024-06-29 15:11:59.102 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2797861099243164 seconds
+Dataset size -> 3776
+[0.001]
+2024-06-29 15:12:00.971 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.218331408684506
+2024-06-29 15:12:00.972 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2965097427368164 seconds
+Dataset size -> 3808
+[0.001]
+2024-06-29 15:12:02.984 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.221222316778446
+2024-06-29 15:12:02.984 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3512864112854004 seconds
+Dataset size -> 3840
+[0.001]
+2024-06-29 15:12:04.849 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.223318752272313
+2024-06-29 15:12:04.849 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2773292064666748 seconds
+Dataset size -> 3872
+[0.001]
+2024-06-29 15:12:06.685 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.219963157166825
+2024-06-29 15:12:06.685 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2766244411468506 seconds
+Dataset size -> 3904
+[0.001]
+2024-06-29 15:12:08.594 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.2207559808126418
+2024-06-29 15:12:08.595 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3483617305755615 seconds
+Dataset size -> 3936
+[0.001]
+2024-06-29 15:12:10.503 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.222854710082739
+2024-06-29 15:12:10.503 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3328971862792969 seconds
+Dataset size -> 3968
+[0.001]
+2024-06-29 15:12:12.383 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.2208779027659817
+2024-06-29 15:12:12.383 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2958500385284424 seconds
+Dataset size -> 4000
+[0.001]
+2024-06-29 15:12:14.303 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.2200740088643698
+2024-06-29 15:12:14.304 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3588995933532715 seconds
+Dataset size -> 4032
+2024-06-29 15:12:16.146 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.2192744655498744
+2024-06-29 15:12:16.147 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2930212020874023 seconds
+[0.001]
+Dataset size -> 4064
+[0.001]
+2024-06-29 15:12:18.031 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.2132960855881536
+2024-06-29 15:12:18.032 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.304246425628662 seconds
+Dataset size -> 4096
+2024-06-29 15:12:19.943 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.2076905884651699
+2024-06-29 15:12:19.943 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3289151191711426 seconds
+[0.001]
+Dataset size -> 4128
+[0.001]
+2024-06-29 15:12:21.710 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1975356390151661
+2024-06-29 15:12:21.710 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2408678531646729 seconds
+Dataset size -> 4160
+2024-06-29 15:12:23.529 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1928001960979084
+2024-06-29 15:12:23.530 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2675063610076904 seconds
+[0.001]
+Dataset size -> 4192
+[0.001]
+2024-06-29 15:12:25.352 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1853724607616958
+2024-06-29 15:12:25.353 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.240800380706787 seconds
+Dataset size -> 4224
+2024-06-29 15:12:27.792 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.178724194796248
+2024-06-29 15:12:27.792 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3100612163543701 seconds
+[0.001]
+Dataset size -> 4256
+[0.001]
+2024-06-29 15:12:29.701 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1695155314917058
+2024-06-29 15:12:29.702 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2988250255584717 seconds
+Dataset size -> 4288
+[0.001]
+2024-06-29 15:12:31.507 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1645741372759297
+2024-06-29 15:12:31.508 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.248274564743042 seconds
+Dataset size -> 4320
+2024-06-29 15:12:33.457 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1513541906257565
+2024-06-29 15:12:33.457 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3889496326446533 seconds
+[0.001]
+Dataset size -> 4352
+[0.001]
+2024-06-29 15:12:35.326 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1339653728373342
+2024-06-29 15:12:35.327 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3007512092590332 seconds
+Dataset size -> 4384
+[0.001]
+2024-06-29 15:12:37.229 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1328043533664751
+2024-06-29 15:12:37.229 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3058044910430908 seconds
+Dataset size -> 4416
+[0.001]
+2024-06-29 15:12:39.120 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1230944972177876
+2024-06-29 15:12:39.121 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3345706462860107 seconds
+Dataset size -> 4448
+[0.001]
+2024-06-29 15:12:41.049 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1175928822345065
+2024-06-29 15:12:41.050 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3502113819122314 seconds
+Dataset size -> 4480
+[0.001]
+2024-06-29 15:12:42.899 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1223493395460955
+2024-06-29 15:12:42.899 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3353848457336426 seconds
+Dataset size -> 4512
+[0.001]
+2024-06-29 15:12:44.802 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1207374272545452
+2024-06-29 15:12:44.803 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3413951396942139 seconds
+Dataset size -> 4544
+[0.001]
+2024-06-29 15:12:46.622 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1203441799841047
+2024-06-29 15:12:46.622 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.280508041381836 seconds
+Dataset size -> 4576
+2024-06-29 15:12:48.596 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1112920140557279
+2024-06-29 15:12:48.596 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3505067825317383 seconds
+[0.001]
+Dataset size -> 4608
+[0.001]
+2024-06-29 15:12:50.425 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1253808559094887
+2024-06-29 15:12:50.425 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2790765762329102 seconds
+Dataset size -> 4640
+[0.001]
+2024-06-29 15:12:52.296 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.115464163016753
+2024-06-29 15:12:52.296 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3136379718780518 seconds
+Dataset size -> 4672
+[0.001]
+2024-06-29 15:12:54.094 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1124689552408091
+2024-06-29 15:12:54.095 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2399952411651611 seconds
+Dataset size -> 4704
+[0.001]
+2024-06-29 15:12:55.977 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1169627095900787
+2024-06-29 15:12:55.978 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.258147954940796 seconds
+Dataset size -> 4736
+[0.001]
+2024-06-29 15:12:57.847 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1138143899698465
+2024-06-29 15:12:57.848 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2994446754455566 seconds
+Dataset size -> 4768
+[0.001]
+2024-06-29 15:12:59.736 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1123999948912657
+2024-06-29 15:12:59.736 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3243553638458252 seconds
+Dataset size -> 4800
+[0.001]
+2024-06-29 15:13:01.648 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1180738759629352
+2024-06-29 15:13:01.648 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3102474212646484 seconds
+Dataset size -> 4832
+2024-06-29 15:13:03.549 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1234696205924768
+2024-06-29 15:13:03.549 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3282356262207031 seconds
+[0.001]
+Dataset size -> 4864
+[0.001]
+2024-06-29 15:13:05.386 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1164249208270138
+2024-06-29 15:13:05.386 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2707304954528809 seconds
+Dataset size -> 4896
+[0.001]
+2024-06-29 15:13:07.238 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1132429556117058
+2024-06-29 15:13:07.238 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2601065635681152 seconds
+Dataset size -> 4928
+[0.001]
+2024-06-29 15:13:09.277 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1152338452036663
+2024-06-29 15:13:09.277 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3049323558807373 seconds
+Dataset size -> 4960
+[0.001]
+2024-06-29 15:13:11.115 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1176586724917024
+2024-06-29 15:13:11.115 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2883076667785645 seconds
+Dataset size -> 4992
+[0.001]
+2024-06-29 15:13:12.963 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1196662314597312
+2024-06-29 15:13:12.963 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2850160598754883 seconds
+Dataset size -> 5024
+2024-06-29 15:13:14.813 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1182599682991552
+2024-06-29 15:13:14.813 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2856128215789795 seconds
+[0.001]
+Dataset size -> 5056
+2024-06-29 15:13:16.819 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1154074949581974
+2024-06-29 15:13:16.819 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.4004671573638916 seconds
+[0.001]
+Dataset size -> 5088
+2024-06-29 15:13:18.773 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1101816593475853
+2024-06-29 15:13:18.773 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.382502794265747 seconds
+[0.001]
+Dataset size -> 5120
+[0.001]
+2024-06-29 15:13:20.700 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1123550307829682
+2024-06-29 15:13:20.701 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.322754144668579 seconds
+Dataset size -> 5152
+[0.001]
+2024-06-29 15:13:22.594 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1099799473564789
+2024-06-29 15:13:22.595 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3051669597625732 seconds
+Dataset size -> 5184
+[0.001]
+2024-06-29 15:13:24.521 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1032160667551392
+2024-06-29 15:13:24.522 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3659658432006836 seconds
+Dataset size -> 5216
+[0.001]
+2024-06-29 15:13:26.336 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.0930467203977055
+2024-06-29 15:13:26.337 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2894535064697266 seconds
+Dataset size -> 5248
+[0.001]
+2024-06-29 15:13:28.223 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1044710471706225
+2024-06-29 15:13:28.224 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.335106611251831 seconds
+Dataset size -> 5280
+2024-06-29 15:13:30.062 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1070306139957973
+2024-06-29 15:13:30.062 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2439494132995605 seconds
+[0.001]
+Dataset size -> 5312
+[0.001]
+2024-06-29 15:13:31.931 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.0993771132216794
+2024-06-29 15:13:31.931 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2889683246612549 seconds
+Dataset size -> 5344
+2024-06-29 15:13:33.768 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.105693755068095
+2024-06-29 15:13:33.768 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2749722003936768 seconds
+[0.001]
+Dataset size -> 5376
+[0.001]
+2024-06-29 15:13:35.608 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1083431853513206
+2024-06-29 15:13:35.608 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3026320934295654 seconds
+Dataset size -> 5408
+[0.001]
+2024-06-29 15:13:37.473 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.103411171944798
+2024-06-29 15:13:37.473 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3203437328338623 seconds
+Dataset size -> 5440
+[0.001]
+2024-06-29 15:13:39.346 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.107740501431436
+2024-06-29 15:13:39.346 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.312077283859253 seconds
+Dataset size -> 5472
+2024-06-29 15:13:41.254 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1024844791030408
+2024-06-29 15:13:41.255 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.286726713180542 seconds
+[0.001]
+Dataset size -> 5504
+2024-06-29 15:13:43.065 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.119175942837058
+2024-06-29 15:13:43.065 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2596447467803955 seconds
+[0.001]
+Dataset size -> 5536
+[0.001]
+2024-06-29 15:13:44.928 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1090941472063462
+2024-06-29 15:13:44.929 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.280139684677124 seconds
+Dataset size -> 5568
+[0.001]
+2024-06-29 15:13:46.826 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1209871086400007
+2024-06-29 15:13:46.827 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.334674596786499 seconds
+Dataset size -> 5600
+[0.001]
+2024-06-29 15:13:48.797 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1155146408567258
+2024-06-29 15:13:48.797 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3581061363220215 seconds
+Dataset size -> 5632
+2024-06-29 15:13:50.677 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1145963237898977
+2024-06-29 15:13:50.678 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2942264080047607 seconds
+[0.001]
+Dataset size -> 5664
+2024-06-29 15:13:52.506 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1140698499864996
+2024-06-29 15:13:52.507 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3012475967407227 seconds
+[0.001]
+Dataset size -> 5696
+2024-06-29 15:13:54.433 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.109976846040528
+2024-06-29 15:13:54.434 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3349030017852783 seconds
+[0.001]
+Dataset size -> 5728
+[0.001]
+2024-06-29 15:13:56.240 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.0991870915230855
+2024-06-29 15:13:56.240 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2595775127410889 seconds
+Dataset size -> 5760
+2024-06-29 15:13:58.058 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1092599454022316
+2024-06-29 15:13:58.058 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2724132537841797 seconds
+[0.001]
+Dataset size -> 5792
+[0.001]
+2024-06-29 15:13:59.950 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1187608686441615
+2024-06-29 15:13:59.951 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3114278316497803 seconds
+Dataset size -> 5824
+[0.001]
+2024-06-29 15:14:01.884 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1179911090063892
+2024-06-29 15:14:01.884 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2408161163330078 seconds
+Dataset size -> 5856
+2024-06-29 15:14:03.717 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.116611911527975
+2024-06-29 15:14:03.717 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2614238262176514 seconds
+[0.001]
+Dataset size -> 5888
+2024-06-29 15:14:05.545 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1142525833129366
+2024-06-29 15:14:05.545 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3057422637939453 seconds
+[0.001]
+Dataset size -> 5920
+[0.001]
+2024-06-29 15:14:07.452 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1116710056939558
+2024-06-29 15:14:07.453 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3417658805847168 seconds
+Dataset size -> 5952
+[0.001]
+2024-06-29 15:14:09.509 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.12881727457532
+2024-06-29 15:14:09.509 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.4476711750030518 seconds
+Dataset size -> 5984
+[0.001]
+2024-06-29 15:14:11.602 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1098689626793983
+2024-06-29 15:14:11.602 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.456270694732666 seconds
+Dataset size -> 6016
+2024-06-29 15:14:13.679 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1153853052761575
+2024-06-29 15:14:13.679 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.448085069656372 seconds
+[0.001]
+Dataset size -> 6048
+[0.001]
+2024-06-29 15:14:15.478 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1259300329185422
+2024-06-29 15:14:15.478 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.266831636428833 seconds
+Dataset size -> 6080
+[0.001]
+2024-06-29 15:14:17.358 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1168418985182536
+2024-06-29 15:14:17.358 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.2890777587890625 seconds
+Dataset size -> 6112
+[0.001]
+2024-06-29 15:14:19.241 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1091273662517644
+2024-06-29 15:14:19.241 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3193795680999756 seconds
+Dataset size -> 6144
+[0.001]
+2024-06-29 15:14:21.194 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.126312149842199
+2024-06-29 15:14:21.195 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.3169589042663574 seconds
+Dataset size -> 6176
+[0.001]
+2024-06-29 15:14:23.057 | DEBUG    | gp.fitgp:__call__:155 - Average loss (epochs: 1) 1.1158991147436539
+2024-06-29 15:14:23.057 | DEBUG    | bayesopt.bayesianoptimizer_rl:fit:211 - Time taken -> 1.317884922027588 seconds
+2024-06-29 15:15:08.692 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 15:16:38.351 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 150
+2024-06-29 15:18:00.706 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 109.0 / 500.0
+2024-06-29 15:21:00.894 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 15:21:01.142 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 180
+2024-06-29 15:23:59.099 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 15:25:28.768 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 210
+2024-06-29 15:26:57.932 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 15:29:34.599 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 15:29:34.844 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 240
+2024-06-29 15:32:25.964 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 15:33:51.334 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 270
+2024-06-29 15:35:18.668 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 15:38:04.804 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 15:38:05.043 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 300
+2024-06-29 15:41:00.925 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 15:42:19.989 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 330
+2024-06-29 15:43:38.691 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 15:46:01.487 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 15:46:01.753 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 360
+2024-06-29 15:48:27.731 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 15:49:52.640 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 390
+2024-06-29 15:51:13.507 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 15:53:59.958 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 15:54:00.211 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 420
+2024-06-29 15:56:22.132 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 15:57:13.568 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 450
+2024-06-29 15:58:32.104 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 16:01:19.620 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 16:01:19.895 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 480
+2024-06-29 16:03:30.416 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 297.0 / 500.0
+2024-06-29 16:04:42.573 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 510
+2024-06-29 16:05:51.144 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 463.0 / 500.0
+2024-06-29 16:08:18.786 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 132.0 / 500.0
+2024-06-29 16:08:19.033 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 540
+2024-06-29 16:10:35.211 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 476.0 / 500.0
+2024-06-29 16:11:20.079 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 570
+2024-06-29 16:12:41.285 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 16:14:47.984 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 309.0 / 500.0
+2024-06-29 16:14:48.230 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 600
+2024-06-29 16:16:54.821 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 16:18:01.625 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 630
+2024-06-29 16:18:59.542 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 286.0 / 500.0
+2024-06-29 16:20:57.218 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 485.0 / 500.0
+2024-06-29 16:20:57.464 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 660
+2024-06-29 16:22:41.465 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 116.0 / 500.0
+2024-06-29 16:24:01.620 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 690
+2024-06-29 16:25:12.841 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 288.0 / 500.0
+2024-06-29 16:26:58.732 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 112.0 / 500.0
+2024-06-29 16:26:58.983 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 720
+2024-06-29 16:28:44.243 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 308.0 / 500.0
+2024-06-29 16:29:45.255 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 750
+2024-06-29 16:30:26.572 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 292.0 / 500.0
+2024-06-29 16:32:25.689 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 16:32:25.937 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 780
+2024-06-29 16:34:19.501 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 455.0 / 500.0
+2024-06-29 16:35:16.210 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 810
+2024-06-29 16:35:58.799 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 102.0 / 500.0
+2024-06-29 16:37:26.403 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 101.0 / 500.0
+2024-06-29 16:37:26.648 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 840
+2024-06-29 16:39:04.044 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 99.0 / 500.0
+2024-06-29 16:39:35.655 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 870
+2024-06-29 16:40:12.014 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 298.0 / 500.0
+2024-06-29 16:41:40.454 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 16:41:40.713 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 900
+2024-06-29 16:43:10.022 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 104.0 / 500.0
+2024-06-29 16:44:09.220 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 930
+2024-06-29 16:44:53.967 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 276.0 / 500.0
+2024-06-29 16:46:19.399 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 500.0 / 500.0
+2024-06-29 16:46:19.644 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 960
+2024-06-29 16:47:51.810 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 302.0 / 500.0
+2024-06-29 16:48:37.023 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 990
+2024-06-29 16:49:24.224 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 461.0 / 500.0
+Avg return - GPQ2 (DGP) - 326.338 +- 191.949
+Training execution time 5995.154 sec
+Training VRAM usage 1.799 GB
+Training energy usage 252070.588 J
+[2024-06-29 16:49:24,243] [zeus.monitor.energy](energy.py:150) Monitoring GPU indices [0].
+2024-06-29 16:49:24.242 | INFO     | simulators.simulator_rl:_signtest_train_with_random_policy:635 - GPQ2 (DGP) p-value (cuml): 2.9282897741181193e-225
+2024-06-29 16:49:24.242 | INFO     | simulators.simulator_rl:evaluate_agents:348 - Evaluating agents -> ['random', 'GPQ2 (DGP)']
+2024-06-29 16:49:24.242 | INFO     | simulators.simulator_rl:evaluate_agents:353 - Evaluating -> random
+2024-06-29 16:49:24.256 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - random episode reward / highest episode reward: 23.0 / 46.0
+/home/matthijs/.pycharm_helpers/pycharm_matplotlib_backend/backend_interagg.py:85: MatplotlibDeprecationWarning: The tostring_rgb function was deprecated in Matplotlib 3.8 and will be removed in 3.10. Use buffer_rgba instead.
+  buffer = self.tostring_rgb()
+2024-06-29 16:49:24.515 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 30
+2024-06-29 16:49:24.519 | INFO     | simulators.simulator_rl:evaluate_agents:353 - Evaluating -> GPQ2 (DGP)
+Avg return - random - 22.060 +- 11.520
+Training execution time 0.274 sec
+Training VRAM usage 0.000 GB
+Training energy usage 9.673 J
+[2024-06-29 16:49:24,519] [zeus.monitor.energy](energy.py:150) Monitoring GPU indices [0].
+2024-06-29 16:49:58.961 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 120.0 / 500.0
+2024-06-29 16:51:25.366 | DEBUG    | callbacks.rewardcallback:on_episode_end:69 - GPQ2 (DGP) episode reward / highest episode reward: 126.0 / 500.0
+/home/matthijs/.pycharm_helpers/pycharm_matplotlib_backend/backend_interagg.py:85: MatplotlibDeprecationWarning: The tostring_rgb function was deprecated in Matplotlib 3.8 and will be removed in 3.10. Use buffer_rgba instead.
+  buffer = self.tostring_rgb()
+2024-06-29 16:51:25.624 | DEBUG    | simulators.simulator_rl:_agent_env_interaction_gym:523 - Episode: 30
+2024-06-29 16:51:25.627 | INFO     | simulators.simulator_rl:_signtest_eval_with_random_policy:647 - random p-value (returns eval): 0.5
+2024-06-29 16:51:25.628 | INFO     | simulators.simulator_rl:_signtest_eval_with_random_policy:647 - GPQ2 (DGP) p-value (returns eval): 2.9032079132305613e-18
+Avg return - GPQ2 (DGP) - 222.900 +- 157.242
+Training execution time 121.106 sec
+Training VRAM usage -0.125 GB
+Training energy usage 4291.456 J
+2024-06-29 16:51:25.641 | INFO     | simulators.simulator_rl:plot_any_plottable_data:232 - Plotting plottable data
+/home/matthijs/.pycharm_helpers/pycharm_matplotlib_backend/backend_interagg.py:85: MatplotlibDeprecationWarning: The tostring_rgb function was deprecated in Matplotlib 3.8 and will be removed in 3.10. Use buffer_rgba instead.
+  buffer = self.tostring_rgb()
+gpq_agent_3
+2024-06-29 16:51:27.060 | INFO     | simulators.simulator_rl:save_agents:190 - Saving agents to ../data/saved_agents/experiment_CARTPOLE_THESIS_UPDATED/...
+sb_dqn_1
+sb_dqn_2
+DQN (MLP)
+random
+GPQ2 (DGP)
+gpq_agent_3
+2024-06-29 16:51:29.512 | INFO     | simulators.simulator_rl:save_agents:207 - Done!
+2024-06-29 16:51:29.512 | INFO     | backup.backupper:backup_experiment:33 - backing up experiment...
+2024-06-29 16:51:29.512 | INFO     | simulators.simulator_rl:save_agents:190 - Saving agents to ../data/saved_agents/experiment_CARTPOLE_THESIS_UPDATED/...
+sb_dqn_1
+sb_dqn_2
+DQN (MLP)
+random
+GPQ2 (DGP)
+2024-06-29 16:51:32.076 | INFO     | simulators.simulator_rl:save_agents:207 - Done!
+2024-06-29 16:51:32.101 | INFO     | simulators.simulator_rl:save:131 - Saving simulator...
+2024-06-29 16:51:33.213 | INFO     | simulators.simulator_rl:save:135 - Done!
+
+Process finished with exit code 0

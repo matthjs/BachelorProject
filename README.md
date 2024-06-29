@@ -97,6 +97,7 @@ Online updates (Fantasization) for exact GPs works, but the problem is that you 
 * Reduced speed after reloading deep GP agent in Lunar Lander.
 * SVGP consistent low loss on Lunar Lander but limited performance -> need for deep GP?
 * For Lunar Lander I guess the number of inducing points needs to be large enough?
+* 
 ### Lunar Lander
 * How many layers and inducing points do I need?? 
 * Is it better to optimize over random batches or the latest batches??
@@ -139,6 +140,7 @@ Contains the `metricstracker` class which allows one to keep track of means and 
 * For optimization what seems to be best is a moderately sized dataset and random subset optimization (?)
 
 # TODO testing
+* More epochs per batch good?
 * Show that random batching over larger dataset is less effective.
 * Fix recording function.
 * Test memory/time as dataset size increases/number of inducing points increases.

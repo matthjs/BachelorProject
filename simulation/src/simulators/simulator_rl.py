@@ -234,12 +234,14 @@ class SimulatorRL:
         tracker = self.metrics_tracker_registry.get_tracker("train")
         tracker.plot_metric(metric_name="return",
                             plot_path=plot_dir + self.env_str + self.experiment_id,
-                            title=f"{self.env_str}_{', '.join(self.agents.keys())}")
+                            title="graph " + self.env_str)
+                            #title=f"{self.env_str}_{', '.join(self.agents.keys())}")
         tracker.plot_metric(metric_name="loss",
                             x_axis_label="updates",
                             plot_path=plot_dir + self.env_str + self.experiment_id + "_loss",
-                            title=f"{self.env_str}_{', '.join(self.agents.keys())}")
+                            title="graph " + self.env_str)
 
+        """
         for agent_id, info in self.agents_info.items():
             for info_attr, value in info.items():
                 if info_attr == "update_times":
@@ -260,6 +262,7 @@ class SimulatorRL:
                                       "Update Index",
                                       "Memory Usage (GB)",
                                       plot_dir=plot_dir + "/" + self.experiment_id)
+        """
 
         return self
 
@@ -471,13 +474,12 @@ class SimulatorRL:
         obs = env.reset()[0]
 
         if mode == "train" and agent.is_stable_baselines_wrapper():
-            raise AttributeError("This function in train mode should only be run on True custom agents")
+            logger.warning("This function in train mode does not train StableBaselines3 agents")
 
         for callback in callbacks:
             callback.on_training_start()
 
         ep = num_episodes
-        training = True
 
         while True:
             old_obs = obs
@@ -494,16 +496,14 @@ class SimulatorRL:
             # agent.record_env_info(info, terminated or truncated)
             agent.add_trajectory((old_obs, action, reward, obs))
 
-            if mode == "train":
+            if mode == "train" and not agent.is_stable_baselines_wrapper():
                 if agent.updatable():
                     for callback in callbacks:
                         callback.on_update_start()
-                    #if training:
                     agent.update()
                     for callback in callbacks:
                         callback.on_update_end()
                 else:
-                    #if training:
                     agent.update()
 
             for callback in callbacks:
@@ -544,7 +544,8 @@ class SimulatorRL:
         if not agent.is_stable_baselines_wrapper():
             raise AttributeError("This function should only be run on wrapped StableBaselines agents")
 
-        sb_callbacks = [StopTrainingOnMaxEpisodes(max_episodes=num_episodes, verbose=0)]
+        max_episode_callback = StopTrainingOnMaxEpisodes(max_episodes=num_episodes, verbose=0)
+        sb_callbacks = [max_episode_callback]
 
         for callback in callbacks:
             callback.init_callback(
@@ -569,9 +570,18 @@ class SimulatorRL:
         # For instance, if total_timesteps is set arbitrarily large then
         # DQN will only execute random actions.
 
-        # 5e5 for DQN (MLP) on Lunar Lander
-        model.learn(total_timesteps=int(4e5), callback=sb_callbacks)
-        # model.learn(total_timesteps=int(216942042), callback=sb_callbacks)
+        # 1e5 for DQN on Lunar Lander
+        # 5e4 on CartPole
+        # TODO: make it to where this does not have to be hardcoded.
+        model.learn(total_timesteps=int(1e5), callback=sb_callbacks)
+
+        self._eval_start()
+        # this does not train StableBaselines3 agents.
+        self._agent_env_interaction_gym("train",
+                                        agent_id,
+                                        num_episodes - max_episode_callback.n_episodes,
+                                        callbacks)
+        self._eval_end()
 
     def _eval_start(self):
         self.env.training = False

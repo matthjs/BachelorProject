@@ -36,7 +36,7 @@ class MetricsTracker4:
         self._aggregates_history[metric_name] = defaultdict(lambda: ([], []))
 
     def plot_metric(self, metric_name, plot_path="./", x_axis_label="Episodes", y_axis_label='Average',
-                    title="History", figsize=(10, 7), fontsize=14, linewidth=1.5) -> None:
+                    title="History", figsize=(10, 6), fontsize=14, linewidth=1.5) -> None:
         """
         Plot the metrics to a matplotlib figure.
         """
@@ -47,6 +47,19 @@ class MetricsTracker4:
         fig, ax = plt.subplots(figsize=figsize)
 
         for agent_id, (mean_returns, var_returns) in self._aggregates_history[metric_name].items():
+            if agent_id == "gpq_agent_3":
+                agent_id = "GPQ (SVGP)"
+            elif agent_id == "sb_dqn_1":
+                continue
+                agent_id = "DQN (MLP)"
+            elif agent_id == "GPQ2 (DGP)":
+                agent_id = "GPQ (DGP)"
+            elif agent_id == "sb_dqn_2":
+                agent_id = "DQN (Linear)"
+            elif agent_id == "GPSARSA (DGP)":
+                continue
+            elif agent_id == "random":
+                agent_id = "RANDOM"
             x_return = np.linspace(0, len(mean_returns), len(mean_returns), endpoint=False)
             ax.plot(x_return, mean_returns, linewidth=linewidth, label=f'{agent_id} agent')
             ax.fill_between(x_return,

@@ -104,7 +104,7 @@ class GPSarsaAgent(AbstractAgent):
         Check if the agent is ready for update.
         :return: True if the agent is ready, False otherwise.
         """
-        return self._exploration_policy.exploring_starts() <= 0 and self._batch_counter >= self._batch_size
+        return self._training and self._exploration_policy.exploring_starts() <= 0 and self._batch_counter >= self._batch_size
 
     # noinspection DuplicatedCode
     def add_trajectory(self, trajectory: tuple) -> None:

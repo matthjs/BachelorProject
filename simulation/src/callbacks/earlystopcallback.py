@@ -15,6 +15,8 @@ class EarlyStopCallback(AbstractCallback):
         super().__init__()
         self.reward_callback = reward_callback
         self.reward_threshold = reward_threshold
+        # TODO: You should not need two counters.
+        self.threshold_reach_count_init = threshold_reach_count
         self.threshold_reach_count = threshold_reach_count
         self.metrics_tracker = None
         self.episode_reward = 0
@@ -53,3 +55,9 @@ class EarlyStopCallback(AbstractCallback):
                 if self.threshold_reach_count <= 0:
                     self.agent.disable_training()
                     self.threshold_reached = True
+            else:
+                self.threshold_reach_count = self.threshold_reach_count_init
+
+    def on_training_end(self) -> None:
+        super().on_training_end()
+        self.reward_callback.on_training_end()

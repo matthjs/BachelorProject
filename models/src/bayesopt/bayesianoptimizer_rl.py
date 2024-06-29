@@ -8,7 +8,7 @@ from botorch.models.gpytorch import GPyTorchModel
 from botorch.models.transforms.input import Normalize
 from gpytorch.means import ConstantMean
 from loguru import logger
-from torch.optim.lr_scheduler import ExponentialLR
+from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
 
 from bachelorproject.configobject import Config
 from bayesopt.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
@@ -39,7 +39,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                  action_space: gym.Space,
                  kernel_type: str,
                  kernel_args,
-                 strategy='GPEpsilonGreedy',
+                 strategy='thompson_sampling',
                  sparsification_treshold: float = None,
                  posterior_observation_noise: bool = False,
                  num_inducing_points: int = 64
@@ -164,7 +164,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                     #                          indices=list(range(self._state_size - 2)))
                 ).to(self.device)
                 # self._optimizer = torch.optim.Adam(dpg.parameters(), lr=Config.GP_FIT_LEARNING_RATE)
-                self._optimizer = ExponentialLR(torch.optim.Adam(dpg.parameters(), lr=Config.GP_FIT_LEARNING_RATE), gamma=0.9999)
+                # self._optimizer = LambdaLR(torch.optim.Adam(dpg.parameters(), lr=Config.GP_FIT_LEARNING_RATE), lr_lambda=lambda ep: ep / 10)
+                self._optimizer = ExponentialLR(torch.optim.Adam(dpg.parameters(), lr=Config.GP_FIT_LEARNING_RATE), gamma=1)
                 return dpg
             else:
                 return self._current_gp.to(self.device)
@@ -194,9 +195,10 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             print("Dataset size ->", train_x.shape[0])
             if hyperparameter_fitting:
                 start_time = time.time()
-                if self._optimizer is None:
-                    raise ValueError("No optimizer")
+                # if self._optimizer is None:
+                #    raise ValueError("No optimizer")
                 checkpoint_path = None if self._gp_mode == 'deep_gp' else 'gp_model_checkpoint_' + self._gp_mode + '.pth'
+                optimizer = self._optimizer.optimizer if self._gp_mode == 'deep_gp' else None
                 self.latest_loss = self.fit_gp(gp, train_x, train_y, self._gp_mode,
                                                batch_size=Config.GP_FIT_BATCH_SIZE,
                                                num_epochs=Config.GP_FIT_NUM_EPOCHS,
@@ -205,10 +207,10 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                                                random_batching=Config.GP_FIT_RANDOM_BATCHING,
                                                logging=True,
                                                checkpoint_path=checkpoint_path,
-                                               optimizer=self._optimizer.optimizer)
+                                               optimizer=optimizer)
                 logger.debug(f"Time taken -> {time.time() - start_time} seconds")
                 self._optimizer.step()
-                print(self._optimizer.get_lr())
+                print(self._optimizer.get_last_lr())
 
             self._current_gp = gp
 
@@ -315,6 +317,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         action_tensor = self._gp_action_selector.action(self._current_gp, state)
 
+        # print(self._dummy_counter)
         if self._dummy_counter == 50:
             self._visualize_data(state)
 
