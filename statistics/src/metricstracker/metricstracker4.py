@@ -50,9 +50,14 @@ class MetricsTracker4:
             if agent_id == "gpq_agent_3":
                 agent_id = "GPQ (SVGP)"
             elif agent_id == "sb_dqn_1":
+                continue
                 agent_id = "DQN (MLP)"
+            elif agent_id == "GPQ2 (DGP)":
+                agent_id = "GPQ (DGP)"
             elif agent_id == "sb_dqn_2":
                 agent_id = "DQN (Linear)"
+            elif agent_id == "GPSARSA (DGP)":
+                continue
             elif agent_id == "random":
                 agent_id = "RANDOM"
             x_return = np.linspace(0, len(mean_returns), len(mean_returns), endpoint=False)
