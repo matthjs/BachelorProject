@@ -138,7 +138,11 @@ class GPEpsilonGreedy(GPActionSelector):
             state_action_pairs = append_actions(state_tensor, self._action_space.n)
             posterior_distribution = gpq_model.posterior(state_action_pairs,
                                                          observation_noise=self._observation_noise)
-            best_action, _ = torch.argmax(posterior_distribution.mean, dim=1)
+            # print(posterior_distribution.mean)
+            q_values = posterior_distribution.mean.unsqueeze(0)
+            # print(q_values)
+            best_action = torch.argmax(q_values, dim=1)
+            # print(best_action)
             return best_action
 
         return torch.tensor([[self._action_space.sample()]], device=fetch_device())

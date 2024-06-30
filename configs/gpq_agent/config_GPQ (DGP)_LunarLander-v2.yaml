@@ -34,7 +34,7 @@ model:
   kernel_type: "matern"
   strategy: "thompson_sampling"
   posterior_observation_noise: False
-  num_inducing_points: 512   # 256  # Only has effect if variational GP or deep GP is selected.
+  num_inducing_points: 128 # 512   # 256  # Only has effect if variational GP or deep GP is selected.
 
   kernel:
     matern_kernel:

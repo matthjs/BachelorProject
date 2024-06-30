@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 import pandas as pd
 import gymnasium as gym
@@ -221,7 +222,10 @@ class SimulatorRL:
 
         return self
 
-    def plot_any_plottable_data(self, plot_dir: str = "../plots/") -> 'SimulatorRL':
+    def plot_any_plottable_data(self,
+                                agent_id_list: Optional[list[str]] = None,
+                                color_list: Optional[list[str]] = None,
+                                plot_dir: str = "../plots/") -> 'SimulatorRL':
         """
          Plot any plottable data and save the plots to files.
 
@@ -234,12 +238,15 @@ class SimulatorRL:
         tracker = self.metrics_tracker_registry.get_tracker("train")
         tracker.plot_metric(metric_name="return",
                             plot_path=plot_dir + self.env_str + self.experiment_id,
-                            title="graph " + self.env_str)
-                            #title=f"{self.env_str}_{', '.join(self.agents.keys())}")
+                            title="graph " + self.env_str,
+                            id_list=agent_id_list,
+                            color_list=color_list)
         tracker.plot_metric(metric_name="loss",
                             x_axis_label="updates",
                             plot_path=plot_dir + self.env_str + self.experiment_id + "_loss",
-                            title="graph " + self.env_str)
+                            title="graph " + self.env_str,
+                            id_list=agent_id_list,
+                            color_list=color_list)
 
         """
         for agent_id, info in self.agents_info.items():

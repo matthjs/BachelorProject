@@ -36,7 +36,9 @@ class MetricsTracker4:
         self._aggregates_history[metric_name] = defaultdict(lambda: ([], []))
 
     def plot_metric(self, metric_name, plot_path="./", x_axis_label="Episodes", y_axis_label='Average',
-                    title="History", figsize=(10, 6), fontsize=14, linewidth=1.5) -> None:
+                    title="History", figsize=(10, 6), fontsize=14, linewidth=1.5,
+                    id_list: Optional[List[str]] = None,
+                    color_list: Optional[List[str]] = None) -> None:
         """
         Plot the metrics to a matplotlib figure.
         """
@@ -46,7 +48,13 @@ class MetricsTracker4:
 
         fig, ax = plt.subplots(figsize=figsize)
 
+        use_colors = color_list is not None and id_list is not None and len(color_list) == len(id_list)
+
+        idx = 0
         for agent_id, (mean_returns, var_returns) in self._aggregates_history[metric_name].items():
+            if id_list is not None and agent_id not in id_list:
+                continue
+
             if agent_id == "gpq_agent_3":
                 agent_id = "GPQ (SVGP)"
             elif agent_id == "sb_dqn_1":
@@ -60,12 +68,17 @@ class MetricsTracker4:
                 continue
             elif agent_id == "random":
                 agent_id = "RANDOM"
+
+            color = color_list[idx] if use_colors else None
+
             x_return = np.linspace(0, len(mean_returns), len(mean_returns), endpoint=False)
-            ax.plot(x_return, mean_returns, linewidth=linewidth, label=f'{agent_id} agent')
+            ax.plot(x_return, mean_returns, linewidth=linewidth, label=f'{agent_id} agent', color=color)
             ax.fill_between(x_return,
-                                mean_returns - np.sqrt(var_returns) * 0.1,
-                                mean_returns + np.sqrt(var_returns) * 0.1,
-                                alpha=0.2)
+                            mean_returns - np.sqrt(var_returns) * 0.1,
+                            mean_returns + np.sqrt(var_returns) * 0.1,
+                            alpha=0.2,
+                            color=color)
+            idx += 1
 
         ax.set_title(metric_name + " " + title, fontsize=fontsize)
         ax.set_xlabel(x_axis_label, fontsize=fontsize)
@@ -77,6 +90,9 @@ class MetricsTracker4:
         plt.yticks(fontsize=fontsize)
 
         plt.tight_layout()
+        # -400, 150 for Lunar Lander
+        # if metric_name != "loss":
+        #    plt.ylim((-400, 150))
 
         # Create directory if it does not exist
         plot_dir = '../plots'
