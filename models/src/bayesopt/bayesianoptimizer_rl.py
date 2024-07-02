@@ -318,7 +318,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         action_tensor = self._gp_action_selector.action(self._current_gp, state)
 
         # print(self._dummy_counter)
-        if self._dummy_counter == 50:
+        if self._dummy_counter == 0:
             self._visualize_data(state)
 
         return action_tensor.item()

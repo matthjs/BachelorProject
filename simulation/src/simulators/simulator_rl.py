@@ -109,8 +109,10 @@ class SimulatorRL:
 
         logger.info("done!")
 
-        simulator.env = VecNormalize.load(load_dir + "/env" + simulator.experiment_id + ".pkl", make_vec_env(simulator.env_str))
-        simulator.eval_env = VecNormalize.load(load_dir + "/eval_env" + simulator.experiment_id + ".pkl", make_vec_env(simulator.env_str))
+        simulator.env = VecNormalize.load(load_dir + "/env" + simulator.experiment_id + ".pkl",
+                                          make_vec_env(simulator.env_str))
+        simulator.eval_env = VecNormalize.load(load_dir + "/eval_env" + simulator.experiment_id + ".pkl",
+                                               make_vec_env(simulator.env_str))
 
         if new_experiment_id is not None:
             logger.info("replacing experiment id with: ", new_experiment_id)
@@ -224,7 +226,7 @@ class SimulatorRL:
 
     def plot_any_plottable_data(self,
                                 agent_id_list: Optional[list[str]] = None,
-                                color_list: Optional[list[str]] = None,
+                                color_list: Optional[dict] = None,
                                 plot_dir: str = "../plots/") -> 'SimulatorRL':
         """
          Plot any plottable data and save the plots to files.
@@ -384,36 +386,37 @@ class SimulatorRL:
         :param num_episodes: Number of episodes to play.
         """
         self._eval_start()
+        # self.env.render_mode = "rgb_array"
         agent = self.agents[agent_id]
+        obs = self.env.reset()[0]
         play_env = VecVideoRecorder(venv=self.env,
                                     video_folder=record_dir,
                                     record_video_trigger=lambda x: x == 0,
                                     video_length=num_timeseps,
                                     name_prefix=self.experiment_id + "_" + agent_id)
-        obs = play_env.reset()
 
         episode_reward = 0
 
         for _ in range(num_timeseps - 1):
             old_obs = obs
             action = agent.policy(obs)
-            obs, reward, done, info = play_env.step(action)
+            obs, reward, done, info = play_env.step([action])
             obs = obs[0]  # (1, state_dim) -> (state_dim)
             reward = reward[0]  # (1,) -> float
             episode_reward += reward
-            # print(action)
 
             if done:
                 logger.info(f"Episode reward {episode_reward}")
                 episode_reward = 0
-                obs, info = play_env.reset()
+                obs = play_env.reset()[0]
 
-        play_env.close()
+        # play_env.close()
         self._eval_end()
 
     def play(self, agent_id: str, num_episodes: int) -> None:
         """
         Play the specified number of episodes using the given agent.
+        TODO: DEPRECATED -> REMOVE
 
         :param agent_id: Identifier of the agent to be used for playing.
         :param num_episodes: Number of episodes to play.

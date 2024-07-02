@@ -141,7 +141,7 @@ class CustomVecNormalize(VecNormalize):
 
 
 def make_vec_env(env_id: str):
-    return DummyVecEnv([lambda: gym.make(env_id)])
+    return DummyVecEnv([lambda: gym.make(env_id, render_mode='rgb_array')])
 
 def make_vec_normalized_env(env_str: str,
                             training=True,
@@ -153,10 +153,9 @@ def make_vec_normalized_env(env_str: str,
                             epsilon=1e-08) -> VecNormalize:
     norm_indices = 0
     if env_str == "LunarLander-v2":
-        print("HELLO")
         norm_indices = 6  # 8 - 2 = 6 We should not normalize the last two dimensions.
 
-    vec_env = DummyVecEnv([lambda: gym.make(env_str)])
+    vec_env = DummyVecEnv([lambda: gym.make(env_str, render_mode="rgb_array")])
     vec_normalized_env = CustomVecNormalize(venv=vec_env,
                                             training=training,
                                             norm_obs=norm_obs,

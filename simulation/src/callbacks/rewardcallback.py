@@ -10,7 +10,7 @@ from callbacks.abstractcallback import AbstractCallback
 
 
 class RewardCallback(AbstractCallback):
-    def __init__(self, save_agent_on_best=True):
+    def __init__(self, save_agent_on_best=False):
         super().__init__()
         self.episode_reward = 0
         self.highest_avg_return = -9999999

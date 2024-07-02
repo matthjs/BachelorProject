@@ -18,52 +18,104 @@ def test_load_experiment():
      .evaluate_agents(10, callbacks=[RewardCallback(), UsageCallback()])
      .play("gpq_agent_1", 20))
 
+
 def plot_cartpole():
     sim = SimulatorRL.load(experiment_id="experiment_CARTPOLE_THESIS_UPDATED")
-    sim.plot_any_plottable_data()
+    sim.plot_any_plottable_data(agent_id_list=["GPQ2 (DGP)", "DQN (MLP)", "sb_dqn_2", "gpq_agent_3", "random"],
+                                color_list={"GPQ2 (DGP)": "#069af3","DQN (MLP)": "#f97306", "sb_dqn_2":"#15b01a", "gpq_agent_3":"#7e1e9c", "random":"#ff81c0"})
+    return sim
+
+
+def play_cartpole():
+    sim = SimulatorRL.load(experiment_id="experiment_CARTPOLE_THESIS_UPDATED")
+    sim.record("sb_dqn_2", 1000)
+    # sim.play("GPQ2 (DGP)", 5)
+    # sim.play("DQN (MLP)", 5)
+    # sim.evaluate_agents(30, agent_id_list=["GPQ2 (DGP)"], callbacks=[RewardCallback(), UsageCallback()])
+
+def play_lunar_lander():
+    sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_UPDATED+DEF")
+    sim.record("DQN (Linear)", 10000)
+    # sim.play("GPQ2 (DGP)", 5)
+    # sim.play("DQN (MLP)", 5)
+    # sim.evaluate_agents(30, agent_id_list=["GPQ2 (DGP)"], callbacks=[RewardCallback(), UsageCallback()])
 
 def plot_lunar_lander():
-    sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS")
-    sim.plot_any_plottable_data()
+    sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_UPDATED+DEF")
+    sim.plot_any_plottable_data(agent_id_list=["GPQ2 (DGP)", "DQN (MLP)", "DQN (Linear)", "GPQ (SVGP)", "random"],
+                                color_list={"GPQ2 (DGP)": "#069af3",  "DQN (MLP)": "#f97306",  "DQN (Linear)": "#15b01a", "GPQ (SVGP)": "#7e1e9c", "random": "#ff81c0"})
+    return sim
+
+def plot_lunar_lander2():
+    sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_UPDATED+DEF")
+    sim.plot_any_plottable_data(agent_id_list=["GPQ2 (DGP)", "GPQEGREEDY (DGP)", "GPQUCB (DGP)", "random"],
+                                color_list={"GPQ2 (DGP)": "#069af3", "GPQEGREEDY (DGP)": "#ffff14", "GPQUCB (DGP)": "#e50000", "random": "#ff81c0"})
+    return sim
 
 """
 COLOR_LIST
--   DPQ (DGP) #FF7F50
--   GPQEGREEDY (DGP) #00FFFF
--   GPQUCB (DGP)    #000080
+-   DPQ (DGP) #069af3
+-   DPG2 (DGP) #069af3
+-   DQN (MLP)   #f97306   RED-LIKE
+-   DQN (Linear)    #15b01a
+-   GPQEGREEDY (DGP) #ffff14
+-   GPQUCB (DGP)    #e50000
+-   GPQ (SVGP)  #7e1e9c
+-   GPSARSA (DGP) #00ffff
+-   GP-Q (GP)   #89fe05
 """
 
 if __name__ == "__main__":
-    #plot_lunar_lander()
+    # plot_lunar_lander2()
+    # plot_lunar_lander()
+    # plot_lunar_lander()
+    # plot_lunar_lander()
     # experiment_dummy_136, 143 maxes out reward signal for CartPole.
-    sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_STRAT3")
+    # DO NOT USE +++
+    sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_UPDATED+DEF", new_experiment_id="experiment_LUNAR_THESIS_UPDATED+DEF+")
     # 400 stopped at episode 110
 
     # sim = SimulatorRL("CartPole-v1", experiment_id="experiment_cartpole_archcompTRUEP")
-    # b = Backupper(sim)  # backups experiment on SIGINT interrupt or normal exit.
+    b = Backupper(sim)  # backups experiment on SIGINT interrupt or normal exit.
 
     (sim
-     #.register_agent("GPQ2 (SVGP)", "gpq_agent")
-     # .register_agent("GPQ2 (DGP)", "gpq_agent")
-     # .register_agent("GPQEGREEDY (DGP)", "gpq_agent")
-     # .register_agent("GPQUCB (DGP)", "gpq_agent")
-     # .register_agent("GPSARSALAPTOP (DGP)", "gpsarsa_agent")
-     # .register_agent("gpsarsa_agent_1", "gpsarsa_agent")
-     # .register_agent("gpsarsa_agent_2", "gpsarsa_agent")
-     # .register_agent("sb_dqn_2", "sb_dqn")
-     #.register_agent("DQN (MLP)", "sb_dqn")
-     # .register_agent("sb_ppo_1", "sb_ppo")
-     #.train_agents(agent_id_list=["random"], num_episodes=1000, concurrent=False,  callbacks=[RewardCallback(), UsageCallback()])
-     # .train_agents(agent_id_list=["GPQEGREEDY (DGP)", "GPQUCB (DGP)"], num_episodes=1000, concurrent=False,
-     #              callbacks=[EarlyStopCallback(RewardCallback(), 200, 5),
-     #                         UsageCallback(),
-     #                         LossCallback()])
-     #.evaluate_agents(30, agent_id_list=["GPQEGREEDY (DGP)", "GPQUCB (DGP)"], callbacks=[RewardCallback(), UsageCallback()])
-     #.data_to_csv()
-     .plot_any_plottable_data(agent_id_list=["GPQ (DGP)", "GPQEGREEDY (DGP)", "GPQUCB (DGP)"], color_list=["#FF7F50", "#00FFFF", "#000080"]))
-     #.save_agents()
-     #)
+    # .register_agent("GPQ2 (SVGP)", "gpq_agent")
+    # .register_agent("GPQ3 (DGP)", "gpq_agent")
+    # .register_agent("GPQEGREEDY (DGP)", "gpq_agent")
+    # .register_agent("GPQUCB (DGP)", "gpq_agent")
+    .register_agent("GPSARSA2 (DGP)", "gpsarsa_agent")
+    # .register_agent("gpsarsa_agent_1", "gpsarsa_agent")
+    # .register_agent("gpsarsa_agent_2", "gpsarsa_agent")
+    # .register_agent("sb_dqn_2", "sb_dqn")
+    # .register_agent("DQN (Linear)", "sb_dqn")
+    # .register_agent("sb_ppo_1", "sb_ppo")
+    # .train_agents(agent_id_list=["random"], num_episodes=1000, concurrent=False,  callbacks=[RewardCallback(), UsageCallback()])
+    .train_agents(agent_id_list=["GPSARSA2 (DGP)"], num_episodes=1000, concurrent=False,
+                  callbacks=[EarlyStopCallback(RewardCallback(), 200, 5),
+                             UsageCallback(),
+                             LossCallback()])
+    .evaluate_agents(30, agent_id_list=["GPSARSA2 (DGP)"], callbacks=[RewardCallback(), UsageCallback()])
+    .data_to_csv()
+    .plot_any_plottable_data(agent_id_list=["GPQ2 (DGP)", "DQN (MLP)", "DQN (Linear)", "GPQ (SVGP)", "random"],
+                                color_list={"GPSARSA2 (DGP)": "#00ffff", "GPQ2 (DGP)": "#069af3",  "DQN (MLP)": "#f97306",  "DQN (Linear)": "#15b01a", "GPQ (SVGP)": "#7e1e9c", "random": "#ff81c0"})
+    .save_agents()
+    )
 
+    """
+    COLOR_LIST
+    -   DPQ (DGP) #069af3
+    -   DPG2 (DGP) #069af3
+    -   DQN (MLP)   #f97306   RED-LIKE
+    -   DQN (Linear)    #15b01a
+    -   GPQEGREEDY (DGP) #ffff14
+    -   GPQUCB (DGP)    #e50000
+    -   GPQ (SVGP)  #7e1e9c
+    -   GPSARSA (DGP) #00ffff
+    -   GP-Q (GP)   #89fe05
+    -   random      #ff81c0
+    """
+
+    # sim.play("GPQ2 (DGP)", 3)
     # sim.play("gpq_agent_3", 3)
-    #sim.play("sb_dqn_1", 3)
+    # sim.play("sb_dqn_1", 3)
     # sim.record("sb_dqn_1", 100)

@@ -38,7 +38,7 @@ class MetricsTracker4:
     def plot_metric(self, metric_name, plot_path="./", x_axis_label="Episodes", y_axis_label='Average',
                     title="History", figsize=(10, 6), fontsize=14, linewidth=1.5,
                     id_list: Optional[List[str]] = None,
-                    color_list: Optional[List[str]] = None) -> None:
+                    color_list: Optional[dict] = None) -> None:
         """
         Plot the metrics to a matplotlib figure.
         """
@@ -50,10 +50,11 @@ class MetricsTracker4:
 
         use_colors = color_list is not None and id_list is not None and len(color_list) == len(id_list)
 
-        idx = 0
         for agent_id, (mean_returns, var_returns) in self._aggregates_history[metric_name].items():
             if id_list is not None and agent_id not in id_list:
                 continue
+
+            color = color_list[agent_id] if use_colors else None
 
             if agent_id == "gpq_agent_3":
                 agent_id = "GPQ (SVGP)"
@@ -69,8 +70,6 @@ class MetricsTracker4:
             elif agent_id == "random":
                 agent_id = "RANDOM"
 
-            color = color_list[idx] if use_colors else None
-
             x_return = np.linspace(0, len(mean_returns), len(mean_returns), endpoint=False)
             ax.plot(x_return, mean_returns, linewidth=linewidth, label=f'{agent_id} agent', color=color)
             ax.fill_between(x_return,
@@ -78,7 +77,6 @@ class MetricsTracker4:
                             mean_returns + np.sqrt(var_returns) * 0.1,
                             alpha=0.2,
                             color=color)
-            idx += 1
 
         ax.set_title(metric_name + " " + title, fontsize=fontsize)
         ax.set_xlabel(x_axis_label, fontsize=fontsize)
