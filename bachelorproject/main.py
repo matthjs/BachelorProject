@@ -22,7 +22,8 @@ def test_load_experiment():
 def plot_cartpole():
     sim = SimulatorRL.load(experiment_id="experiment_CARTPOLE_THESIS_UPDATED")
     sim.plot_any_plottable_data(agent_id_list=["GPQ2 (DGP)", "DQN (MLP)", "sb_dqn_2", "gpq_agent_3", "random"],
-                                color_list={"GPQ2 (DGP)": "#069af3","DQN (MLP)": "#f97306", "sb_dqn_2":"#15b01a", "gpq_agent_3":"#7e1e9c", "random":"#ff81c0"})
+                                color_list={"GPQ2 (DGP)": "#069af3", "DQN (MLP)": "#f97306", "sb_dqn_2": "#15b01a",
+                                            "gpq_agent_3": "#7e1e9c", "random": "#ff81c0"})
     return sim
 
 
@@ -33,6 +34,7 @@ def play_cartpole():
     # sim.play("DQN (MLP)", 5)
     # sim.evaluate_agents(30, agent_id_list=["GPQ2 (DGP)"], callbacks=[RewardCallback(), UsageCallback()])
 
+
 def play_lunar_lander():
     sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_UPDATED+DEF")
     sim.record("DQN (Linear)", 10000)
@@ -40,17 +42,30 @@ def play_lunar_lander():
     # sim.play("DQN (MLP)", 5)
     # sim.evaluate_agents(30, agent_id_list=["GPQ2 (DGP)"], callbacks=[RewardCallback(), UsageCallback()])
 
+
 def plot_lunar_lander():
     sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_UPDATED+DEF")
     sim.plot_any_plottable_data(agent_id_list=["GPQ2 (DGP)", "DQN (MLP)", "DQN (Linear)", "GPQ (SVGP)", "random"],
-                                color_list={"GPQ2 (DGP)": "#069af3",  "DQN (MLP)": "#f97306",  "DQN (Linear)": "#15b01a", "GPQ (SVGP)": "#7e1e9c", "random": "#ff81c0"})
+                                color_list={"GPQ2 (DGP)": "#069af3", "DQN (MLP)": "#f97306", "DQN (Linear)": "#15b01a",
+                                            "GPQ (SVGP)": "#7e1e9c", "random": "#ff81c0"})
     return sim
+
 
 def plot_lunar_lander2():
     sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_UPDATED+DEF")
     sim.plot_any_plottable_data(agent_id_list=["GPQ2 (DGP)", "GPQEGREEDY (DGP)", "GPQUCB (DGP)", "random"],
-                                color_list={"GPQ2 (DGP)": "#069af3", "GPQEGREEDY (DGP)": "#ffff14", "GPQUCB (DGP)": "#e50000", "random": "#ff81c0"})
+                                color_list={"GPQ2 (DGP)": "#069af3", "GPQEGREEDY (DGP)": "#ffff14",
+                                            "GPQUCB (DGP)": "#e50000", "random": "#ff81c0"})
     return sim
+
+
+def plot_lunar_lander3():
+    sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_UPDATED+DEF")
+    sim.plot_any_plottable_data(agent_id_list=["GPQ2 (DGP)", "GPSARSA (DGP)", "random"],
+                                color_list={"GPQ2 (DGP)": "#069af3", "GPSARSA (DGP)": "#00ffff"})
+
+    return sim
+
 
 """
 COLOR_LIST
@@ -66,40 +81,44 @@ COLOR_LIST
 """
 
 if __name__ == "__main__":
+    # 1
     # plot_lunar_lander2()
     # plot_lunar_lander()
     # plot_lunar_lander()
     # plot_lunar_lander()
     # experiment_dummy_136, 143 maxes out reward signal for CartPole.
     # DO NOT USE +++
-    sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_UPDATED+DEF", new_experiment_id="experiment_LUNAR_THESIS_UPDATED+DEF+")
+    # 3 is good.
+    # sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_UPDATED+DEFSARSACHECK", new_experiment_id="experiment_LUNAR_THESIS_UPDATED+DEFSARSACHECK2")
     # 400 stopped at episode 110
 
-    # sim = SimulatorRL("CartPole-v1", experiment_id="experiment_cartpole_archcompTRUEP")
+    sim = SimulatorRL("LunarLander-v2", experiment_id="experiment_NEW_LUNAR")
     b = Backupper(sim)  # backups experiment on SIGINT interrupt or normal exit.
 
     (sim
-    # .register_agent("GPQ2 (SVGP)", "gpq_agent")
-    # .register_agent("GPQ3 (DGP)", "gpq_agent")
-    # .register_agent("GPQEGREEDY (DGP)", "gpq_agent")
-    # .register_agent("GPQUCB (DGP)", "gpq_agent")
-    .register_agent("GPSARSA2 (DGP)", "gpsarsa_agent")
-    # .register_agent("gpsarsa_agent_1", "gpsarsa_agent")
-    # .register_agent("gpsarsa_agent_2", "gpsarsa_agent")
-    # .register_agent("sb_dqn_2", "sb_dqn")
-    # .register_agent("DQN (Linear)", "sb_dqn")
-    # .register_agent("sb_ppo_1", "sb_ppo")
-    # .train_agents(agent_id_list=["random"], num_episodes=1000, concurrent=False,  callbacks=[RewardCallback(), UsageCallback()])
-    .train_agents(agent_id_list=["GPSARSA2 (DGP)"], num_episodes=1000, concurrent=False,
-                  callbacks=[EarlyStopCallback(RewardCallback(), 200, 5),
-                             UsageCallback(),
-                             LossCallback()])
-    .evaluate_agents(30, agent_id_list=["GPSARSA2 (DGP)"], callbacks=[RewardCallback(), UsageCallback()])
-    .data_to_csv()
-    .plot_any_plottable_data(agent_id_list=["GPQ2 (DGP)", "DQN (MLP)", "DQN (Linear)", "GPQ (SVGP)", "random"],
-                                color_list={"GPSARSA2 (DGP)": "#00ffff", "GPQ2 (DGP)": "#069af3",  "DQN (MLP)": "#f97306",  "DQN (Linear)": "#15b01a", "GPQ (SVGP)": "#7e1e9c", "random": "#ff81c0"})
-    .save_agents()
-    )
+     .register_agent("GPQ (SVGP)", "gpq_agent")
+     .register_agent("GPQ (DGP)", "gpq_agent")
+     # .register_agent("GPQEGREEDY (DGP)", "gpq_agent")
+     # .register_agent("GPQUCB (DGP)", "gpq_agent")
+     .register_agent("GPSARSA (DGP)", "gpsarsa_agent")
+     # .register_agent("gpsarsa_agent_1", "gpsarsa_agent")
+     # .register_agent("gpsarsa_agent_2", "gpsarsa_agent")
+     .register_agent("DQN (MLP)", "sb_dqn")
+     .register_agent("DQN (Linear)", "sb_dqn")
+     # .register_agent("sb_ppo_1", "sb_ppo")
+     # .train_agents(agent_id_list=["random"], num_episodes=1000, concurrent=False,  callbacks=[RewardCallback(), UsageCallback()])
+     .train_agents(num_episodes=2000, concurrent=False,
+                   callbacks=[EarlyStopCallback(RewardCallback(), 200, 5),
+                              UsageCallback(),
+                              LossCallback()])
+     .evaluate_agents(30, callbacks=[RewardCallback(), UsageCallback()])
+     .data_to_csv()
+     .plot_any_plottable_data()
+     # .plot_any_plottable_data(agent_id_list=["GPSARSA2 (DGP)", "random"], color_list={"GPSARSA2 (DGP)":"#00ffff", "random":"#ff81c0"})
+     # .plot_any_plottable_data(agent_id_list=["GPQ2 (DGP)", "DQN (MLP)", "DQN (Linear)", "GPQ (SVGP)", "random"],
+     #                            color_list={"GPSARSA2 (DGP)": "#00ffff", "GPQ2 (DGP)": "#069af3",  "DQN (MLP)": "#f97306",  "DQN (Linear)": "#15b01a", "GPQ (SVGP)": "#7e1e9c", "random": "#ff81c0"})
+     .save_agents()
+     )
 
     """
     COLOR_LIST

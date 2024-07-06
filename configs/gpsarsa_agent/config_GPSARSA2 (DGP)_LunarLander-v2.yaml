@@ -25,16 +25,16 @@ exploration:    # Not used if thompson sampling is used.
 model:
   gp_model_str: "deep_gp"
   discount_factor: 0.99
-  batch_size: 256 # @ 256
-  replay_buffer_size: 256
+  batch_size: 128
+  replay_buffer_size: 128
   exploring_starts: 0
-  max_dataset_size: 80000 # 20k -> 50k
+  max_dataset_size: 20000 # 20k -> 50k
   sparsification_threshold: None
   gp_likelihood_noise_constraint: None
   kernel_type: "matern"
   strategy: "thompson_sampling"
   posterior_observation_noise: False
-  num_inducing_points: 512  # Only has effect if variational GP or deep GP is selected.
+  num_inducing_points: 128  # Only has effect if variational GP or deep GP is selected.
 
 
   kernel:

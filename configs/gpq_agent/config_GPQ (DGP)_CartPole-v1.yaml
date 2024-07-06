@@ -1,12 +1,12 @@
 dgp_hidden_layers_config:
-  - output_dims: 1    # 4
+  - output_dims: 4    # 4
     mean_type: linear
-  - output_dims: 1
+  - output_dims: 4
     mean_type: linear
   # Uncomment if needed
-  - output_dims: 1
+  - output_dims: 4
     mean_type: linear
-  - output_dims: 1
+  - output_dims: 4
     mean_type: linear
   - output_dims: null
     mean_type: constant

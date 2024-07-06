@@ -65,8 +65,6 @@ class MetricsTracker4:
                 agent_id = "GPQ (DGP)"
             elif agent_id == "sb_dqn_2":
                 agent_id = "DQN (Linear)"
-            elif agent_id == "GPSARSA (DGP)":
-                continue
             elif agent_id == "random":
                 agent_id = "RANDOM"
 
