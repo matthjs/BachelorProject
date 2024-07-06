@@ -1,0 +1,51 @@
+agent_id,agent_type,hyperparams,num_episodes (train),avg return train,stdev return train,max return train,execution time (sec) train,VRAM usage (GB) train,Energy usage (J) train,p_val_cuml_return_train_>,W-statistic_cuml,num_episodes (eval),avg return eval,stdev return eval,max return eval,execution time (sec) eval,VRAM usage (GB) eval,Energy usage (J) eval,p_val_return_eval_>,W-statistic_return_eval
+random,random,{},1000.0,-181.164,111.128,46.176,207.075,0.157,394.98,0.5,0.0,30.0,-175.306,109.336,30.75,0.533,0.0,24.317,0.5,0.0
+GPQ (SVGP),gpq_agent,"{'gp_model_str': 'deep_gp', 'discount_factor': 0.99, 'batch_size': 128, 'replay_buffer_size': 128, 'exploring_starts': 0, 'max_dataset_size': 20000, 'kernel_type': 'matern', 'sparsification_threshold': None, 'strategy': 'thompson_sampling', 'posterior_observation_noise': False, 'num_inducing_points': 512, 'gp_fit_num_epochs': 1, 'gp_fit_batch_size': 512, 'gp_fit_num_batches': 7, 'gp_fit_learning_rate': 0.005, 'gp_fit_random_batching': True, 'dgp_hidden_layers_config': [{'output_dims': None, 'mean_type': 'constant'}]}",1000.0,-163.964,138.77,272.84,2527.861,0.164,194220.091,1.0,-5.332,30.0,-143.553,59.663,-56.897,101.212,0.158,3684.19,0.092,1.328
+GPQ (SVGP),gpq_agent,{},,,,,,,,,,30.0,-143.553,59.663,-56.897,101.212,0.158,3684.19,0.092,1.328
+random,random,{},,,,,,,,,,30.0,-175.306,109.336,30.75,0.533,0.0,24.317,0.5,0.0
+GPQ (DGP),gpq_agent,"{'gp_model_str': 'deep_gp', 'discount_factor': 0.99, 'batch_size': 128, 'replay_buffer_size': 128, 'exploring_starts': 0, 'max_dataset_size': 20000, 'kernel_type': 'matern', 'sparsification_threshold': None, 'strategy': 'thompson_sampling', 'posterior_observation_noise': False, 'num_inducing_points': 128, 'gp_fit_num_epochs': 1, 'gp_fit_batch_size': 512, 'gp_fit_num_batches': 7, 'gp_fit_learning_rate': 0.005, 'gp_fit_random_batching': True, 'dgp_hidden_layers_config': [{'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': None, 'mean_type': 'constant'}]}",1000.0,-102.77,117.154,285.583,11067.474,2.822,782401.334,0.0,13.595,30.0,-43.724,85.181,283.105,519.789,-0.049,19490.422,0.0,5.829
+GPQ (SVGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPQ (DGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+random,random,{},,,,,,,,,,30.0,-175.306,109.336,30.75,0.533,0.0,24.317,0.5,0.0
+GPSARSA (DGP),gpsarsa_agent,"{'gp_model_str': 'deep_gp', 'discount_factor': 0.99, 'batch_size': 128, 'replay_buffer_size': 128, 'exploring_starts': 0, 'max_dataset_size': 20000, 'kernel_type': 'matern', 'sparsification_threshold': None, 'strategy': 'thompson_sampling', 'posterior_observation_noise': False, 'num_inducing_points': 128, 'gp_fit_num_epochs': 1, 'gp_fit_batch_size': 512, 'gp_fit_num_batches': 7, 'gp_fit_learning_rate': 0.005, 'gp_fit_random_batching': True, 'dgp_hidden_layers_config': [{'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': None, 'mean_type': 'constant'}]}",1000.0,-226.702,137.941,244.696,4099.396,0.524,226691.546,1.0,-33.037,30.0,-167.562,87.87,-39.492,116.304,0.0,4485.328,0.507,-0.018
+GPQ (SVGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPQ (DGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPSARSA (DGP),gpsarsa_agent,{},,,,,,,,,,,,,,,,,,
+random,random,{},,,,,,,,,,30.0,-175.306,109.336,30.75,0.533,0.0,24.317,0.5,0.0
+DQN (MLP),sb_dqn,"{'policy': 'MlpPolicy', 'learning_rate': 0.00063, 'batch_size': 128, 'buffer_size': 50000, 'learning_starts': 0, 'gamma': 0.99, 'target_update_interval': 250, 'train_freq': 4, 'gradient_steps': -1, 'exploration_fraction': 0.12, 'exploration_final_eps': 0.1, 'policy_kwargs': {'net_arch': [256, 256]}}",1000.0,122.949,140.246,323.927,75.171,0.0,2445.88,0.0,38.644,30.0,183.364,116.467,318.673,3.415,0.0,113.9,0.0,8.424
+GPQ (SVGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPQ (DGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPSARSA (DGP),gpsarsa_agent,{},,,,,,,,,,,,,,,,,,
+DQN (MLP),sb_dqn,{},,,,,,,,,,,,,,,,,,
+random,random,{},,,,,,,,,,30.0,-175.306,109.336,30.75,0.533,0.0,24.317,0.5,0.0
+GPQ2 (DGP),gpq_agent,"{'gp_model_str': 'deep_gp', 'discount_factor': 0.99, 'batch_size': 128, 'replay_buffer_size': 128, 'exploring_starts': 0, 'max_dataset_size': 20000, 'kernel_type': 'matern', 'sparsification_threshold': None, 'strategy': 'thompson_sampling', 'posterior_observation_noise': False, 'num_inducing_points': 128, 'gp_fit_num_epochs': 1, 'gp_fit_batch_size': 512, 'gp_fit_num_batches': 7, 'gp_fit_learning_rate': 0.005, 'gp_fit_random_batching': True, 'dgp_hidden_layers_config': [{'output_dims': 9, 'mean_type': 'linear'}, {'output_dims': 9, 'mean_type': 'linear'}, {'output_dims': 9, 'mean_type': 'linear'}, {'output_dims': 9, 'mean_type': 'linear'}, {'output_dims': None, 'mean_type': 'constant'}]}",1000.0,-108.002,127.732,296.217,12757.826,2.35,1171179.725,0.0,11.984,30.0,-32.98,76.002,196.86,453.193,0.0,16322.424,0.0,7.146
+GPQ (SVGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPQ (DGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPSARSA (DGP),gpsarsa_agent,{},,,,,,,,,,,,,,,,,,
+DQN (MLP),sb_dqn,{},,,,,,,,,,,,,,,,,,
+GPQ2 (DGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+random,random,{},,,,,,,,,,30.0,-175.306,109.336,30.75,0.533,0.0,24.317,0.5,0.0
+GPQ3 (DGP),gpq_agent,"{'gp_model_str': 'deep_gp', 'discount_factor': 0.99, 'batch_size': 128, 'replay_buffer_size': 128, 'exploring_starts': 0, 'max_dataset_size': 20000, 'kernel_type': 'matern', 'sparsification_threshold': None, 'strategy': 'thompson_sampling', 'posterior_observation_noise': False, 'num_inducing_points': 128, 'gp_fit_num_epochs': 1, 'gp_fit_batch_size': 512, 'gp_fit_num_batches': 7, 'gp_fit_learning_rate': 0.005, 'gp_fit_random_batching': True, 'dgp_hidden_layers_config': [{'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': None, 'mean_type': 'constant'}]}",1000.0,-219.605,129.443,40.143,2188.164,0.643,134909.922,1.0,-36.619,30.0,-166.841,100.364,-2.705,54.343,0.0,1557.026,0.552,-0.132
+GPQEGREEDY (DGP),gpq_agent,"{'gp_model_str': 'deep_gp', 'discount_factor': 0.99, 'batch_size': 128, 'replay_buffer_size': 128, 'exploring_starts': 0, 'max_dataset_size': 20000, 'kernel_type': 'matern', 'sparsification_threshold': None, 'strategy': 'epsilon_greedy', 'posterior_observation_noise': False, 'num_inducing_points': 128, 'gp_fit_num_epochs': 1, 'gp_fit_batch_size': 512, 'gp_fit_num_batches': 7, 'gp_fit_learning_rate': 0.005, 'gp_fit_random_batching': True, 'dgp_hidden_layers_config': [{'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': None, 'mean_type': 'constant'}], 'gp_e_greedy_steps': 100000}",1000.0,-172.1,109.911,143.538,1925.599,0.0,144204.598,0.255,0.659,30.0,-132.701,86.954,7.822,161.029,0.0,4689.422,0.034,1.823
+GPQUCB (DGP),gpq_agent,"{'gp_model_str': 'deep_gp', 'discount_factor': 0.99, 'batch_size': 128, 'replay_buffer_size': 128, 'exploring_starts': 0, 'max_dataset_size': 20000, 'kernel_type': 'matern', 'sparsification_threshold': None, 'strategy': 'upper_confidence_bound', 'posterior_observation_noise': False, 'num_inducing_points': 128, 'gp_fit_num_epochs': 1, 'gp_fit_batch_size': 512, 'gp_fit_num_batches': 7, 'gp_fit_learning_rate': 0.005, 'gp_fit_random_batching': True, 'dgp_hidden_layers_config': [{'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': 1, 'mean_type': 'linear'}, {'output_dims': None, 'mean_type': 'constant'}], 'ucb_beta': 1.5}",1000.0,-181.155,115.524,209.262,3062.602,0.0,194554.775,1.0,-29.404,30.0,-243.022,128.397,38.93,75.9,0.0,2196.866,0.999,-3.063
+GPQ (SVGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPQ (DGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPSARSA (DGP),gpsarsa_agent,{},,,,,,,,,,,,,,,,,,
+DQN (MLP),sb_dqn,{},,,,,,,,,,,,,,,,,,
+GPQ2 (DGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPQ3 (DGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPQEGREEDY (DGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPQUCB (DGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+random,random,{},,,,,,,,,,30.0,-175.306,109.336,30.75,0.533,0.0,24.317,0.5,0.0
+DQN (Linear),sb_dqn,"{'policy': 'MlpPolicy', 'learning_rate': 0.00063, 'batch_size': 128, 'buffer_size': 50000, 'learning_starts': 0, 'gamma': 0.99, 'target_update_interval': 250, 'train_freq': 4, 'gradient_steps': -1, 'exploration_fraction': 0.12, 'exploration_final_eps': 0.1, 'policy_kwargs': {'net_arch': []}}",1000.0,-408.383,185.715,-101.297,11.445,0.0,323.768,1.0,-36.233,30.0,-440.654,186.163,-48.764,1.325,0.0,40.233,1.0,-6.517
+GPQ (SVGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPQ (DGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPSARSA (DGP),gpsarsa_agent,{},,,,,,,,,,,,,,,,,,
+DQN (MLP),sb_dqn,{},,,,,,,,,,,,,,,,,,
+GPQ2 (DGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPQ3 (DGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPQEGREEDY (DGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+GPQUCB (DGP),gpq_agent,{},,,,,,,,,,,,,,,,,,
+DQN (Linear),sb_dqn,{},,,,,,,,,,,,,,,,,,
+random,random,{},,,,,,,,,,30.0,-175.306,109.336,30.75,0.533,0.0,24.317,0.5,0.0
+GPSARSA2 (DGP),gpsarsa_agent,"{'gp_model_str': 'deep_gp', 'discount_factor': 0.99, 'batch_size': 128, 'replay_buffer_size': 128, 'exploring_starts': 0, 'max_dataset_size': 20000, 'kernel_type': 'matern', 'sparsification_threshold': None, 'strategy': 'thompson_sampling', 'posterior_observation_noise': False, 'num_inducing_points': 128, 'gp_fit_num_epochs': 1, 'gp_fit_batch_size': 512, 'gp_fit_num_batches': 7, 'gp_fit_learning_rate': 0.005, 'gp_fit_random_batching': True, 'dgp_hidden_layers_config': [{'output_dims': 9, 'mean_type': 'linear'}, {'output_dims': 9, 'mean_type': 'linear'}, {'output_dims': 9, 'mean_type': 'linear'}, {'output_dims': 9, 'mean_type': 'linear'}, {'output_dims': None, 'mean_type': 'constant'}]}",1000.0,-191.305,120.431,282.35,4903.501,2.622,360184.507,1.0,-32.257,30.0,-48.628,151.445,249.293,301.688,0.0,10934.248,0.0,4.145
