@@ -92,22 +92,22 @@ if __name__ == "__main__":
     # sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_UPDATED+DEFSARSACHECK", new_experiment_id="experiment_LUNAR_THESIS_UPDATED+DEFSARSACHECK2")
     # 400 stopped at episode 110
 
-    sim = SimulatorRL("LunarLander-v2", experiment_id="experiment_NEW_LUNAR")
+    sim = SimulatorRL("LunarLander-v2", experiment_id="experiment_TEST")
     b = Backupper(sim)  # backups experiment on SIGINT interrupt or normal exit.
 
     (sim
-     .register_agent("GPQ (SVGP)", "gpq_agent")
-     .register_agent("GPQ (DGP)", "gpq_agent")
+     # .register_agent("GPQ (SVGP)", "gpq_agent")
+     #.register_agent("GPQ (DGP)", "gpq_agent")
      # .register_agent("GPQEGREEDY (DGP)", "gpq_agent")
      # .register_agent("GPQUCB (DGP)", "gpq_agent")
-     .register_agent("GPSARSA (DGP)", "gpsarsa_agent")
+     #.register_agent("GPSARSA (DGP)", "gpsarsa_agent")
      # .register_agent("gpsarsa_agent_1", "gpsarsa_agent")
      # .register_agent("gpsarsa_agent_2", "gpsarsa_agent")
-     .register_agent("DQN (MLP)", "sb_dqn")
-     .register_agent("DQN (Linear)", "sb_dqn")
-     # .register_agent("sb_ppo_1", "sb_ppo")
+     # .register_agent("DQN (MLP)", "sb_dqn")
+     #.register_agent("DQN (Linear)", "sb_dqn")
+     .register_agent("sb_ppo_1", "sb_ppo")
      # .train_agents(agent_id_list=["random"], num_episodes=1000, concurrent=False,  callbacks=[RewardCallback(), UsageCallback()])
-     .train_agents(num_episodes=2000, concurrent=False,
+     .train_agents(num_episodes=1000, concurrent=False,
                    callbacks=[EarlyStopCallback(RewardCallback(), 200, 5),
                               UsageCallback(),
                               LossCallback()])
