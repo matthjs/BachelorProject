@@ -157,7 +157,6 @@ class SimulatorRL:
 
         if os.path.exists(path + "_sb_dqn.zip"):
             stupid_flag = False
-            print("YESSIR")
             self.agents[agent_id] = StableBaselinesAdapter(DQN.load(path + "_sb_dqn.zip", env=self.env))
         elif os.path.exists(path + "_sb_ppo.zip"):
             stupid_flag = False
@@ -322,6 +321,8 @@ class SimulatorRL:
                     self._stable_baselines_train(agent_id, num_episodes, callbacks)
                 else:
                     self._agent_env_interaction_gym("train", agent_id, num_episodes, callbacks)
+
+                # self.save()
         else:
             raise NotImplementedError("OOPS I did not implement this yet my bad.")
 

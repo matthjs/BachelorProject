@@ -2594,6 +2594,7 @@ description = "Nvidia JIT LTO Library"
 optional = false
 python-versions = ">=3"
 files = [
+    {file = "nvidia_nvjitlink_cu12-12.4.99-py3-none-manylinux2014_aarch64.whl", hash = "sha256:75d6498c96d9adb9435f2bbdbddb479805ddfb97b5c1b32395c694185c20ca57"},
     {file = "nvidia_nvjitlink_cu12-12.4.99-py3-none-manylinux2014_x86_64.whl", hash = "sha256:c6428836d20fe7e327191c175791d38570e10762edc588fb46749217cd444c74"},
     {file = "nvidia_nvjitlink_cu12-12.4.99-py3-none-win_amd64.whl", hash = "sha256:991905ffa2144cb603d8ca7962d75c35334ae82bf92820b6ba78157277da1ad2"},
 ]
@@ -4363,6 +4364,17 @@ opt-einsum = ["opt-einsum (>=3.3)"]
 optree = ["optree (>=0.9.1)"]
 
 [[package]]
+name = "torchinfo"
+version = "1.8.0"
+description = "Model summary in PyTorch, based off of the original torchsummary."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "torchinfo-1.8.0-py3-none-any.whl", hash = "sha256:2e911c2918603f945c26ff21a3a838d12709223dc4ccf243407bce8b6e897b46"},
+    {file = "torchinfo-1.8.0.tar.gz", hash = "sha256:72e94b0e9a3e64dc583a8e5b7940b8938a1ac0f033f795457f27e6f4e7afa2e9"},
+]
+
+[[package]]
 name = "torchrl"
 version = "0.4.0"
 description = ""
@@ -4747,4 +4759,4 @@ test = ["aiosqlite (==0.20.0)", "anyio (==3.7.1)", "fastapi[all]", "httpx", "pyd
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "c714d455e592e1e77f1d19a74b4c6db602f901b68fc819dae58b387c0c581da0"
+content-hash = "ae5c909b68525840309bf8845232a15c428da41237f46c12a7c1af8b6e06a2d2"

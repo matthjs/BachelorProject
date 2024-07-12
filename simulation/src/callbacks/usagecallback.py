@@ -3,6 +3,7 @@ import time
 import pandas as pd
 import resource
 
+import pynvml
 from zeus.monitor import ZeusMonitor
 
 from agent.abstractagent import AbstractAgent
@@ -66,7 +67,7 @@ class UsageCallback(AbstractCallback):
         super().on_episode_end()
 
     def on_update_start(self) -> None:
-        # self.update_start_memory_usage = get_gpu_memory_usage()[1]
+        self.update_start_memory_usage = get_gpu_memory_usage()[1]
         self.energy_monitor.begin_window("updating")
 
     def on_update_end(self) -> None:

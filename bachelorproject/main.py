@@ -1,3 +1,4 @@
+import pynvml
 from loguru import logger
 from backup.backupper import Backupper
 from callbacks.earlystopcallback import EarlyStopCallback
@@ -67,6 +68,7 @@ def plot_lunar_lander3():
     return sim
 
 
+
 """
 COLOR_LIST
 -   DPQ (DGP) #069af3
@@ -81,6 +83,7 @@ COLOR_LIST
 """
 
 if __name__ == "__main__":
+    pynvml.nvmlInit()
     # 1
     # plot_lunar_lander2()
     # plot_lunar_lander()
@@ -89,29 +92,32 @@ if __name__ == "__main__":
     # experiment_dummy_136, 143 maxes out reward signal for CartPole.
     # DO NOT USE +++
     # 3 is good.
-    # sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_UPDATED+DEFSARSACHECK", new_experiment_id="experiment_LUNAR_THESIS_UPDATED+DEFSARSACHECK2")
+    sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_16", new_experiment_id="experiment_LUNAR_THESIS_17")
     # 400 stopped at episode 110
 
-    sim = SimulatorRL("LunarLander-v2", experiment_id="experiment_NEW_LUNAR")
+    # sim = SimulatorRL("LunarLander-v2", experiment_id="experiment_LUNAR_THESIS2")
     b = Backupper(sim)  # backups experiment on SIGINT interrupt or normal exit.
 
     (sim
-     .register_agent("GPQ (SVGP)", "gpq_agent")
-     .register_agent("GPQ (DGP)", "gpq_agent")
-     # .register_agent("GPQEGREEDY (DGP)", "gpq_agent")
-     # .register_agent("GPQUCB (DGP)", "gpq_agent")
-     .register_agent("GPSARSA (DGP)", "gpsarsa_agent")
+     # .register_agent("GPQ (SVGP)", "gpq_agent")
+     .register_agent("GPQ4 (DGP)", "gpq_agent")
+     # .register_agent("GPSARSA (DGP)", "gpsarsa_agent")
      # .register_agent("gpsarsa_agent_1", "gpsarsa_agent")
      # .register_agent("gpsarsa_agent_2", "gpsarsa_agent")
-     .register_agent("DQN (MLP)", "sb_dqn")
-     .register_agent("DQN (Linear)", "sb_dqn")
+     # .register_agent("DQN2 (MLP)", "sb_dqn")
+     # .register_agent("DQN2 (Linear)", "sb_dqn")
+     # .register_agent("GPQEGREEDY (DGP)", "gpq_agent")
+     # .register_agent("GPQUCB (DGP)", "gpq_agent")
      # .register_agent("sb_ppo_1", "sb_ppo")
      # .train_agents(agent_id_list=["random"], num_episodes=1000, concurrent=False,  callbacks=[RewardCallback(), UsageCallback()])
-     .train_agents(num_episodes=2000, concurrent=False,
+     .train_agents(agent_id_list=["GPQ4 (DGP)"],
+                                  num_episodes=3000, concurrent=False,
                    callbacks=[EarlyStopCallback(RewardCallback(), 200, 5),
                               UsageCallback(),
                               LossCallback()])
-     .evaluate_agents(30, callbacks=[RewardCallback(), UsageCallback()])
+     .evaluate_agents(30,
+                      agent_id_list=[
+                                  "GPQ4 (DGP)"], callbacks=[RewardCallback(), UsageCallback()])
      .data_to_csv()
      .plot_any_plottable_data()
      # .plot_any_plottable_data(agent_id_list=["GPSARSA2 (DGP)", "random"], color_list={"GPSARSA2 (DGP)":"#00ffff", "random":"#ff81c0"})
@@ -138,3 +144,7 @@ if __name__ == "__main__":
     # sim.play("gpq_agent_3", 3)
     # sim.play("sb_dqn_1", 3)
     # sim.record("sb_dqn_1", 100)
+    pynvml.nvmlShutdown()
+
+
+

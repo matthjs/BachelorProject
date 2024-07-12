@@ -21,7 +21,9 @@ class Backupper:
         if not self.triggered:
             logger.info("Exiting program... ")
             # Perform any cleanup actions here
-            self.simulator.evaluate_agents(30, callbacks=[RewardCallback(), UsageCallback()])
+            self.simulator.evaluate_agents(30,
+                                           agent_id_list=[
+                                               "GPQ3 (DGP)"], callbacks=[RewardCallback(), UsageCallback()])
             self.simulator.data_to_csv()
             self.simulator.plot_any_plottable_data()
             self.backup_experiment()  # Call your method or perform any necessary actions
@@ -31,5 +33,6 @@ class Backupper:
     def backup_experiment(self) -> None:
         if not self.triggered:
             logger.info("backing up experiment...")
+            self.simulator.data_to_csv()
             self.simulator.save()
             self.triggered = True
