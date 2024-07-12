@@ -153,3 +153,33 @@ Contains the `metricstracker` class which allows one to keep track of means and 
 ## Lunar Lander
 * Run it also with other GP model configs (2).
 * Do the stabilization testing (if time otherwise just leave it at CartPole).
+
+# Simulation Recordings
+
+## Cartpole
+
+### GPQ (Deep Gaussian Process)
+![GPQ](/sample_videos/CARTPOLE_GPQ_DGP.gif)
+### GPQ (Sparse Variational Gaussian Process)
+![GPQ-SVGP](/sample_videos/CARTPOLE_GPQ_SVGP.gif)
+### DQN (Multilayer Perceptron)
+![DQN-MLP](/sample_videos/CARTPOLE_DQN_MLP.gif)
+### DQN (Linear Model)
+![DQN-LINEAR](/sample_videos/CARTPOLE_DQN_LINEAR.gif)
+
+## Lunar Lander
+### GPSARSA (Deep Gaussian Process)
+![GPSARSA1](/sample_videos/LUNAR_LANDER_GPSARSA_DGP_SUCCESS.gif)
+![GPSARSA2](/sample_videos/LUNAR_LANDER_GPSARSA_DGP_FAIL.gif)
+### GPQ (Sparse Variational Gaussian Process)
+![GPQ-SVGP1](/sample_videos/LUNAR_LANDER_GPQ_SVGP_OK.gif)
+![GPQ-SVGP2](/sample_videos/LUNAR_LANDER_GPQ_SVGP_FAIL.gif)
+### DQN (MLP)
+![DQN-MLP1](/sample_videos/LUNAR_LANDER_DQN_MLP_SUCCESS.gif)
+![DQN-MLP2](/sample_videos/LUNAR_LANDER_DQN_MLP_SUCCESS2.gif)
+### DQN (Linear)
+![DQN-LINEAR](/sample_videos/LUJAR_LANDER_DQN_LINEAR_FAIL.gif)
+### RANDOM POLICY
+![RANDOM](/sample_videos/LUNAR_LANDER_RANDOM.gif)
+
+
