@@ -1,3 +1,4 @@
+import sys
 from collections import deque
 
 import torch
@@ -9,6 +10,7 @@ from botorch.models.transforms.input import Normalize
 from gpytorch.means import ConstantMean
 from loguru import logger
 from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
+from torchinfo import summary
 
 from bachelorproject.configobject import Config
 from bayesopt.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
@@ -115,9 +117,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         if self._gp_mode not in ["variational_gp", "deep_gp"]:
             del self._current_gp
 
-        # mean_module = ConstantMean(batch_shape=train_x.shape[:-2])
-        # mean_module.initialize(constant=1)
-
         if self._gp_mode == 'exact_gp':
             return MixedSingleTaskGP(
                 train_X=train_x,
@@ -131,6 +130,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 outcome_transform=None,
                 use_scale_kernel=self.use_scale_kernel
             ).to(self.device)
+        # DEPRECATED
         elif self._gp_mode == 'variational_gp':
             # Do not use RFF with variational GP.
             if train_x.shape[0] < self._num_inducing_points:
@@ -140,31 +140,19 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                     cat_dims=[self._state_size],
                     cont_kernel_factory=self._kernel_factory,
                     inducing_points=self._num_inducing_points,
-                    input_transform=Normalize(d=self._state_size + 1,
-                                              indices=list(range(self._state_size))),
                     outcome_transform=None
                 ).to(self.device)
             else:
                 return self._current_gp
         elif self._gp_mode == 'deep_gp':
             if first_time:
-                # print(list(range(self._state_size - 2)))
                 dpg = DeepGPModel(
                     train_x_shape=train_x.shape,
                     hidden_layers_config=Config.DGP_HIDDEN_LAYERS_CONFIG,
-                    # hidden_layers_config=[
-                    #    {"output_dims": 1, "mean_type": "linear"},
-                    #    {"output_dims": 2, "mean_type": "linear"},
-                    #    # {"output_dims": 1, "mean_type": "linear"},
-                    #    {"output_dims": None, "mean_type": "constant"}
-                    # ],
                     cat_dims=[self._state_size],
                     num_inducing_points=self._num_inducing_points,
-                    #input_transform=Normalize(d=self._state_size + 1,
-                    #                          indices=list(range(self._state_size - 2)))
                 ).to(self.device)
-                # self._optimizer = torch.optim.Adam(dpg.parameters(), lr=Config.GP_FIT_LEARNING_RATE)
-                # self._optimizer = LambdaLR(torch.optim.Adam(dpg.parameters(), lr=Config.GP_FIT_LEARNING_RATE), lr_lambda=lambda ep: ep / 10)
+
                 self._optimizer = ExponentialLR(torch.optim.Adam(dpg.parameters(), lr=Config.GP_FIT_LEARNING_RATE), gamma=1)
                 return dpg
             else:
@@ -180,8 +168,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         :param hyperparameter_fitting: Whether to fit the kernel hyperparameters or not.
         """
         with botorch.settings.debug(True):
-            # print(new_train_x)
-
             self.extend_dataset(new_train_x, new_train_y)
             if self._exploring_starts > 0:
                 return
@@ -189,14 +175,9 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             train_x, train_y = self.dataset()
             gp = self._construct_gp(train_x, train_y)
 
-            # print("DEVICE DATA:", train_x.device.type)
-            # print("DEVICE GP", gp.device.type)
-
             print("Dataset size ->", train_x.shape[0])
             if hyperparameter_fitting:
                 start_time = time.time()
-                # if self._optimizer is None:
-                #    raise ValueError("No optimizer")
                 checkpoint_path = None if self._gp_mode == 'deep_gp' else 'gp_model_checkpoint_' + self._gp_mode + '.pth'
                 optimizer = self._optimizer.optimizer if self._gp_mode == 'deep_gp' else None
                 self.latest_loss = self.fit_gp(gp, train_x, train_y, self._gp_mode,
@@ -244,8 +225,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         res2 = torch.matmul(res, kernel_vec.t())
         test_val = (kernel_fun(test_point, test_point) - res2).to_dense()
 
-        # print("kernel val", kernel_fun(test_point, test_point).to_dense())
-
         print(f"test result test_val > spars_tresh -> {test_val.item()} > {self._sparsification_treshold}")
         return test_val.item() > self._sparsification_treshold
 
@@ -272,10 +251,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         :param new_train_x: A tensor with expected shape (dataset_size, state_space_dim).
         :param new_train_y: A tensor with expected shape (dataset_size, 1).
         """
-        # new_train_x = self._current_gp.transform_inputs(new_train_x)
-
-        # print("->", new_train_x)
-
         # dequeue evaluates to False if empty.
         if self._sparsification_treshold is not None and self._data_x:
             self._sparse_add(new_train_x, new_train_y)
@@ -317,7 +292,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         action_tensor = self._gp_action_selector.action(self._current_gp, state)
 
-        # print(self._dummy_counter)
         if self._dummy_counter == 300:
             self._visualize_data(state)
 
@@ -358,24 +332,14 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 action_batch = torch.full((batch_size, 1), action).to(device)
                 state_action_pairs = torch.cat((state_batch, action_batch), dim=1).to(device)
 
-                # print(state_action_pairs.shape)
-
                 mean_qs = self._current_gp.posterior(state_action_pairs,
                                                      observation_noise=self._posterior_obs_noise).mean
                 # batch_size amount of q_values.
                 q_values.append(mean_qs)
-                # print(f"S X A: \n{state_action_pairs}, q_values: {mean_qs}\n")
 
             # Some reshaping black magic to get the max q value along each batch dimension.
-            # print(q_values)
             q_tensor = torch.cat(q_values, dim=0).view(len(q_values), -1, 1)
             max_q_values, max_actions = torch.max(q_tensor, dim=0)
-            # print("maxq->", max_q_values)
-            # print(max_q_values.shape)
-            # print("maxaction->", max_actions)
-            # print(max_actions.shape)
-
-        # print(max_actions.shape)
 
         return max_q_values, max_actions
 
