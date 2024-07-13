@@ -1,6 +1,6 @@
 <br />
 <p align="center">
-  <h1 align="center">Bachelor Project - Gaussian processes and Reinforcement Learning</h1>
+  <h1 align="center">Bachelor Project - Interpretable Function Approximation with Gaussian Processes in Value-Based Model-Free Reinforcement Learning</h1>
 
   <p align="center">
   </p>
@@ -70,55 +70,11 @@ The `RewardCallback` will allow you to determine the average return (return=sum 
 
 Additionally, you can plot some relevant collected data using `plot_any_plottable_data()`, save them to a csv file using `.data_to_csv()` and save your agents to stable storage using `.save_agents()`
 
-If you want to visualize how an agent interacts with the environment then you can use the `play` method:
+If you want to visualize how an agent interacts with the environment then you can use the `record` method:
 ```
-sim.play(<agent_id>, <num_episodes>)
+sim.record(<agent_id>, <num_timesteps>)
 ```
-## TODO
-* Fix sparsification scheme if possible.
-* ~~Make the kernels and acquistion function more easily configurable.~~
-* Implement Hyperparameter to JSON saving.
-* ~~Add hyperparameter info into CSV file~~.
-* Finish auto hyperparameter tuning code (probably too computationally expensive though).
-* ~~General code clean up~~.
-* Add more documentation.
-* ~~Add variational GPs and Deep GPs.~~
 
-## NOTES
-Online updates (Fantasization) for exact GPs works, but the problem is that you cannot cap the dataset size. From testing the time and space complexity does not appear to be too different. However one key difference is that the hyperparameters from the previous fit are retained, which results in a different GP fit. The compromise can be to copy the fitted hyperparameters (kernel parameters + noise variance).
-* I have verified that exact GP inference is indeed $O(N^2)$. Time complexity still needs to be verified. TODO: Compare time with fit_gpytorch_mll and space usage with other algorithms.
-* Problem: Memory usage for exactGP does not scale properly, variational GPs cope decently and appear to scale more linearly but posterior is an approximation.
-* For linear Q-learning, perhaps it is easier and more meaningful to make a comparison to StableBaselines3 DQN algorithm with a linear model.
-* Observation noise for posterior yes or no?
-* Test dataset size possible for minibatching.
-* Balance the batch_size for minibatching and also the batch_size for updating.
-* Initialize mean function to nonzero constant?
-* UPDATE HYPERPARAMETERS ON ONLY PART OF THE DATASET, THIS MAY ALLOW DEEP GPS (OR VARIATIONAL GPS) TO HAVE SIGNIFICANTLY BIGGER BASE DATASETS TO OPTIMIZE OVER!!!! OPTIMIZING OVER ENTIRE DATASET BECOMES TOO SLOW.
-* Reduced speed after reloading deep GP agent in Lunar Lander.
-* SVGP consistent low loss on Lunar Lander but limited performance -> need for deep GP?
-* For Lunar Lander I guess the number of inducing points needs to be large enough?
-* 
-### Lunar Lander
-* How many layers and inducing points do I need?? 
-* Is it better to optimize over random batches or the latest batches??
-* SVGP with high fit batch size (1024) and inducing point size (1024) with random batching with low learning rate (0.001) seems to have trouble learning.
-* Adding at least one layer has an effect.
-* What is the effect of using a discrete kernel for ther actions?
-* Maybe do > 1 epoch on each minibatch?
-* How many fit batches is actually necessary??
-* Decreasing batch fit size does not seem to speed things up that much.
-* Random minibatching or N latest minibatches??
-* Is it meaningful to increase dataset butches > 100,000?
-* Composite kernel seems to cause the agent to not learn? Random_batching=Yes, latest_batching=Yes
-* 0.001 to low learning rate?
-* Immediate decline in performance in beginning.
-* Experiment 200 was able to get > 200 reward! But then performance does not improve that much. Random fitting after all?
-* For latest N batches it is actually better to just limit the dataset size instead.
-* Look into SVGP performance with relatively high number of inducing points.
-* What is the ideal learnign rate? Too low -> slow divergence/drop in performance? High -> Fast spike early.
-* Down up trajectory common for SVGP (with ~1000 inducing points) and "high" LR? (0.1, 0.01, 0.001). Lower than this little learning though.
-* Lower variational loss with deeper GPs with lower (~128) number of inducing points. Better than "shallow" deep GP with higher number of inducing points?
-* Much easier fit and lower values when using gradual update. for Q values.
 ## Information on modules
 
 ### Agents
@@ -134,22 +90,30 @@ Contains classes that have to do with running RL algorithms on gymnasium environ
 ### Statistics
 Contains the `metricstracker` class which allows one to keep track of means and variances of values in an online manner.
 
-# More notes
-* Too high learning rate causes GP to converge too quickly.
-* Performance degregation when continuing training.
-* For optimization what seems to be best is a moderately sized dataset and random subset optimization (?)
 
-# TODO testing
-* More epochs per batch good?
-* Show that random batching over larger dataset is less effective.
-* Fix recording function.
-* Test memory/time as dataset size increases/number of inducing points increases.
-* For fixed GP model compare thompson sampling to UCB (and maybe epsilon greedy) (just do it in CartPole and dont bother with Lunar Lander)
-* For fixed GP model Maybe compare to GP-SARSA (just do it in CartPole) behavior probably not too different.
-## CartPole
-* Determine optimal hyperparameter settings
-* Run with 4 GP configs.
-* Do the stabilization testing.
+# Simulation Recordings
+
+## Cartpole
+
+### GPQ (Deep Gaussian Process)
+![GPQ](/sample_videos/CARTPOLE_GPQ_DGP.gif)
+### GPQ (Sparse Variational Gaussian Process)
+![GPQ-SVGP](/sample_videos/CARTPOLE_GPQ_SVGP.gif)
+### DQN (Multilayer Perceptron)
+![DQN-MLP](/sample_videos/CARTPOLE_DQN_MLP.gif)
+### DQN (Linear Model)
+![DQN-LINEAR](/sample_videos/CARTPOLE_DQN_LINEAR.gif)
+
 ## Lunar Lander
-* Run it also with other GP model configs (2).
-* Do the stabilization testing (if time otherwise just leave it at CartPole).
+### GPSARSA (Deep Gaussian Process)
+![GPSARSA1](/sample_videos/LUNAR_LANDER_GPSARSA_DGP_SUCCESS.gif)
+![GPSARSA2](/sample_videos/LUNAR_LANDER_GPSARSA_DGP_FAIL.gif)
+### GPQ (Sparse Variational Gaussian Process)
+![GPQ-SVGP1](/sample_videos/LUNAR_LANDER_GPQ_SVGP_OK.gif)
+![GPQ-SVGP2](/sample_videos/LUNAR_LANDER_GPQ_SVGP_FAIL.gif)
+### DQN (MLP)
+![DQN-MLP1](/sample_videos/LUNAR_LANDER_DQN_MLP_SUCCESS.gif)
+![DQN-MLP2](/sample_videos/LUNAR_LANDER_DQN_MLP_SUCCESS2.gif)
+### DQN (Linear)
+![DQN-LINEAR](/sample_videos/LUJAR_LANDER_DQN_LINEAR_FAIL.gif)
+
