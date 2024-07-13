@@ -1,3 +1,5 @@
+import sys
+
 import pynvml
 from loguru import logger
 from backup.backupper import Backupper
@@ -28,17 +30,17 @@ def plot_cartpole():
     return sim
 
 
-def play_cartpole():
+def play_cartpole(agent_id, num_timesteps=5000):
     sim = SimulatorRL.load(experiment_id="experiment_CARTPOLE_THESIS_UPDATED")
-    sim.record("sb_dqn_2", 1000)
+    sim.record(agent_id, num_timesteps)
     # sim.play("GPQ2 (DGP)", 5)
     # sim.play("DQN (MLP)", 5)
     # sim.evaluate_agents(30, agent_id_list=["GPQ2 (DGP)"], callbacks=[RewardCallback(), UsageCallback()])
 
 
-def play_lunar_lander():
-    sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_UPDATED+DEF")
-    sim.record("DQN (Linear)", 10000)
+def play_lunar_lander(agent_id, num_timesteps=10000):
+    sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_16")
+    sim.record(agent_id, num_timesteps)
     # sim.play("GPQ2 (DGP)", 5)
     # sim.play("DQN (MLP)", 5)
     # sim.evaluate_agents(30, agent_id_list=["GPQ2 (DGP)"], callbacks=[RewardCallback(), UsageCallback()])
@@ -83,6 +85,14 @@ COLOR_LIST
 """
 
 if __name__ == "__main__":
+    play_lunar_lander("DQN2 (MLP)")
+    play_lunar_lander("DQN2 (Linear)")
+    play_lunar_lander("GPSARSA (DGP)")
+    play_lunar_lander("GPQ (SVGP)")
+    play_lunar_lander("random")
+
+    sys.exit()
+
     pynvml.nvmlInit()
     # 1
     # plot_lunar_lander2()
