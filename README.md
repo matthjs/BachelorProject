@@ -93,18 +93,11 @@ Contains the `metricstracker` class which allows one to keep track of means and 
 
 # Simulation Recordings
 
-## Cartpole
-
-### GPQ (Deep Gaussian Process)
-![GPQ](/sample_videos/CARTPOLE_GPQ_DGP.gif)
-### GPQ (Sparse Variational Gaussian Process)
-![GPQ-SVGP](/sample_videos/CARTPOLE_GPQ_SVGP.gif)
-### DQN (Multilayer Perceptron)
-![DQN-MLP](/sample_videos/CARTPOLE_DQN_MLP.gif)
-### DQN (Linear Model)
-![DQN-LINEAR](/sample_videos/CARTPOLE_DQN_LINEAR.gif)
-
 ## Lunar Lander
+### GPQ (Deep Gaussian Process)
+![GPQ1](/sample_videos/LUNAR_LANDER_GPQ_DGP_SUCCESS.gif)
+![GPQ2](/sample_videos/LUNAR_LANDER_GPQ_DGP_FAIL.gif)
+
 ### GPSARSA (Deep Gaussian Process)
 ![GPSARSA1](/sample_videos/LUNAR_LANDER_GPSARSA_DGP_SUCCESS.gif)
 ![GPSARSA2](/sample_videos/LUNAR_LANDER_GPSARSA_DGP_FAIL.gif)
@@ -116,4 +109,17 @@ Contains the `metricstracker` class which allows one to keep track of means and 
 ![DQN-MLP2](/sample_videos/LUNAR_LANDER_DQN_MLP_SUCCESS2.gif)
 ### DQN (Linear)
 ![DQN-LINEAR](/sample_videos/LUJAR_LANDER_DQN_LINEAR_FAIL.gif)
+
+
+## Cartpole
+
+### GPQ (Deep Gaussian Process)
+![GPQ](/sample_videos/CARTPOLE_GPQ_DGP.gif)
+### GPQ (Sparse Variational Gaussian Process)
+![GPQ-SVGP](/sample_videos/CARTPOLE_GPQ_SVGP.gif)
+### DQN (Multilayer Perceptron)
+![DQN-MLP](/sample_videos/CARTPOLE_DQN_MLP.gif)
+### DQN (Linear Model)
+![DQN-LINEAR](/sample_videos/CARTPOLE_DQN_LINEAR.gif)
+
 
