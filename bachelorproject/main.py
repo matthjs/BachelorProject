@@ -1,3 +1,5 @@
+import sys
+
 import pynvml
 from loguru import logger
 from backup.backupper import Backupper
@@ -67,6 +69,12 @@ def plot_lunar_lander3():
 
     return sim
 
+def plot_lunar_lander_def():
+    sim = SimulatorRL.load(experiment_id="experiment_LUNAR_THESIS_17")
+    sim.plot_any_plottable_data(agent_id_list=["GPQ4 (DGP)", "GPSARSA (DGP)", "DQN2 (MLP)", "DQN2 (Linear)", "GPQ (SVGP)", "random"],
+                                color_list={"GPQ4 (DGP)": "#069af3", "DQN2 (MLP)": "#f97306", "DQN2 (Linear)": "#15b01a",
+                                            "GPQ (SVGP)": "#7e1e9c", "random": "#ff81c0", "GPSARSA (DGP)": "#00ffff"})
+
 
 
 """
@@ -83,6 +91,8 @@ COLOR_LIST
 """
 
 if __name__ == "__main__":
+    plot_lunar_lander_def()
+    sys.exit()
     pynvml.nvmlInit()
     # 1
     # plot_lunar_lander2()

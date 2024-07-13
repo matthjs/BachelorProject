@@ -95,7 +95,7 @@ class MetricsTracker4:
         if not os.path.exists(plot_dir):
             os.makedirs(plot_dir)
 
-        plt.savefig(plot_path)
+        plt.savefig(plot_path, dpi=300)
 
         plt.show()
 
