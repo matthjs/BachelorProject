@@ -1,19 +1,10 @@
 import gymnasium as gym
 from stable_baselines3.common.vec_env import VecNormalize, DummyVecEnv
-from stable_baselines3.common.running_mean_std import RunningMeanStd
-import numpy as np
-import inspect
-import pickle
-from copy import deepcopy
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, Union
 
 import numpy as np
-from gymnasium import spaces
-
-from stable_baselines3.common import utils
-from stable_baselines3.common.preprocessing import is_image_space
 from stable_baselines3.common.running_mean_std import RunningMeanStd
-from stable_baselines3.common.vec_env.base_vec_env import VecEnv, VecEnvStepReturn, VecEnvWrapper
+from stable_baselines3.common.vec_env.base_vec_env import VecEnvStepReturn
 
 
 class CustomVecNormalize(VecNormalize):
@@ -47,7 +38,7 @@ class CustomVecNormalize(VecNormalize):
         if self.norm_obs_indices > 0:
             # Normalize only the first N indices
             if obs.ndim == 1:
-                obs = obs.reshape(1, -1)        # I do not know why I need to do this.
+                obs = obs.reshape(1, -1)  # I do not know why I need to do this.
             normalized_obs = obs.copy()
             normalized_obs[:, :self.norm_obs_indices] = np.clip(
                 (obs[:, :self.norm_obs_indices] - obs_rms.mean) / np.sqrt(obs_rms.var + self.epsilon), -self.clip_obs,
@@ -68,7 +59,7 @@ class CustomVecNormalize(VecNormalize):
             # Unnormalize only the first N indices
             # unnormalized_obs = obs
             if obs.ndim == 1:
-                obs = obs.reshape(1, -1)        # I do not know why I need to do this.
+                obs = obs.reshape(1, -1)  # I do not know why I need to do this.
             unnormalized_obs = obs.copy()
             unnormalized_obs[:, :self.norm_obs_indices] = (obs[:, :self.norm_obs_indices] * np.sqrt(
                 obs_rms.var + self.epsilon)) + obs_rms.mean
@@ -142,6 +133,7 @@ class CustomVecNormalize(VecNormalize):
 
 def make_vec_env(env_id: str):
     return DummyVecEnv([lambda: gym.make(env_id, render_mode='rgb_array')])
+
 
 def make_vec_normalized_env(env_str: str,
                             training=True,

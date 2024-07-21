@@ -16,10 +16,9 @@ RUN apt-get install -y xvfb x11-utils
 
 # Copy the entire project code to the container
 COPY . .
-RUN rm -rf /app/.venv   # Except this
 
-# Set PYTHONPATH to include the directory containing the 'final_project' module
-ENV PYTHONPATH="${PYTHONPATH}:/app/bachelorproject"
+# Set PYTHONPATH to include the directory containing the 'bachelorproject' module and other necessary directories
+ENV PYTHONPATH="/app:/app/bachelorproject:/app/agents/src:/app/models/src:/app/simulation/src:/app/statistics/src:/app/utilities/src"
 
 # Install Poetry
 RUN pip install poetry
@@ -29,4 +28,5 @@ RUN poetry lock
 # Install dependencies
 RUN poetry install --no-root --no-interaction --no-ansi
 
-CMD ["python", "bachelorproject/experiment.py"]
+CMD ["python", "bachelorproject/experiment_cartpole.py"]
+CMD ["python", "bachelorproject/experiment_lunarlander.py"]

@@ -1,5 +1,6 @@
 .idea
 __pycache__/
+.venv
 videos
 data/saved_agents
 data/simulationbackup

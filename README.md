@@ -17,7 +17,7 @@ This thesis contains the code that was used for my bachelor thesis which focuses
 - [Poetry](https://python-poetry.org/).
 ## Running
 Using docker: Run the docker-compose files to run all relevant services (`docker compose up` or `docker compose up --build`).
-It will automatically run the `experiment.py` script, which can be used to reproduce the results from my thesis.
+It will automatically run the `experiment_cartpole.py` and `experiment_lunarlander.py` scripts, which can be used to reproduce the results from my thesis.
 
 You can also set up a virtual environment using Poetry. Poetry can  be installed using `pip`:
 ```
