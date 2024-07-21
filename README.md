@@ -81,7 +81,7 @@ sim.record(<agent_id>, <num_timesteps>)
 Contains objects that interact with the (gymnasium) environments and also a factory class for the creation of such objects. Note that any computation is delegated to other objects.
 
 ### Models
-Contains Gaussian process models, Bayesian optimizers, neural networks and objects that are able to fit these models for
+Contains Gaussian process models, Bayesian optimizers and objects that are able to fit these models for
 value function approximation.
 
 ### Simulation
@@ -123,3 +123,5 @@ Contains the `metricstracker` class which allows one to keep track of means and 
 ![DQN-LINEAR](/sample_videos/CARTPOLE_DQN_LINEAR.gif)
 
 
+# License
+This project is licensed under the GNU Affero General Public License v3.0 - see the [LICENSE](./LICENSE.txt) file for details.
