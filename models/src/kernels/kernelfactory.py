@@ -1,6 +1,6 @@
-from gpytorch.kernels import Kernel, RFFKernel, MaternKernel, RBFKernel, SpectralMixtureKernel
+from gpytorch.kernels import RFFKernel, MaternKernel, RBFKernel, SpectralMixtureKernel
 import torch
-from typing import Any, Callable, Dict, List, Optional
+from typing import List
 
 
 class RFFKernelAdapter:
@@ -19,6 +19,7 @@ class RFFKernelAdapter:
             active_dims=active_dims
         )
 
+
 class SpectralMixtureAdapter:
     num_mixtures = 4
 
@@ -31,6 +32,7 @@ class SpectralMixtureAdapter:
             active_dims=active_dims,
             eps=1e-2
         )
+
 
 def create_kernel(kernel_name: str, cfg):
     """
@@ -51,4 +53,3 @@ def create_kernel(kernel_name: str, cfg):
         return SpectralMixtureAdapter.create_kernel, False
 
     return None
-

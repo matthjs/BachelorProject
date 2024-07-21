@@ -463,10 +463,6 @@ class SimulatorRL:
             raise ValueError(f"Invalid mode {mode}.")
 
         env = self.env
-        # if mode == "train":
-        #     env = self.env
-        # else:
-        #    env = self.eval_env
         agent = self.agents[agent_id]
 
         for callback in callbacks:
@@ -498,13 +494,7 @@ class SimulatorRL:
             obs, reward, done, info = env.step([action])
             obs = obs[0]  # (1, state_dim) -> (state_dim)
             reward = reward[0]  # (1,) -> float
-            # if reward >= 500:
-            #    training = False
-            # print(reward)
-            # raise ValueError(f"{obs[0]}->{obs[0].shape}, {reward[0]}->{reward.shape}")
-            # obs, reward, terminated, truncated, info = env.step(action)
 
-            # agent.record_env_info(info, terminated or truncated)
             agent.add_trajectory((old_obs, action, reward, obs))
 
             if mode == "train" and not agent.is_stable_baselines_wrapper():
@@ -613,14 +603,6 @@ class SimulatorRL:
                                            gamma=cfg.environment.gamma,
                                            epsilon=cfg.environment.epsilon)
         self.eval_env = self.env
-        # self.eval_env = make_vec_normalized_env(env_str,
-        #                                        training=False,
-        #                                        norm_obs=cfg.environment.norm_obs,
-        #                                        norm_reward=cfg.environment.norm_reward,
-        #                                        clip_obs=cfg.environment.clip_obs,
-        #                                        clip_reward=cfg.environment.clip_reward,
-        #                                        gamma=cfg.environment.gamma,
-        #                                        epsilon=cfg.environment.epsilon)
 
     def _config_obj(self, agent_type: str, agent_id: str, env_str: str, config_path: str = "../../../configs"):
         with initialize(config_path=config_path + "/" + agent_type, version_base="1.2"):
@@ -666,7 +648,6 @@ class SimulatorRL:
         return self
 
     def data_to_csv(self, data_path: str = "../data/experiments") -> 'SimulatorRL':
-        # print(os.getcwd())
         self.df.to_csv(data_path + "/" + self.experiment_id + ".csv", index=False)
         return self
 

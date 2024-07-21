@@ -22,10 +22,6 @@ from gpytorch.variational import _VariationalDistribution, _VariationalStrategy,
 from torch import Tensor
 
 
-class ExactGaussianProcessRegressor:
-    pass
-
-
 # noinspection PyPep8Naming
 class MixedSingleTaskVariationalGP(SingleTaskVariationalGP):
     def __init__(

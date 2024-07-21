@@ -1,12 +1,11 @@
 import os
-import threading
-from typing import List, Optional, Union, Dict, Tuple, SupportsFloat, Any
+from typing import List, Optional, Dict, Any
 from collections import defaultdict
 
 import numpy as np
 from matplotlib import pyplot as plt
 
-from util.welford import Welford
+from welford.welford import Welford
 
 
 class MetricsTracker4:
@@ -59,12 +58,17 @@ class MetricsTracker4:
             if agent_id == "gpq_agent_3":
                 agent_id = "GPQ (SVGP)"
             elif agent_id == "sb_dqn_1":
-                continue
                 agent_id = "DQN (MLP)"
             elif agent_id == "GPQ2 (DGP)":
                 agent_id = "GPQ (DGP)"
+            elif agent_id == "DQN2 (MLP)":
+                agent_id = "DQN (MLP)"
+            elif agent_id == "DQN2 (Linear)":
+                agent_id = "DQN (Linear)"
             elif agent_id == "sb_dqn_2":
                 agent_id = "DQN (Linear)"
+            elif agent_id == "GPQ4 (DGP)":
+                agent_id = "GPQ (DGP)"
             elif agent_id == "random":
                 agent_id = "RANDOM"
 

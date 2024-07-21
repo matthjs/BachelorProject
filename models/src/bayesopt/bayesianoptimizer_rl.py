@@ -1,17 +1,11 @@
-import sys
 from collections import deque
-
-import torch
 import time
 import botorch.settings
 import torch
 from botorch.models.gpytorch import GPyTorchModel
 from botorch.models.transforms.input import Normalize
-from gpytorch.means import ConstantMean
 from loguru import logger
-from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
-from torchinfo import summary
-
+from torch.optim.lr_scheduler import ExponentialLR
 from bachelorproject.configobject import Config
 from bayesopt.abstractbayesianoptimizer_rl import AbstractBayesianOptimizerRL
 from bayesopt.acquisition import ThompsonSampling, \
@@ -20,7 +14,6 @@ from gp.custommixedgp import MixedSingleTaskGP
 from gp.deepgp import DeepGPModel
 from gp.fitgp import GPFitter
 from gp.gpviz import plot_gp_point_distribution
-from gp.mixeddeepgp import BotorchDeepGPMixed
 from gp.mixedvariationalgp import MixedSingleTaskVariationalGP
 from kernels.kernelfactory import create_kernel
 from util.fetchdevice import fetch_device
@@ -117,11 +110,11 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         if self._gp_mode not in ["variational_gp", "deep_gp"]:
             del self._current_gp
 
+        # NOTE: This is too memory intensive for a lot of RL environments.
         if self._gp_mode == 'exact_gp':
             return MixedSingleTaskGP(
                 train_X=train_x,
                 train_Y=train_y,
-                # mean_module=mean_module,
                 cat_dims=[self._state_size],
                 cont_kernel_factory=self._kernel_factory,
                 input_transform=Normalize(  # TODO: Normalization causes issue with condition_on_observations
@@ -149,7 +142,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 dpg = DeepGPModel(
                     train_x_shape=train_x.shape,
                     hidden_layers_config=Config.DGP_HIDDEN_LAYERS_CONFIG,
-                    cat_dims=[self._state_size],
                     num_inducing_points=self._num_inducing_points,
                 ).to(self.device)
 
@@ -344,24 +336,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         return max_q_values, max_actions
 
     def _visualize_data(self, state):
-        """
-        plot_gp_contours_with_uncertainty2(self._current_gp,
-                                           4,
-                                           self._action_size,
-                                           (2, 3),
-                                           highlight_point=(state[2], state[3], action_tensor.item()),
-                                           title='Action-value GP contour'
-                                           )
-
-        plot_gp_surface_with_uncertainty(self._current_gp,
-                                         (0, 1),
-                                         (0, 1),
-                                         self._action_size,
-                                         highlight_point=(state[2], state[3], action_tensor.item()),
-                                         title='Action-value GP'
-                                         )
-        logger.debug(f"Dataset size {len(self._data_x)}")
-        """
         plot_gp_point_distribution(self._current_gp,
                                    state,
                                    self._action_size,

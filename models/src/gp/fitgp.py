@@ -5,26 +5,11 @@ import gpytorch
 import torch
 from botorch.models.gpytorch import GPyTorchModel
 from gpytorch import ExactMarginalLogLikelihood
-from gpytorch.mlls import VariationalELBO, DeepApproximateMLL, PredictiveLogLikelihood
+from gpytorch.mlls import VariationalELBO, DeepApproximateMLL
 from loguru import logger
-from torch.utils.data import TensorDataset, DataLoader, Sampler
+from torch.utils.data import TensorDataset, DataLoader
 
 from util.save import load_model, save_model
-
-
-# Deprecated.
-class ReverseSampler(Sampler):
-    def __init__(self, data_source):
-        super().__init__(data_source)
-        self.data_source = data_source
-
-    def __iter__(self):
-        # Return an iterator that yields indices in reverse order
-        return iter(range(len(self.data_source) - 1, -1, -1))
-
-    def __len__(self):
-        # Return the number of samples in the dataset
-        return len(self.data_source)
 
 
 class GPFitter:
@@ -143,7 +128,7 @@ class GPFitter:
                     num_batches -= 1
 
                     # if num_batches == 0 and logging:
-                        # logger.debug(f"variational loss on minibatch (epochs: {num_epochs}) {loss}")
+                    # logger.debug(f"variational loss on minibatch (epochs: {num_epochs}) {loss}")
 
                     if num_batches == 0:
                         break

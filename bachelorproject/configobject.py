@@ -1,7 +1,5 @@
 import torch
-import json
 
-from omegaconf import OmegaConf
 
 class Config:
     # Static fields to store configurations
@@ -36,7 +34,6 @@ class Config:
         Config.UCB_BETA = cfg.exploration.ucb_beta
         Config.GP_E_GREEDY_STEPS = cfg.exploration.gp_e_greedy_steps
 
-        # print(cfg.dgp_hidden_layers_config)
         Config.DGP_HIDDEN_LAYERS_CONFIG = cfg.dgp_hidden_layers_config
 
     @staticmethod

@@ -2,28 +2,16 @@
 Based on https://github.com/pytorch/botorch/issues/1750 and
 https://docs.gpytorch.ai/en/stable/examples/05_Deep_Gaussian_Processes/Deep_Gaussian_Processes.html
 """
-from typing import Any, Callable, Dict, List, Optional, Type, Union
-from math import floor
+from typing import Any, Dict, List, Union
 
 import gpytorch
 import torch
-from botorch.acquisition import UpperConfidenceBound
-from botorch.models.kernels import CategoricalKernel
 from botorch.posteriors import GPyTorchPosterior
-from gpytorch.constraints import GreaterThan
-
-from gpytorch.distributions import MultivariateNormal
-from gpytorch.kernels import RBFKernel, ScaleKernel, MaternKernel
 from gpytorch.likelihoods import GaussianLikelihood
-from gpytorch.means import ConstantMean, LinearMean
-from gpytorch.kernels.kernel import Kernel
-from gpytorch.models.deep_gps import DeepGP, DeepGPLayer
-from gpytorch.variational import CholeskyVariationalDistribution, VariationalStrategy
-
+from gpytorch.models.deep_gps import DeepGP
 from botorch.models.gpytorch import GPyTorchModel
 from torch import Tensor
-
-from gp.deepgplayers import DeepGPHiddenLayer, DeepGPMultivariateNormal, DeepGPMixedHiddenLayer
+from gp.deepgplayers import DeepGPHiddenLayer, DeepGPMultivariateNormal
 
 
 class DeepGPModel(DeepGP, GPyTorchModel):
@@ -31,11 +19,10 @@ class DeepGPModel(DeepGP, GPyTorchModel):
                  train_x_shape,
                  hidden_layers_config: List[Dict[str, Any]],
                  num_inducing_points=128,
-                 cat_dims: Optional[List[int]] = None,
                  input_transform=None,
                  outcome_transform=None):
         """
-        NOTE: Currently does not allow you to customize the kernel functions used.
+        NOTE: Currently does not allow you to customize the kernel functions used -> hardcoded RBF in DeepGPHiddenLayer.
         Args:
             train_x_shape: Shape of the training data.
             LAST LAYER SHOULD ALWAYS HAVE MEAN_TYPE "CONSTANT".
@@ -49,20 +36,9 @@ class DeepGPModel(DeepGP, GPyTorchModel):
 
         input_dims = train_x_shape[-1]
         self.layers = []
-        first_layer = True
 
         # Create hidden layers based on the provided configuration
         for layer_config in hidden_layers_config:
-            # if False and first_layer and cat_dims is not None:        # Maybe a bit clunky.
-            #    hidden_layer = DeepGPMixedHiddenLayer(
-            #        input_dims=input_dims,
-            #        output_dims=layer_config['output_dims'],
-            #        mean_type=layer_config['mean_type'],
-            #        num_inducing=num_inducing_points,
-            #        cat_dims=cat_dims
-            #    )
-            #    first_layer = False
-            #else:
             hidden_layer = DeepGPHiddenLayer(
                     input_dims=input_dims,
                     output_dims=layer_config['output_dims'],

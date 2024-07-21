@@ -1,5 +1,4 @@
-import threading
-from abc import ABC, abstractmethod
+from abc import ABC
 
 import pandas as pd
 
@@ -9,7 +8,7 @@ from agent.abstractagent import AbstractAgent
 class AbstractCallback(ABC):
     def __init__(self):
         self.mode = None
-        self.num_steps = 0  # type: int
+        self.num_steps = 0
         self.num_episodes = 0
         self.logging = False
         self.extra = None
@@ -19,8 +18,6 @@ class AbstractCallback(ABC):
         self.metrics_tracker_registry = None
         self.df = None
         self.experiment_id = None
-
-        # self._lock = threading.Lock()
 
     def init_callback(self,
                       experiment_id: str,

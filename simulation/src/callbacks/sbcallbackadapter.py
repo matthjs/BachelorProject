@@ -1,6 +1,5 @@
 import numpy as np
-import torch
-from stable_baselines3.common.callbacks import BaseCallback, StopTrainingOnNoModelImprovement
+from stable_baselines3.common.callbacks import BaseCallback
 
 from callbacks.abstractcallback import AbstractCallback
 
@@ -70,14 +69,10 @@ class StableBaselinesCallbackAdapter(BaseCallback):
         if np.any(done_t):
             self.callback.on_episode_end()
 
-        # iffy, results in moving data from GPU to CPU to GPU
-        # maybe require that agents get tensors already.
         action = action_t.item() if len(action_t) == 1 else action_t
         reward = reward_t.item() if len(reward_t) == 1 else reward_t
         new_obs = new_obs_t[0] if len(new_obs_t) == 1 else new_obs_t
         done = done_t.item() if len(done_t) == 1 else done_t
-
-        # print(action, reward, new_obs, done)
 
         return self.callback.on_step(action, reward, new_obs, done)
 
