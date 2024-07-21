@@ -1,2 +1,5 @@
 .idea
 __pycache__/
+videos
+data/saved_agents
+data/simulationbackup
