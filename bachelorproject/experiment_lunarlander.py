@@ -19,8 +19,8 @@ if __name__ == "__main__":
      .register_agent("GPQ (DGP)", "gpq_agent")
      .register_agent("DQN (MLP)", "sb_dqn")
      .register_agent("DQN (Linear)", "sb_dqn")
-     .train_agents(num_episodes=10, concurrent=False,
-                   callbacks=[EarlyStopCallback(RewardCallback(), 500, 5),
+     .train_agents(num_episodes=3000, concurrent=False,
+                   callbacks=[EarlyStopCallback(RewardCallback(), 200, 5),
                               UsageCallback(),
                               LossCallback()])
      .evaluate_agents(30, callbacks=[RewardCallback(), UsageCallback()])
