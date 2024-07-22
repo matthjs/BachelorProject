@@ -123,5 +123,11 @@ Contains the `metricstracker` class which allows one to keep track of means and 
 ![DQN-LINEAR](/sample_videos/CARTPOLE_DQN_LINEAR.gif)
 
 
+# Acknowledgements
+
+Special thanks to the maintainers of the GPytorch library. The base classes provided by GPytorch for state-of-the-art GP modeling have significantly contributed to this thesis.
+
+For more information about GPytorch, please visit their [GitHub repository](https://github.com/cornellius-gp/gpytorch).
+
 # License
 This project is licensed under the GNU Affero General Public License v3.0 - see the [LICENSE](./LICENSE.txt) file for details.
