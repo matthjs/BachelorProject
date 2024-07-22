@@ -25,11 +25,7 @@ def is_zip_file(filename: str) -> bool:
 
 class SimulatorRL:
     """
-    Idea, have this class collect relevant information into a dataframe, which can
-    be exported to a CSV.
-    Allow for agent hyperparams to be configured using YAML file.
-    In dataframe, at least put a comparison of mean reward test there with random
-    policy (statistic value and P-value).
+    Class for managing RL experiments.
     I am aware that a class this big is bad design, but it is what it is.
     """
 
@@ -384,39 +380,7 @@ class SimulatorRL:
                 episode_reward = 0
                 obs = play_env.reset()[0]
 
-        # play_env.close()
         self._eval_end()
-
-    def play(self, agent_id: str, num_episodes: int) -> None:
-        """
-        Play the specified number of episodes using the given agent.
-        TODO: DEPRECATED -> REMOVE
-
-        :param agent_id: Identifier of the agent to be used for playing.
-        :param num_episodes: Number of episodes to play.
-        """
-        agent = self.agents[agent_id]
-        play_env = gym.make(self.env_str, render_mode='human')
-        obs, info = play_env.reset()
-
-        episode_reward = 0
-
-        while True:
-            action = agent.policy(obs)  # Will run .predict() if this is actually StableBaselines algorithm.
-            obs, reward, terminated, truncated, info = play_env.step(action)
-            episode_reward += reward
-            # print(action)
-
-            if terminated or truncated:
-                logger.info(f"Episode reward {episode_reward}")
-                episode_reward = 0
-                num_episodes -= 1
-                obs, info = play_env.reset()
-
-            if num_episodes == 0:
-                break
-
-        play_env.close()
 
     def _agent_env_interaction_gym(self,
                                    mode: str,
@@ -539,15 +503,23 @@ class SimulatorRL:
 
         model = agent.stable_baselines_unwrapped()
 
-        # Problem: DQN's epsilon-greedy schedule depends on total_timesteps
-        # parameter, which complicates the use of StopTrainingOnMaxEpisodes.
-        # For instance, if total_timesteps is set arbitrarily large then
-        # DQN will only execute random actions.
+        time_steps = 0
+        if self.env_str == "CartPole-v1":
+            time_steps = 5e4
+        elif self.env_str == "LunarLander-v2":
+            time_steps = 1e5
+        else:
+            logger.warning(
+                "Warning: Number of timesteps for DQN are currently hardcoded for CartPole and Lunar Lander. "
+                "Defaults to arbitrarily large timesteps as there always is a maximum number of episodes. "
+                "However, DQN's epsilon-greedy schedule depends on the total_timesteps parameter, complicating "
+                "the use of StopTrainingOnMaxEpisodes. If total_timesteps is set arbitrarily large, DQN will only "
+                "execute random actions. To add support for DQN in other environments,"
+                "re-adjust the code to make the number of timesteps part of the configuration."
+            )
+            time_steps = 4242424242424
 
-        # 1e5 for DQN on Lunar Lander
-        # 5e4 on CartPole
-        # TODO: make it to where this does not have to be hardcoded.
-        model.learn(total_timesteps=int(1e5), callback=sb_callbacks)
+        model.learn(total_timesteps=int(time_steps), callback=sb_callbacks)
 
         self._eval_start()
         # this does not train StableBaselines3 agents.
@@ -631,5 +603,3 @@ class SimulatorRL:
     def agent_id_list(self) -> list[str]:
         return list(self.agents_info.keys())
 
-    def hyperopt_experiment(self):
-        raise NotImplementedError("Uhh.. so this is not implemented and might never be.")
