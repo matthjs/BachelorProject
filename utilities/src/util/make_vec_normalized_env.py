@@ -8,9 +8,31 @@ from stable_baselines3.common.vec_env.base_vec_env import VecEnvStepReturn
 
 
 class CustomVecNormalize(VecNormalize):
-    def __init__(self, venv, training=True,
-                 norm_obs=True, norm_reward=True, clip_obs=10.0, clip_reward=10.0, gamma=0.99, epsilon=1e-8,
+    """
+    Custom vectorized environment normalization for specific observation indices.
+    """
+
+    def __init__(self,
+                 venv,
+                 training=True,
+                 norm_obs=True,
+                 norm_reward=True,
+                 clip_obs=10.0,
+                 clip_reward=10.0,
+                 gamma=0.99,
+                 epsilon=1e-8,
                  norm_obs_indices=0):
+        """
+        :param venv: The vectorized environment.
+        :param training: Whether the environment is in training mode. Default is True.
+        :param norm_obs: Whether to normalize observations. Default is True.
+        :param norm_reward: Whether to normalize rewards. Default is True.
+        :param clip_obs: The clipping value for observations. Default is 10.0.
+        :param clip_reward: The clipping value for rewards. Default is 10.0.
+        :param gamma: The discount factor for reward normalization. Default is 0.99.
+        :param epsilon: A small value to avoid division by zero during normalization. Default is 1e-8.
+        :param norm_obs_indices: Number of observation indices to normalize. Default is 0 (normalize all).
+        """
         super().__init__(venv,
                          training=training,
                          norm_obs=norm_obs,
@@ -31,9 +53,10 @@ class CustomVecNormalize(VecNormalize):
     def _normalize_obs(self, obs: np.ndarray, obs_rms: RunningMeanStd) -> np.ndarray:
         """
         Helper to normalize observation.
-        :param obs:
-        :param obs_rms: associated statistics
-        :return: normalized observation
+
+        :param obs: Observations to be normalized.
+        :param obs_rms: Running mean and standard deviation statistics.
+        :return: Normalized observations.
         """
         if self.norm_obs_indices > 0:
             # Normalize only the first N indices
@@ -51,9 +74,10 @@ class CustomVecNormalize(VecNormalize):
     def _unnormalize_obs(self, obs: np.ndarray, obs_rms: RunningMeanStd) -> np.ndarray:
         """
         Helper to unnormalize observation.
-        :param obs:
-        :param obs_rms: associated statistics
-        :return: unnormalized observation
+
+        :param obs: Normalized observations to be unnormalized.
+        :param obs_rms: Running mean and standard deviation statistics.
+        :return: Unnormalized observations.
         """
         if self.norm_obs_indices > 0:
             # Unnormalize only the first N indices
@@ -71,6 +95,8 @@ class CustomVecNormalize(VecNormalize):
     def update_rms_obs(self, obs):
         """
         Update the running mean and standard deviation for the specified observation indices.
+
+        :param obs: Observations to update statistics with.
         """
         if self.norm_obs_indices > 0:
             self.obs_rms.update(obs[:, :self.norm_obs_indices])
@@ -115,7 +141,7 @@ class CustomVecNormalize(VecNormalize):
     def reset(self) -> Union[np.ndarray, Dict[str, np.ndarray]]:
         """
         Reset all environments
-        :return: first observation of the episode
+        :return: First observation of the episode
         """
         obs = self.venv.reset()
         assert isinstance(obs, (np.ndarray, dict))
@@ -136,18 +162,31 @@ def make_vec_env(env_id: str):
 
 
 def make_vec_normalized_env(env_str: str,
-                            training=True,
-                            norm_obs=True,
-                            norm_reward=False,
-                            clip_obs=10.0,
-                            clip_reward=10.0,
-                            gamma=0.99,
-                            epsilon=1e-08) -> VecNormalize:
+                            training: bool = True,
+                            norm_obs: bool = True,
+                            norm_reward: bool = False,
+                            clip_obs: float = 10.0,
+                            clip_reward: float = 10.0,
+                            gamma: float = 0.99,
+                            epsilon: float = 1e-08) -> VecNormalize:
+    """
+    Create a VecNormalize environment for the specified Gym environment string.
+
+    :param env_str: The string identifier for the Gym environment.
+    :param training: Whether the environment is for training. Default is True.
+    :param norm_obs: Whether to normalize observations. Default is True.
+    :param norm_reward: Whether to normalize rewards. Default is False.
+    :param clip_obs: The clipping value for observations. Default is 10.0.
+    :param clip_reward: The clipping value for rewards. Default is 10.0.
+    :param gamma: The discount factor for reward normalization. Default is 0.99.
+    :param epsilon: A small value to avoid division by zero during normalization. Default is 1e-08.
+    :return: A VecNormalize environment with the specified settings.
+    """
     norm_indices = 0
     if env_str == "LunarLander-v2":
         norm_indices = 6  # 8 - 2 = 6 We should not normalize the last two dimensions.
 
-    vec_env = DummyVecEnv([lambda: gym.make(env_str, render_mode="rgb_array")])
+    vec_env = make_vec_env(env_str)
     vec_normalized_env = CustomVecNormalize(venv=vec_env,
                                             training=training,
                                             norm_obs=norm_obs,

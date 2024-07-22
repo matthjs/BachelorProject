@@ -10,7 +10,7 @@ from welford.welford import Welford
 
 class MetricsTracker:
     """
-    Thread-safe object for recording metrics.
+    NOT Thread-safe object for recording metrics.
     """
 
     def __init__(self):
@@ -20,16 +20,12 @@ class MetricsTracker:
         self._aggregates_history: Dict[str, Dict[str, tuple]] = {}
         self._values_history: Dict[str, Dict[str, List[float]]] = {}
 
-    def to_csv(self, filename: str) -> None:
-        """
-        Write the metrics to a csv file.
-
-        :param filename: The name of the csv file.
-        """
-        # Implementation for writing metrics to a CSV file
-        pass
-
     def register_metric(self, metric_name: str) -> None:
+        """
+        Register a new metric to be tracked.
+
+        :param metric_name: The name of the metric to register.
+        """
         self._aggregates[metric_name] = {}
         self._values_history[metric_name] = {}
         self._aggregates_history[metric_name] = defaultdict(lambda: ([], []))
@@ -40,6 +36,17 @@ class MetricsTracker:
                     color_list: Optional[dict] = None) -> None:
         """
         Plot the metrics to a matplotlib figure.
+
+        :param metric_name: The name of the metric to plot.
+        :param plot_path: The path to save the plot. Default is "./".
+        :param x_axis_label: The label for the x-axis. Default is "Episodes".
+        :param y_axis_label: The label for the y-axis. Default is "Average".
+        :param title: The title of the plot. Default is "History".
+        :param figsize: The size of the figure. Default is (10, 6).
+        :param fontsize: The font size for labels and title. Default is 14.
+        :param linewidth: The width of the lines in the plot. Default is 1.5.
+        :param id_list: Optional list of agent IDs to include in the plot. Default is None.
+        :param color_list: Optional dictionary of colors for the agents. Default is None.
         """
         if metric_name not in self._aggregates:
             print(f"Metric name {metric_name} not registered")
@@ -54,23 +61,6 @@ class MetricsTracker:
                 continue
 
             color = color_list[agent_id] if use_colors else None
-
-            if agent_id == "gpq_agent_3":
-                agent_id = "GPQ (SVGP)"
-            elif agent_id == "sb_dqn_1":
-                agent_id = "DQN (MLP)"
-            elif agent_id == "GPQ2 (DGP)":
-                agent_id = "GPQ (DGP)"
-            elif agent_id == "DQN2 (MLP)":
-                agent_id = "DQN (MLP)"
-            elif agent_id == "DQN2 (Linear)":
-                agent_id = "DQN (Linear)"
-            elif agent_id == "sb_dqn_2":
-                agent_id = "DQN (Linear)"
-            elif agent_id == "GPQ4 (DGP)":
-                agent_id = "GPQ (DGP)"
-            elif agent_id == "random":
-                agent_id = "RANDOM"
 
             x_return = np.linspace(0, len(mean_returns), len(mean_returns), endpoint=False)
             ax.plot(x_return, mean_returns, linewidth=linewidth, label=f'{agent_id} agent', color=color)
@@ -102,10 +92,11 @@ class MetricsTracker:
 
     def record_scalar(self, metric_name: str, agent_id: str, val: float) -> None:
         """
-        Record val
-        :param metric_name:
-        :param agent_id:
-        :param val:
+        Record a scalar value for a specific metric and agent.
+
+        :param metric_name: The name of the metric.
+        :param agent_id: The ID of the agent.
+        :param val: The value to record.
         """
         if metric_name not in self._aggregates:
             raise AttributeError(f"Metric name {metric_name} not registered")
@@ -123,10 +114,11 @@ class MetricsTracker:
 
     def latest_mean_variance(self, metric_name: str, agent_id: str) -> tuple[Any, Any] | None:
         """
-        Get latest mean variance estimate.
-        :param metric_name:
-        :param agent_id:
-        :return:
+        Get the latest mean and variance estimate for a specific metric and agent.
+
+        :param metric_name: The name of the metric.
+        :param agent_id: The ID of the agent.
+        :return: A tuple containing the latest mean and variance, or None if no data is available.
         """
         means, variances = self._aggregates_history[metric_name].get(agent_id)
         if means:
@@ -135,7 +127,19 @@ class MetricsTracker:
             return None
 
     def metric_history(self, metric_name: str) -> dict[str, tuple]:
+        """
+        Get the history of aggregates for a specific metric.
+
+        :param metric_name: The name of the metric.
+        :return: A dictionary mapping agent IDs to tuples of (mean history, variance history).
+        """
         return self._aggregates_history[metric_name]
 
     def value_history(self, metric_name: str) -> dict[str, List[float]]:
+        """
+        Get the history of recorded values for a specific metric.
+
+        :param metric_name: The name of the metric.
+        :return: A dictionary mapping agent IDs to lists of recorded values.
+        """
         return self._values_history[metric_name]
