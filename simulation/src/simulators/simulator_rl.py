@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-import gymnasium as gym
 import cloudpickle
 
 from typing import Optional
@@ -75,7 +74,9 @@ class SimulatorRL:
         self.agents_info["random"]["agent_type"] = "random"
 
     @staticmethod
-    def load(experiment_id: str, new_experiment_id=None, load_dir: str = "../data/simulationbackup") -> 'SimulatorRL':
+    def load(experiment_id: str,
+             new_experiment_id: Optional[str] = None,
+             load_dir: str = "../data/simulationbackup") -> 'SimulatorRL':
         """
         Load a SimulatorRL instance from a backup file.
         (1) load simulator.
@@ -169,9 +170,7 @@ class SimulatorRL:
         Save agents to disk.
 
         :param agent_id_list: List of agent identifiers to save. If None, all agents are saved.
-        :type agent_id_list: List[str], optional
         :param save_dir: Directory path to save the agents, defaults to "../data/saved_agents/".
-        :type save_dir: str, optional
 
         :return: Instance of SimulatorRL with agents saved.
         """
@@ -186,10 +185,8 @@ class SimulatorRL:
         if agent_id_list is None:
             agent_id_list = list(self.agents.keys())  # do all agents if agent_id_list not specified.
 
-        # I am being really lazy here. Try and see if cloudpickle suffices.
-        # Even though for StableBaselines agents there is the .save() .load methods.
+        # Save agents to stable storage.
         for agent_id in agent_id_list:
-            print(agent_id)
             if self.agents[agent_id].is_stable_baselines_wrapper():
                 self.agents[agent_id].stable_baselines_unwrapped().save(save_dir + agent_id + "_" + \
                                                                         self.agents_info[agent_id]["agent_type"])
@@ -203,10 +200,16 @@ class SimulatorRL:
         return self
 
     def register_agent(self, agent_id: str, agent_type: str) -> 'SimulatorRL':
+        """
+        Register an agent with the simulator.
+
+        :param agent_id: Identifier of the agent.
+        :param agent_type: Type of the agent.
+        :return: Instance of SimulatorRL with the registered agent.
+        """
         cfg = self._config_obj(agent_type, agent_id, self.env_str)
 
         agent, hyperparams = self.agent_factory.create_agent_configured(agent_type, self.env, cfg)
-        print(hyperparams)
         self.agents[agent_id] = agent
 
         self._add_agent_to_df(agent_id, agent_type, hyperparams)
@@ -220,11 +223,13 @@ class SimulatorRL:
                                 color_list: Optional[dict] = None,
                                 plot_dir: str = "../plots/") -> 'SimulatorRL':
         """
-         Plot any plottable data and save the plots to files.
+        Plot any plottable data and save the plots to files.
 
-         :param plot_dir: Directory where the plots will be saved. Default is "../plots/".
-         :return: The SimulatorRL instance.
-         """
+        :param agent_id_list: List of agent identifiers to plot. If None, plot all agents.
+        :param color_list: Dictionary of agent identifiers to colors.
+        :param plot_dir: Directory where the plots will be saved. Default is "../plots/".
+        :return: The SimulatorRL instance.
+        """
         if self.verbose > 1:
             logger.info("Plotting plottable data")
 
@@ -257,10 +262,9 @@ class SimulatorRL:
         :param agent_id_list: List of agent identifiers to be trained. If None, all agents will be trained.
         :param callbacks: List of callback functions to be used during training.
         :param concurrent: Flag indicating if training should be done concurrently [NOT IMPLEMENTED]. Default is False.
-        :param reuse_callbacks:
+        :param reuse_callbacks: Flag indicating if callbacks should be reused. Default is False.
         :return: The SimulatorRL instance after training.
         """
-
         # Number of episodes should probably be in config but ah well.
         if agent_id_list is None:
             agent_id_list = list(self.agents.keys())  # do all agents if agent_id_list not specified.
@@ -290,8 +294,6 @@ class SimulatorRL:
                     self._stable_baselines_train(agent_id, num_episodes, callbacks)
                 else:
                     self._agent_env_interaction_gym("train", agent_id, num_episodes, callbacks)
-
-                # self.save()
         else:
             raise NotImplementedError("OOPS I did not implement this yet my bad.")
 
@@ -350,10 +352,11 @@ class SimulatorRL:
 
     def record(self, agent_id: str, num_timeseps: int, record_dir: str = "../videos/") -> None:
         """
-        Play the specified number of episodes using the given agent.
+        Record a video of the agent's performance.
 
-        :param agent_id: Identifier of the agent to be used for playing.
-        :param num_episodes: Number of episodes to play.
+        :param agent_id: Identifier of the agent to be recorded.
+        :param num_timesteps: Number of timesteps to record.
+        :param record_dir: Directory where the video will be saved. Default is "../videos/".
         """
         self._eval_start()
         # self.env.render_mode = "rgb_array"
@@ -389,7 +392,6 @@ class SimulatorRL:
                                    callbacks: list[AbstractCallback]) -> None:
         """
         Train or evaluate an agent in the environment.
-        NOTE: this method is way too long.
 
         :param mode: The mode of operation, either 'train' or 'eval'.
         :param agent_id: Identifier of the agent.
@@ -451,8 +453,9 @@ class SimulatorRL:
                 num_episodes -= 1
                 for callback in callbacks:
                     callback.on_episode_end()
-                # obs, info = env.reset()
+
                 obs = env.reset()[0]
+                # NOTE: Logging frequency hardcoded.
                 if (ep - num_episodes) % 30 == 0 and self.verbose > 0:
                     tracker = self.metrics_tracker_registry.get_tracker("train")
                     tracker.plot_metric(metric_name="return",
@@ -503,7 +506,6 @@ class SimulatorRL:
 
         model = agent.stable_baselines_unwrapped()
 
-        time_steps = 0
         if self.env_str == "CartPole-v1":
             time_steps = 5e4
         elif self.env_str == "LunarLander-v2":
@@ -536,6 +538,12 @@ class SimulatorRL:
         self.env.training = True
 
     def _initialize_env(self, env_str: str, config_path: str = "../../../configs"):
+        """
+        Initialize the environment and evaluation environment using the provided configuration.
+
+        :param env_str: The environment string identifier for the Gym environment.
+        :param config_path: The path to the configuration files. Default is "../../../configs".
+        """
         with initialize(config_path=config_path, version_base="1.2"):
             cfg = compose(config_name="config_" + env_str)
 
@@ -550,13 +558,29 @@ class SimulatorRL:
         self.eval_env = self.env
 
     def _config_obj(self, agent_type: str, agent_id: str, env_str: str, config_path: str = "../../../configs"):
+        """
+        Constructs configuration object for the specified agent type and environment based on the YAML config file.
+
+        :param agent_type: The type of the agent.
+        :param agent_id: The identifier of the agent.
+        :param env_str: The environment string identifier for the Gym environment.
+        :param config_path: The path to the configuration files. Default is "../../../configs".
+        :return: The configuration object.
+        """
         with initialize(config_path=config_path + "/" + agent_type, version_base="1.2"):
             cfg = compose(config_name="config_" + agent_id + "_" + env_str)
 
         self.agents_configs[agent_id] = cfg
         return cfg
 
-    def _add_agent_to_df(self, agent_id: str, agent_type: str, hyperparams=None) -> None:
+    def _add_agent_to_df(self, agent_id: str, agent_type: str, hyperparams: dict = None) -> None:
+        """
+        Add an agent to the dataframe.
+
+        :param agent_id: The identifier of the agent.
+        :param agent_type: The type of the agent.
+        :param hyperparams: The hyperparameters of the agent. Default is None.
+        """
         if hyperparams is None:
             hyperparams = {}
         new_row_values = {"agent_id": agent_id, "agent_type": agent_type, "hyperparams": hyperparams}
@@ -576,6 +600,12 @@ class SimulatorRL:
         self.df.loc[self.df['agent_id'] == agent_id, "W-statistic_cuml"] = round(statistic, 3)
 
     def _signtest_eval_with_random_policy(self, agent_id: str):
+        """
+        Perform a Wilcoxon rank-sum test comparing the evaluation performance of the agent with a random policy.
+        Compares means of undicounted returns.
+
+        :param agent_id: The identifier of the agent.
+        """
         tracker = self.metrics_tracker_registry.get_tracker("eval")
         return_history_random = tracker.value_history("return").get("random")
         return_history = tracker.value_history("return").get(agent_id)

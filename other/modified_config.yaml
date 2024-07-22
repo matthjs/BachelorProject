@@ -1,7 +1,0 @@
-model:
-  architecture: ResNet50
-  num_layers: 16
-training:
-  optimizer: SGD
-  learning_rate: 0.001
-  batch_size: 64
