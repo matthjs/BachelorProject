@@ -1,4 +1,4 @@
-from metricstracker.metricstracker4 import MetricsTracker4
+from metricstracker.metricstracker import MetricsTracker
 
 
 class MetricsTrackerRegistry:
@@ -6,7 +6,7 @@ class MetricsTrackerRegistry:
         self._trackers = {}
 
     def register_tracker(self, tracker_id: str):
-        self._trackers[tracker_id] = MetricsTracker4()
+        self._trackers[tracker_id] = MetricsTracker()
 
     def get_tracker(self, tracker_id: str):
         if tracker_id not in self._trackers:

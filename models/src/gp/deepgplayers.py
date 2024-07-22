@@ -12,28 +12,60 @@ from torch import Tensor
 
 
 class DeepGPMultivariateNormal(GPyTorchPosterior):
+    """
+    A class representing a multivariate normal distribution in a deep Gaussian process.
+    Corrects the expected shape of the sample, mean and variance by averaging the
+    Monte Carlo samples.
+    """
+
     def rsample(self, sample_shape: Optional[torch.Size] = None) -> Tensor:
+        """
+        Random sample from the distribution.
+
+        :param sample_shape: Shape of the samples to draw. Default is None.
+        :return: Sampled tensor.
+        """
         return super().rsample().mean(1)
 
     @property
     def mean(self) -> Tensor:
-        return super().mean.mean(0)  # Is this correct?
+        """
+        Mean of the distribution.
+
+        :return: Mean tensor.
+        """
+        return super().mean.mean(0)
 
     @property
     def variance(self) -> Tensor:
+        """
+        Variance of the distribution.
+
+        :return: Variance tensor.
+        """
         return super().variance.mean(0)
 
 
 class DeepGPHiddenLayer(DeepGPLayer):
     """
-    This is essentially a GP using variational inference.
+    A layer for a Deep Gaussian process. Very similar in structure to a Sparse Variational Gaussian process.
+    This particular DeepGPLayer implementations allows for skip connections, similar to one you would find
+    in a ResNet.
     """
 
     def __init__(self,
-                 input_dims,
-                 output_dims,
-                 num_inducing=128,
-                 mean_type="constant"):
+                 input_dims: int,
+                 output_dims: Optional[int] = None,
+                 num_inducing: int = 128,
+                 mean_type: str = "constant"):
+        """
+        Constructor for DeepGPHiddenLayer.
+
+        :param input_dims: Number of input dimensions.
+        :param output_dims: Number of output dimensions. Default is None.
+        :param num_inducing: Number of inducing points. Default is 128.
+        :param mean_type: Type of mean function ("constant" or "linear"). Default is "constant".
+        """
         if output_dims is None:
             inducing_points = torch.randn(num_inducing, input_dims)
             batch_shape = torch.Size([])
@@ -66,7 +98,13 @@ class DeepGPHiddenLayer(DeepGPLayer):
             ard_num_dims=None,
         )
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> MultivariateNormal:
+        """
+        Forward pass through the hidden layer.
+
+        :param x: Input tensor.
+        :return: Multivariate normal distribution.
+        """
         mean_x = self.mean_module(x)
         covar_x = self.covar_module(x)
         return MultivariateNormal(mean_x, covar_x)

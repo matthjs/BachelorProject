@@ -3,7 +3,6 @@ import time
 import botorch.settings
 import torch
 from botorch.models.gpytorch import GPyTorchModel
-from botorch.models.transforms.input import Normalize
 from loguru import logger
 from torch.optim.lr_scheduler import ExponentialLR
 from bachelorproject.configobject import Config
@@ -14,7 +13,6 @@ from gp.custommixedgp import MixedSingleTaskGP
 from gp.deepgp import DeepGPModel
 from gp.fitgp import GPFitter
 from gp.gpviz import plot_gp_point_distribution
-from gp.mixedvariationalgp import MixedSingleTaskVariationalGP
 from kernels.kernelfactory import create_kernel
 from util.fetchdevice import fetch_device
 import gymnasium as gym
@@ -23,7 +21,8 @@ import gymnasium as gym
 class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
     """
     Bayesian optimizer for model-free RL with discrete action spaces.
-    WARNING: This class is getting a bit big.
+    WARNING: This class is a bit big, due to not strictly following the
+    one class one responsibility principle.
     """
 
     def __init__(self,
@@ -35,22 +34,23 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                  kernel_type: str,
                  kernel_args,
                  strategy='thompson_sampling',
-                 sparsification_treshold: float = None,
                  posterior_observation_noise: bool = False,
                  num_inducing_points: int = 64
                  ):
         """
         Constructor.
+        NOTE: Constructor too long.
 
-        :param model_str: What GP model to use ('exact_gp', 'variational_gp', 'deep_gp').
-        :param exploring_starts: Number of choose_next_action() calls before the GP gets updated.
-        :param max_dataset_size: Max dataset size to apply.
+        :param model_str: What GP model to use ('exact_gp', 'deep_gp').
+        :param exploring_starts: Number of choose_next_action() calls before the GP starts getting updated.
+        :param max_dataset_size: Max dataset size.
         :param state_space: The state space of the environment.
         :param action_space: The action space of the environment (has to be discrete).
         :param kernel_type: Type of kernel to be used for states ('matern', 'rff', 'rbf').
+               NOTE/TODO: deep_gp currently has a hardcoded RBF kernel for each unit -> so this argument does not
+               do anything in that case.
         :param kernel_args: Only applicable for RFF for specifying number of samples (is a data object).
         :param strategy: Acquisition function/behavioral policy to use.
-        :param sparsification_treshold: If set, attempts to run a sparsification algorithm for the dataset.
         """
         self.device = fetch_device()
         self._data_x = deque(maxlen=max_dataset_size)  # Memory consideration: keep track of N latest samples.
@@ -64,15 +64,13 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         self._action_space = action_space
         self._state_space = state_space
         self._exploring_starts = exploring_starts
-        self._dummy_counter = 0
-        self._visualize = False
-        self._stupid_flag_that_should_be_removed = True
 
-        self._sparsification_treshold = sparsification_treshold
+        self._viz_counter = 0
+        self._visualize = False
 
         self._kernel_factory, self.use_scale_kernel = create_kernel(kernel_type, kernel_args)
 
-        if model_str not in ['exact_gp', 'variational_gp', 'deep_gp']:
+        if model_str not in ['exact_gp', 'deep_gp']:
             raise ValueError(f'Unknown gp model type: {model_str}')
 
         self.fit_gp = GPFitter()
@@ -106,6 +104,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         :param train_x: A tensor with expected shape (dataset_size, state_space_dim).
         :param train_y: A tensor with expected shape (dataset_size, 1).
         :return: A GP conditioned on (train_x, train_y) (Hyperparameters NOT fitted).
+                For deep_gp, the DGP is only instantiated once and after which the same
+                reference is returned every time.
         """
         if self._gp_mode not in ["variational_gp", "deep_gp"]:
             del self._current_gp
@@ -117,26 +117,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 train_Y=train_y,
                 cat_dims=[self._state_size],
                 cont_kernel_factory=self._kernel_factory,
-                input_transform=Normalize(  # TODO: Normalization causes issue with condition_on_observations
-                    d=self._state_size + 1,
-                    indices=list(range(self._state_size))),  # ONLY normalize state part.
-                outcome_transform=None,
                 use_scale_kernel=self.use_scale_kernel
             ).to(self.device)
-        # DEPRECATED
-        elif self._gp_mode == 'variational_gp':
-            # Do not use RFF with variational GP.
-            if train_x.shape[0] < self._num_inducing_points:
-                return MixedSingleTaskVariationalGP(
-                    train_X=train_x,
-                    train_Y=train_y,
-                    cat_dims=[self._state_size],
-                    cont_kernel_factory=self._kernel_factory,
-                    inducing_points=self._num_inducing_points,
-                    outcome_transform=None
-                ).to(self.device)
-            else:
-                return self._current_gp
         elif self._gp_mode == 'deep_gp':
             if first_time:
                 dpg = DeepGPModel(
@@ -145,7 +127,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                     num_inducing_points=self._num_inducing_points,
                 ).to(self.device)
 
-                self._optimizer = ExponentialLR(torch.optim.Adam(dpg.parameters(), lr=Config.GP_FIT_LEARNING_RATE), gamma=1)
+                self._optimizer = ExponentialLR(
+                    torch.optim.Adam(dpg.parameters(), lr=Config.GP_FIT_LEARNING_RATE), gamma=1)
                 return dpg
             else:
                 return self._current_gp.to(self.device)
@@ -153,6 +136,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
     def fit(self, new_train_x: torch.tensor, new_train_y: torch.tensor, hyperparameter_fitting: bool = True) -> None:
         """
         Condition the GP on incoming data and fit its hyperparameters.
+        More accurately, for DGP, the incoming data is used, to adjust hyperparameters, including
+        the inducing points, which is what the DGP actually conditions on.
         Sets the _current_gp private field.
 
         :param new_train_x: A tensor with expected shape (dataset_size, state_space_dim).
@@ -163,7 +148,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             self.extend_dataset(new_train_x, new_train_y)
             if self._exploring_starts > 0:
                 return
-            self._dummy_counter += 1
+            self._viz_counter += 1
             train_x, train_y = self.dataset()
             gp = self._construct_gp(train_x, train_y)
 
@@ -183,7 +168,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                                                optimizer=optimizer)
                 logger.debug(f"Time taken -> {time.time() - start_time} seconds")
                 self._optimizer.step()
-                print(self._optimizer.get_last_lr())
 
             self._current_gp = gp
 
@@ -193,49 +177,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         """
         return self._current_gp
 
-    def _linear_independence_test(self,
-                                  test_point: torch.tensor,
-                                  data_points: torch.tensor,
-                                  kernel_matrix: torch.tensor,
-                                  kernel_fun) -> bool:
-        """
-        Computes whether the linear independence test is passed.
-        The linear independence test asks, how well is test_point approximated by the elements
-        of data_points?
-        NOTE: DOES NOT APPEAR TO WORK, THRESHOLD NEVER GETS REACHED AND THE VALUES
-        THAT ARE COMPUTED ARE OFTEN SMALL/CLOSE TO ZERO.
-        $test > treshold$?
-        $ test = k(z', z') - k(Z, z')^T K(Z, Z)^{-1} k(Z, z')$
-        :param test_point: a (1, vec_dim) vector.
-        :param data_points: the input dataset (dataset_size, vec_dim).
-        :param kernel_matrix: pre-computed from dataset (dataset_size, dataset_size).
-        :param kernel_fun: the covariance function.
-        :return: whether the independence test is passed depending on the sparsification treshold.
-        """
-        kernel_vec = kernel_fun(test_point, data_points)
-        res = torch.linalg.solve(kernel_matrix, kernel_vec.squeeze(0)).unsqueeze(0)
-        res2 = torch.matmul(res, kernel_vec.t())
-        test_val = (kernel_fun(test_point, test_point) - res2).to_dense()
-
-        print(f"test result test_val > spars_tresh -> {test_val.item()} > {self._sparsification_treshold}")
-        return test_val.item() > self._sparsification_treshold
-
-    def _sparse_add(self, new_train_x: torch.tensor, new_train_y: torch.tensor) -> None:
-        """
-        Add data points to the dataset using a sparsification scheme.
-
-        :param new_train_x: A tensor with expected shape (dataset_size, state_space_dim).
-        :param new_train_y: A tensor with expected shape (dataset_size, 1).
-        """
-        covar_fun = self._current_gp.covar_module
-        train_x = torch.cat(list(self._data_x))
-        covar_matrix = covar_fun(train_x, train_x)
-
-        for x, y in zip(new_train_x, new_train_y):
-            if self._linear_independence_test(x.unsqueeze(0), train_x, covar_matrix, covar_fun):
-                self._data_x.append(x.unsqueeze(0))
-                self._data_y.append(y.unsqueeze(0))
-
     def extend_dataset(self, new_train_x: torch.tensor, new_train_y: torch.tensor) -> None:
         """
         Add data points to the dataset.
@@ -243,13 +184,6 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         :param new_train_x: A tensor with expected shape (dataset_size, state_space_dim).
         :param new_train_y: A tensor with expected shape (dataset_size, 1).
         """
-        # dequeue evaluates to False if empty.
-        if self._sparsification_treshold is not None and self._data_x:
-            self._sparse_add(new_train_x, new_train_y)
-            return
-
-        # Maybe there is a better way to do this
-        # We want to tensors to be non-batched in the deque.
         for x, y in zip(new_train_x, new_train_y):
             self._data_x.append(x.unsqueeze(0))
             self._data_y.append(y.unsqueeze(0))
@@ -273,6 +207,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         We must fix the state part of the input :math: `z \in S times A`
         and search for the most suitable action part.
         Target is typically TD(0) target.
+        Side effect: Occasionally plots the predictive distribution for a given state.
+
         :param state: a state tensor (1, state_space_dim).
         :return: an action encoded as an int.
         """
@@ -284,7 +220,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         action_tensor = self._gp_action_selector.action(self._current_gp, state)
 
-        if self._dummy_counter == 300:
+        if self._viz_counter == 300:        # TODO: Hardcoded: this should be configurable.
             self._visualize_data(state)
 
         return action_tensor.item()
@@ -335,12 +271,17 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         return max_q_values, max_actions
 
-    def _visualize_data(self, state):
+    def _visualize_data(self, state: torch.tensor) -> None:
+        """
+        Visualizes the predictive distribution for a state by plotting a Gaussian for every action.
+        Resets self._viz_counter.
+        :param state: current state.
+        """
         plot_gp_point_distribution(self._current_gp,
                                    state,
                                    self._action_size,
                                    title=f'Point Distribution for state ({state})')
-        self._dummy_counter = 0
+        self._viz_counter = 0
 
     def exploring_starts(self) -> int:
         return self._exploring_starts

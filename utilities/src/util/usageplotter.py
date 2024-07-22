@@ -74,8 +74,6 @@ def plot_complexities(data, dataset_name='Dataset', xlabel='X-axis', ylabel='Y-a
     :param plot_dir: Directory to save the plot, if specified
     :return: None
     """
-    # print("D", data)
-
     plt.figure(figsize=(10, 6))
 
     # Define data points implicitly based on the length of the dataset

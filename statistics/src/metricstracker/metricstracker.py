@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from welford.welford import Welford
 
 
-class MetricsTracker4:
+class MetricsTracker:
     """
     Thread-safe object for recording metrics.
     """
@@ -90,9 +90,6 @@ class MetricsTracker4:
         plt.yticks(fontsize=fontsize)
 
         plt.tight_layout()
-        # -400, 150 for Lunar Lander
-        # if metric_name != "loss":
-        #    plt.ylim((-400, 150))
 
         # Create directory if it does not exist
         plot_dir = '../plots'
