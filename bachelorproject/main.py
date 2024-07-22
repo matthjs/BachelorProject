@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     (sim
      .register_agent("GPQ (DGP)", "gpq_agent")
-     .train_agents(num_episodes=200, concurrent=False,
+     .train_agents(num_episodes=10, concurrent=False,
                    callbacks=[EarlyStopCallback(RewardCallback(), 500, 5),
                               UsageCallback(),
                               LossCallback()])
