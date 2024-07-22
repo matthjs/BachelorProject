@@ -79,7 +79,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
         # Initialize GP settings. The GP is filled with a few dummy values.
         self._gp_mode = model_str
         self._current_gp = None
-        self._optimizer = None
+        self._lr_scheduler = None
         self._current_gp = self._construct_gp(torch.zeros(10, state_size + 1, dtype=torch.double),
                                               torch.zeros(10, 1, dtype=torch.double), first_time=True)
 
@@ -100,6 +100,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
     def _construct_gp(self, train_x, train_y, first_time=False) -> GPyTorchModel:
         """
         Construct a Gaussian process with data (train_x, train_y).
+        For deep_gp, the train_x.shape is used to get the right architecture for the first layer.
+        Side effect for deep_gp: Instantiates an Adam optimizer that is used in GPFitter.
 
         :param train_x: A tensor with expected shape (dataset_size, state_space_dim).
         :param train_y: A tensor with expected shape (dataset_size, 1).
@@ -107,7 +109,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                 For deep_gp, the DGP is only instantiated once and after which the same
                 reference is returned every time.
         """
-        if self._gp_mode not in ["variational_gp", "deep_gp"]:
+        if self._gp_mode not in ["deep_gp"]:
             del self._current_gp
 
         # NOTE: This is too memory intensive for a lot of RL environments.
@@ -127,7 +129,8 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                     num_inducing_points=self._num_inducing_points,
                 ).to(self.device)
 
-                self._optimizer = ExponentialLR(
+                # Hardcoded gamma, since for the experiment I do not actually use LR scheduling.
+                self._lr_scheduler = ExponentialLR(
                     torch.optim.Adam(dpg.parameters(), lr=Config.GP_FIT_LEARNING_RATE), gamma=1)
                 return dpg
             else:
@@ -156,7 +159,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
             if hyperparameter_fitting:
                 start_time = time.time()
                 checkpoint_path = None if self._gp_mode == 'deep_gp' else 'gp_model_checkpoint_' + self._gp_mode + '.pth'
-                optimizer = self._optimizer.optimizer if self._gp_mode == 'deep_gp' else None
+                optimizer = self._lr_scheduler.optimizer if self._gp_mode == 'deep_gp' else None
                 self.latest_loss = self.fit_gp(gp, train_x, train_y, self._gp_mode,
                                                batch_size=Config.GP_FIT_BATCH_SIZE,
                                                num_epochs=Config.GP_FIT_NUM_EPOCHS,
@@ -167,7 +170,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
                                                checkpoint_path=checkpoint_path,
                                                optimizer=optimizer)
                 logger.debug(f"Time taken -> {time.time() - start_time} seconds")
-                self._optimizer.step()
+                self._lr_scheduler.step()  # Learning rate schedule update.
 
             self._current_gp = gp
 
@@ -220,7 +223,7 @@ class BayesianOptimizerRL(AbstractBayesianOptimizerRL):
 
         action_tensor = self._gp_action_selector.action(self._current_gp, state)
 
-        if self._viz_counter == 300:        # TODO: Hardcoded: this should be configurable.
+        if self._viz_counter == 300:  # TODO: Hardcoded: this should be configurable.
             self._visualize_data(state)
 
         return action_tensor.item()

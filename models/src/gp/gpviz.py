@@ -7,7 +7,7 @@ from typing import Tuple, Optional
 from util.fetchdevice import fetch_device
 
 """
-Note: these visualization functions only work for GP models mapping functions f : R x R x Z -> R
+Note: Most of these visualization functions only work for GP models modeling functions f : R x R x Z -> R
 """
 
 
