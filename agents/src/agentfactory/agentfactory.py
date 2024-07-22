@@ -1,8 +1,6 @@
-from threading import current_thread
-
 import gymnasium as gym
-from stable_baselines3 import DQN, PPO
 
+from stable_baselines3 import DQN, PPO
 from agent.abstractagent import AbstractAgent
 from agent.gpqagent import GPQAgent
 from agent.gpsarsaagent import GPSarsaAgent
@@ -18,21 +16,13 @@ class AgentFactory:
     """
 
     @staticmethod
-    def set_thread_id(agent_type: str) -> None:
-        """
-        Set the thread ID for the current thread.
-        :param agent_type: The type of agent.
-        """
-        thr = current_thread()
-        thr.name = agent_type + "_thread_" + str(thr.ident)
-
-    @staticmethod
     def create_agent_configured(agent_type: str, env, cfg) -> tuple[AbstractAgent, dict]:
         """
         Create an RL agent based on the provided configuration.
-        WARNING: THIS FUNCTION IS A BIT OF A MESS.
+        WARNING: THIS FUNCTION IS A MESS AND DOES NOT REFLECT MY OWN PERSONAL STANDARD ON
+        SOFTWARE QUALITY.
         :param agent_type: The type of agent to create.
-        :param env: a (wrapped) Gymnasium environment.
+        :param env: A (wrapped) Gymnasium environment.
         :param cfg: The configuration for the agent.
         :return: A tuple containing the created agent and its configuration.
         """
@@ -49,7 +39,6 @@ class AgentFactory:
                 'exploring_starts': cfg.model.exploring_starts,
                 'max_dataset_size': cfg.model.max_dataset_size,
                 'kernel_type': cfg.model.kernel_type,
-                'sparsification_threshold': eval(cfg.model.sparsification_threshold),
                 'strategy': cfg.model.strategy,
                 'posterior_observation_noise': cfg.model.posterior_observation_noise,
                 'num_inducing_points': cfg.model.num_inducing_points
@@ -74,7 +63,6 @@ class AgentFactory:
                 max_dataset_size=cfg.model.max_dataset_size,
                 kernel_type=cfg.model.kernel_type,
                 kernel_args=cfg.model.kernel,
-                sparsification_threshold=eval(cfg.model.sparsification_threshold),
                 strategy=cfg.model.strategy,
                 posterior_observation_noise=cfg.model.posterior_observation_noise,
                 num_inducing_points=cfg.model.num_inducing_points
@@ -88,7 +76,6 @@ class AgentFactory:
                 'exploring_starts': cfg.model.exploring_starts,
                 'max_dataset_size': cfg.model.max_dataset_size,
                 'kernel_type': cfg.model.kernel_type,
-                'sparsification_threshold': eval(cfg.model.sparsification_threshold),
                 'strategy': cfg.model.strategy,
                 'posterior_observation_noise': cfg.model.posterior_observation_noise,
                 'num_inducing_points': cfg.model.num_inducing_points
@@ -113,7 +100,6 @@ class AgentFactory:
                 max_dataset_size=cfg.model.max_dataset_size,
                 kernel_type=cfg.model.kernel_type,
                 kernel_args=cfg.model.kernel,
-                sparsification_threshold=eval(cfg.model.sparsification_threshold),
                 strategy=cfg.model.strategy,
                 posterior_observation_noise=cfg.model.posterior_observation_noise,
                 num_inducing_points=cfg.model.num_inducing_points
@@ -180,20 +166,11 @@ class AgentFactory:
         raise ValueError("Unsupported agent type")
 
     @staticmethod
-    def create_agent(agent_type: str, env_str: str) -> AbstractAgent:
+    def create_random_agent(env_str: str) -> AbstractAgent:
         """
-        Factory method for Agent creation.
-        NOTE: This factory function assumes continuous state spaces and
-        discrete action spaces.
+        Create random agent.
         :param env_str:
-        :param agent_type: a string key corresponding to the agent.
         :return: an object of type Agent.
         """
         env = gym.make(env_str)
-
-        AgentFactory.set_thread_id(agent_type)
-
-        if agent_type == "random":
-            return RandomAgent(env)
-
-        raise ValueError("Invalid agent type")
+        return RandomAgent(env)

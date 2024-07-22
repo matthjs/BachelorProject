@@ -1,26 +1,22 @@
 import os
-from typing import Optional
-
 import pandas as pd
 import gymnasium as gym
+import cloudpickle
+
+from typing import Optional
 from loguru import logger
 from scipy.stats import ranksums
 from stable_baselines3 import DQN, PPO
 from stable_baselines3.common.callbacks import StopTrainingOnMaxEpisodes
 from stable_baselines3.common.vec_env import VecNormalize, VecVideoRecorder
-
 from agent.sbadapter import StableBaselinesAdapter
 from agentfactory.agentfactory import AgentFactory
-from bachelorproject.configobject import Config
 from callbacks.abstractcallback import AbstractCallback
 from callbacks.rewardcallback import RewardCallback
 from callbacks.sbcallbackadapter import StableBaselinesCallbackAdapter
 from metricstracker.metricstrackerregistry import MetricsTrackerRegistry
 from hydra import compose, initialize
-import cloudpickle
-
 from util.make_vec_normalized_env import make_vec_normalized_env, make_vec_env
-from util.usageplotter import plot_complexities
 
 
 def is_zip_file(filename: str) -> bool:
@@ -76,7 +72,7 @@ class SimulatorRL:
         """
         Initialize the random agent and add it to the dataframe and agents_info dictionary.
         """
-        self.agents["random"] = self.agent_factory.create_agent("random", self.env_str)
+        self.agents["random"] = self.agent_factory.create_random_agent(self.env_str)
         self.agents_configs["random"] = None
         self._add_agent_to_df("random", "random")
         self.agents_info["random"] = {}
@@ -248,29 +244,6 @@ class SimulatorRL:
                             title="graph " + self.env_str,
                             id_list=agent_id_list,
                             color_list=color_list)
-
-        """
-        for agent_id, info in self.agents_info.items():
-            for info_attr, value in info.items():
-                if info_attr == "update_times":
-                    plot_complexities(value,
-                                      f"Time Usage {agent_id}",
-                                      "Update Index",
-                                      "Time (seconds)",
-                                      plot_dir=plot_dir + "/" + self.experiment_id)
-                elif info_attr == "update_energy":
-                    plot_complexities(value,
-                                      f"Energy Usage {agent_id}",
-                                      "Update Index",
-                                      "Energy (Joule)",
-                                      plot_dir=plot_dir + "/" + self.experiment_id)
-                elif info_attr == "update_memory":
-                    plot_complexities(value,
-                                      f"VRAM usage {agent_id}",
-                                      "Update Index",
-                                      "Memory Usage (GB)",
-                                      plot_dir=plot_dir + "/" + self.experiment_id)
-        """
 
         return self
 
