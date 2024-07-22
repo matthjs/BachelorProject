@@ -1,3 +1,0 @@
-agent_id,agent_type,hyperparams,num_episodes (train),avg return train,stdev return train,execution time (sec) train,p_val_cuml_return_train_>,W-statistic_cuml,num_episodes (eval),avg return eval,stdev return eval,execution time (sec) eval,p_val_return_eval_>,W-statistic_return_eval
-random,random,{},300.0,22.067,11.436,0.075,0.5,0.0,10.0,18.7,7.469,0.007,0.5,0.0
-gpq_agent_2,gpq_agent,"{'gp_model_str': 'variational_gp', 'discount_factor': 0.99, 'batch_size': 32, 'replay_buffer_size': 64, 'exploring_starts': 250, 'max_dataset_size': 10000, 'kernel_type': 'rbf', 'sparsification_threshold': None}",300.0,17.023,16.002,2954.266,1.0,-12.814,10.0,9.2,0.919,1.241,1.0,-3.78

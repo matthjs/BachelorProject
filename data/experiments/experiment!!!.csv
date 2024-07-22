@@ -1,4 +1,0 @@
-agent_id,agent_type,num_episodes (train),avg return train,stdev return train,execution time (sec) train,p_val_comp_mean_return_random_greater,W-statistic,num_episodes (eval),avg return eval,stdev return eval,execution time (sec) eval
-random,random,120.0,22.367,12.717,0.028,0.5,0.0,10.0,19.6,9.24,0.003
-sb_dqn_1,sb_dqn,120.0,21.133,9.89,4.018,1.0,-12.33,10.0,17.0,4.32,0.003
-sb_ppo_1,sb_ppo,120.0,345.633,204.646,186.178,0.0,13.175,10.0,500.0,0.0,7.072

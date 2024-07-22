@@ -1,5 +1,0 @@
-agent id,agent type
-gpq_agent_1,gpq_agent
-gpsarsa_agent_1,gpsarsa_agent
-sb_dqn,sb_dqn
-sb_ppo,sb_ppo

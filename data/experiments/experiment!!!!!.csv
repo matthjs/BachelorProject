@@ -1,4 +1,0 @@
-agent_id,agent_type,num_episodes (train),avg return train,stdev return train,execution time (sec) train,p_val_comp_mean_return_random_greater,W-statistic,num_episodes (eval),avg return eval,stdev return eval,execution time (sec) eval
-random,random,100.0,21.57,10.026,0.06,0.5,0.0,10.0,24.0,14.499,0.004
-gpq_agent_1,gpq_agent,100.0,17.62,14.259,209.55,1.0,-5.775,10.0,43.2,27.583,3.614
-gpsarsa_agent_1,gpsarsa_agent,100.0,15.62,15.83,330.207,1.0,-10.273,10.0,15.1,6.574,2.251

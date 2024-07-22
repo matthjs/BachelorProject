@@ -1,7 +1,0 @@
-agent_id,agent_type,hyperparams,num_episodes (train),avg return train,stdev return train,execution time (sec) train,VRAM usage (GB) train,Energy usage (J) train,p_val_cuml_return_train_>,W-statistic_cuml,num_episodes (eval),avg return eval,stdev return eval,execution time (sec) eval,VRAM usage (GB) eval,Energy usage (J) eval,p_val_return_eval_>,W-statistic_return_eval
-random,random,{},100.0,21.683,11.586,3.557,0.0,14.156,0.5,0.0,10.0,25.0,18.963,0.004,0.0,0.0,0.5,0.0
-gpq_agent_3,gpq_agent,"{'gp_model_str': 'deep_gp', 'discount_factor': 0.99, 'batch_size': 32, 'replay_buffer_size': 64, 'exploring_starts': 100, 'max_dataset_size': 100000, 'kernel_type': 'matern', 'sparsification_threshold': None, 'strategy': 'thompson_sampling', 'posterior_observation_noise': False, 'num_inducing_points': 1024}",100.0,22.35,11.58,259.334,3.966,34294.09,0.0,19.354,10.0,22.2,11.592,11.684,0.0,1025.446,0.538,-0.096
-gpq_agent_3,gpq_agent,{},100.0,22.35,11.58,259.334,3.966,34294.09,0.0,19.354,10.0,22.2,11.592,11.684,0.0,1025.446,0.538,-0.096
-random,random,{},100.0,21.683,11.586,3.557,0.0,14.156,0.5,0.0,10.0,25.0,18.963,0.004,0.0,0.0,0.5,0.0
-gpq_agent_3,gpq_agent,{},100.0,22.35,11.58,259.334,3.966,34294.09,0.0,19.354,10.0,22.2,11.592,11.684,0.0,1025.446,0.538,-0.096
-random,random,{},100.0,21.683,11.586,3.557,0.0,14.156,0.5,0.0,10.0,25.0,18.963,0.004,0.0,0.0,0.5,0.0

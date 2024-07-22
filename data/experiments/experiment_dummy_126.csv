@@ -1,5 +1,0 @@
-agent_id,agent_type,hyperparams,num_episodes (train),avg return train,stdev return train,execution time (sec) train,VRAM usage (GB) train,Energy usage (J) train,p_val_cuml_return_train_>,W-statistic_cuml,num_episodes (eval),avg return eval,stdev return eval,execution time (sec) eval,VRAM usage (GB) eval,Energy usage (J) eval,p_val_return_eval_>,W-statistic_return_eval
-random,random,{},50.0,21.429,11.49,1.805,0.0,1154.0,0.5,0.0,10.0,23.45,12.959,0.008,0.0,0.0,0.5,0.0
-gpq_agent_1,gpq_agent,"{'gp_model_str': 'exact_gp', 'discount_factor': 0.9999, 'batch_size': 32, 'replay_buffer_size': 64, 'exploring_starts': 100, 'max_dataset_size': 1500, 'kernel_type': 'matern', 'sparsification_threshold': None, 'strategy': 'thompson_sampling'}",50.0,19.7,26.464,11.895,4.129,905.109,0.0,4.843,10.0,58.8,52.585,1.051,0.0,33.967,0.495,0.014
-gpq_agent_1,gpq_agent,{},50.0,19.7,26.464,11.895,4.129,905.109,0.0,4.843,10.0,58.8,52.585,1.051,0.0,33.967,0.495,0.014
-random,random,{},50.0,21.429,11.49,1.805,0.0,1154.0,0.5,0.0,10.0,23.45,12.959,0.008,0.0,0.0,0.5,0.0
