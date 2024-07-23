@@ -130,4 +130,4 @@ Special thanks to the maintainers of the GPytorch library. The base classes prov
 For more information about GPytorch, please visit their [GitHub repository](https://github.com/cornellius-gp/gpytorch).
 
 # License
-This project is licensed under the GNU Affero General Public License v3.0 - see the [LICENSE](./LICENSE.txt) file for details.
+This project is licensed under the GNU Affero General Public License v3.0 - see the [LICENSE](./LICENSE) file for details.
