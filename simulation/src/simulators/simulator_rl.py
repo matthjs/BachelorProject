@@ -547,6 +547,9 @@ class SimulatorRL:
         with initialize(config_path=config_path, version_base="1.2"):
             cfg = compose(config_name="config_" + env_str)
 
+        # This is bad practice, but the current code has problems with environment strings that include paths (e.g., '/')
+        if env_str == "Sepsis/ICU-Sepsis-v2":
+            cfg = cfg['config_Sepsis']
         self.env = make_vec_normalized_env(env_str,
                                            training=True,
                                            norm_obs=cfg.environment.norm_obs,
