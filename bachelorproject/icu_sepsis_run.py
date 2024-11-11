@@ -22,7 +22,7 @@ if __name__ == "__main__":
     # VRAM usage estimates.
     (sim
      .register_agent("GPQ (DGP)", "gpq_agent")
-     .train_agents(num_episodes=300, concurrent=False,
+     .train_agents(num_episodes=600, concurrent=False,
                    callbacks=[UsageCallback(),
                               LossCallback()])
      .evaluate_agents(30, callbacks=[RewardCallback(), UsageCallback()])
